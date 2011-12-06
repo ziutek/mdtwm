@@ -61,29 +61,8 @@ func manageExistingWindows() {
 		l.Fatal("Can't get a list of existing windows: ", err)
 	}
 	for _, id := range tr.Children {
-		manageWindow(id)
+		winAdd(Window(id))
 	}
-}
-
-func manageWindow(id xgb.Id) {
-	w := Window(id)
-	l.Print("manageWindow: ", w)
-	if cfg.Ignore.Contains(w.Class()) {
-		return
-	}
-	wa := w.Attrs()
-	if wa.OverrideRedirect || wa.MapState != xgb.MapStateViewable {
-		return
-	}
-	w.EventMask(xgb.EventMaskPropertyChange | xgb.EventMaskStructureNotify |
-		xgb.EventMaskFocusChange)
-	// Nice bechavior if wm will be killed, exited, crashed
-	w.ChangeSaveSet(xgb.SetModeInsert)
-
-	w.SetBorderWidth(cfg.BorderWidth)
-	w.SetBorderColor(cfg.NormalBorderColor)
-	windows.PushFront(w)
-	w.Map()
 }
 
 func grabKeys() {
@@ -96,14 +75,10 @@ func eventLoop() {
 	l.Print("eventLoop")
 
 	// Init event
-	root.EventMask(
-		xgb.EventMaskSubstructureRedirect |
-		xgb.EventMaskStructureNotify |
-		xgb.EventMaskSubstructureNotify |
-		xgb.EventMaskPointerMotion |
-		xgb.EventMaskPropertyChange |
-		xgb.EventMaskEnterWindow,
-	)
+	root.EventMask(xgb.EventMaskSubstructureRedirect |
+		xgb.EventMaskStructureNotify | xgb.EventMaskSubstructureNotify |
+		xgb.EventMaskPointerMotion | xgb.EventMaskPropertyChange |
+		xgb.EventMaskEnterWindow)
 	// Event loop
 	for {
 		event, err := conn.WaitForEvent()
@@ -112,45 +87,22 @@ func eventLoop() {
 			continue
 		}
 		switch ev := event.(type) {
-		case *xgb.KeyPressEvent:
-			l.Print("KeyPressEvent: ", ev)
-		case *xgb.MapRequestEvent:
-			l.Print("MapRequestEvent: ", ev)
-		case *xgb.EnterNotifyEvent:
-			enterNotifyHandler(ev)
-		case *xgb.ButtonPressEvent:
-			l.Print("ButtonPressEvent", ev)
-		case *xgb.DestroyNotifyEvent:
-			l.Print("DestroyNotifyEvent: ", ev)
-		case *xgb.ConfigureNotifyEvent:
-			l.Print("ConfigureNotifyEvent")
-		case *xgb.ConfigureRequestEvent:
-			l.Print("ConfigureRequestEvent")
-		}
-	}
-}
-
-func enterNotifyHandler(ev *xgb.EnterNotifyEvent) {
-	l.Print("EnterNotifyEvent: ", ev)
-
-	switch ev.Mode {
-	case xgb.NotifyModeNormal:
-		l.Print("NotifyModeNormal")
-	case xgb.NotifyModeGrab:
-		l.Print("NotifyModeGrab")
-	case xgb.NotifyModeUngrab:
-		l.Print("NotifyModeUngrab")
-	case xgb.NotifyModeWhileGrabbed:
-		l.Print("NotifyModeWhileGrabbed")
-	default:
-		l.Print("unknown notify mode")
-	}
-
-	for el := windows.Front(); el != nil; el = el.Next() {
-		w := el.Value.(Window)
-		l.Print(w)
-		if w.Id() == ev.Event {
-			w.SetBorderColor(cfg.FocusedBorderColor)
+		case xgb.MapRequestEvent:
+			mapRequest(ev)
+		case xgb.EnterNotifyEvent:
+			enterNotify(ev)
+		case xgb.DestroyNotifyEvent:
+			destroyNotify(ev)
+		case xgb.ConfigureNotifyEvent:
+			configureNotify(ev)
+		case xgb.ConfigureRequestEvent:
+			configureRequest(ev)
+		case xgb.KeyPressEvent:
+			keyPress(ev)
+		case xgb.ButtonPressEvent:
+			buttonPress(ev )
+		default:
+			l.Print("Unknown event: ", ev)
 		}
 	}
 }

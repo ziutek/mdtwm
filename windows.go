@@ -1,7 +1,6 @@
 package main
 
 import (
-	"container/list"
 	"x-go-binding.googlecode.com/hg/xgb"
 )
 
@@ -19,12 +18,16 @@ func (w Window) ChangeAttrs(mask uint32, vals ...uint32) {
 	conn.ChangeWindowAttributes(w.Id(), mask, vals)
 }
 
+func (w Window) Configure(mask uint16, vals ...uint32) {
+	conn.ConfigureWindow(w.Id(), mask, vals)
+}
+
 func (w Window) SetBorderColor(pixel uint32) {
-	 w.ChangeAttrs(xgb.CWBorderPixel, pixel)
+	w.ChangeAttrs(xgb.CWBorderPixel, pixel)
 }
 
 func (w Window) SetBorderWidth(width uint32) {
-	conn.ConfigureWindow(w.Id(), xgb.ConfigWindowBorderWidth, []uint32{width})
+	w.Configure(xgb.ConfigWindowBorderWidth, width)
 }
 
 func (w Window) SetInputFocus() {
@@ -39,11 +42,19 @@ func (w Window) Geometry() (x, y int16, width, height uint16) {
 	return g.X, g.Y, g.Width, g.Height
 }
 
+func (w Window) SetGeometry(x, y int16, width, height uint16) {
+	w.Configure(
+		xgb.ConfigWindowX | xgb.ConfigWindowY |
+		xgb.ConfigWindowWidth | xgb.ConfigWindowHeight,
+		uint32(x), uint32(y), uint32(width), uint32(height),
+	)
+}
+
 func (w Window) Attrs() *xgb.GetWindowAttributesReply {
 	a, err := conn.GetWindowAttributes(w.Id())
-    if err != nil {
-        l.Fatalf("Can't get attributes of window %v: %v", w, err)
-    }
+	if err != nil {
+		l.Fatalf("Can't get attributes of window %v: %v", w, err)
+	}
 	return a
 }
 
@@ -62,8 +73,8 @@ func (w Window) Name() string {
 }
 
 func (w Window) Class() string {
-    p := w.Property(xgb.AtomWmClass, 128)
-    return string(p.Value)
+	p := w.Property(xgb.AtomWmClass, 128)
+	return string(p.Value)
 }
 
 func (w Window) Map() {
@@ -81,5 +92,3 @@ func (w Window) EventMask(mask uint32) {
 func (w Window) ChangeSaveSet(mode byte) {
 	conn.ChangeSaveSet(mode, w.Id())
 }
-
-var windows = list.New()

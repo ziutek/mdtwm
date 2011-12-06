@@ -3,7 +3,7 @@ package main
 func allocColor(r, g, b uint16) uint32 {
 	c, err := conn.AllocColor(screen.DefaultColormap, r, g, b)
 	if err != nil {
-		l.Fatal("Cannot allocate a color: ", err)
+		l.Fatalf("Cannot allocate a color (%x,%x,%x): %v", r, g, b, err)
 	}
 	return c.Pixel
 }
@@ -31,7 +31,7 @@ var cfg *Config
 func loadConfig() {
 	cfg = &Config{
 		NormalBorderColor:  allocColor(0xaaaa, 0xaaaa, 0xaaaa),
-		FocusedBorderColor: allocColor(0x4444, 0x0000, 0xffff),
+		FocusedBorderColor: allocColor(0xf444, 0x0000, 0x000f),
 		BorderWidth:        1,
 		Ignore:             List{"Unity-2d-panel", "unity-2d-launcher"},
 	}
