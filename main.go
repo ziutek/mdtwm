@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"syscall"
 	"x-go-binding.googlecode.com/hg/xgb"
 )
 
@@ -11,7 +12,7 @@ var (
 	display string
 	conn    *xgb.Conn
 	screen  *xgb.ScreenInfo
-	root	Window
+	root    Window
 
 	l = log.New(os.Stderr, "mdtwm: ", 0)
 )
@@ -28,9 +29,11 @@ func main() {
 func signals() {
 	go func() {
 		for sig := range signal.Incoming {
-			switch sig.String() {
-			case "SIGTERM: interrupt", "SIGINT: interrupt":
-				os.Exit(0)
+			if s, ok := sig.(os.UnixSignal); ok {
+				switch s {
+				case syscall.SIGTERM, syscall.SIGINT:
+					os.Exit(0)
+				}
 			}
 			l.Printf("Signal %v received and ignored", sig)
 		}
@@ -64,13 +67,23 @@ func manageExistingWindows() {
 
 func manageWindow(id xgb.Id) {
 	w := Window(id)
+	l.Print("manageWindow: ", w)
+	if cfg.Ignore.Contains(w.Class()) {
+		return
+	}
 	wa := w.Attrs()
 	if wa.OverrideRedirect || wa.MapState != xgb.MapStateViewable {
 		return
 	}
+	w.EventMask(xgb.EventMaskPropertyChange | xgb.EventMaskStructureNotify |
+		xgb.EventMaskFocusChange)
+	// Nice bechavior if wm will be killed, exited, crashed
+	w.ChangeSaveSet(xgb.SetModeInsert)
+
 	w.SetBorderWidth(cfg.BorderWidth)
 	w.SetBorderColor(cfg.NormalBorderColor)
-	windows.PushBack(w)
+	windows.PushFront(w)
+	w.Map()
 }
 
 func grabKeys() {
@@ -83,18 +96,20 @@ func eventLoop() {
 	l.Print("eventLoop")
 
 	// Init event
-	eventMask := uint32(xgb.EventMaskSubstructureRedirect |
+	root.EventMask(
+		xgb.EventMaskSubstructureRedirect |
 		xgb.EventMaskStructureNotify |
 		xgb.EventMaskSubstructureNotify |
 		xgb.EventMaskPointerMotion |
 		xgb.EventMaskPropertyChange |
-		xgb.EventMaskEnterWindow)
-	root.SetAttrs(xgb.CWEventMask, eventMask)
+		xgb.EventMaskEnterWindow,
+	)
 	// Event loop
 	for {
 		event, err := conn.WaitForEvent()
 		if err != nil {
-			l.Fatal(err)
+			l.Print("WaitForEvent error: ", err)
+			continue
 		}
 		switch ev := event.(type) {
 		case *xgb.KeyPressEvent:
@@ -133,6 +148,7 @@ func enterNotifyHandler(ev *xgb.EnterNotifyEvent) {
 
 	for el := windows.Front(); el != nil; el = el.Next() {
 		w := el.Value.(Window)
+		l.Print(w)
 		if w.Id() == ev.Event {
 			w.SetBorderColor(cfg.FocusedBorderColor)
 		}

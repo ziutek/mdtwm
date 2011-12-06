@@ -15,12 +15,12 @@ func (w Window) Id() xgb.Id {
 	return xgb.Id(w)
 }
 
-func (w Window) SetAttrs(mask uint32, vals ...uint32) {
+func (w Window) ChangeAttrs(mask uint32, vals ...uint32) {
 	conn.ChangeWindowAttributes(w.Id(), mask, vals)
 }
 
 func (w Window) SetBorderColor(pixel uint32) {
-	 w.SetAttrs(xgb.CWBorderPixel, pixel)
+	 w.ChangeAttrs(xgb.CWBorderPixel, pixel)
 }
 
 func (w Window) SetBorderWidth(width uint32) {
@@ -31,12 +31,12 @@ func (w Window) SetInputFocus() {
 	conn.SetInputFocus(xgb.InputFocusPointerRoot, w.Id(), xgb.TimeCurrentTime)
 }
 
-func (w Window) Geometry() (x, y, width, height int) {
+func (w Window) Geometry() (x, y int16, width, height uint16) {
 	g, err := conn.GetGeometry(w.Id())
 	if err != nil {
 		l.Fatal("Can't get geometry of window %v: %v", w, err)
 	}
-	return int(g.X), int(g.Y), int(g.Width), int(g.Height)
+	return g.X, g.Y, g.Width, g.Height
 }
 
 func (w Window) Attrs() *xgb.GetWindowAttributesReply {
@@ -68,6 +68,18 @@ func (w Window) Class() string {
 
 func (w Window) Map() {
 	conn.MapWindow(w.Id())
+}
+
+func (w Window) Reparent(parent Window, x, y int16) {
+	conn.ReparentWindow(w.Id(), parent.Id(), x, y)
+}
+
+func (w Window) EventMask(mask uint32) {
+	w.ChangeAttrs(xgb.CWEventMask, mask)
+}
+
+func (w Window) ChangeSaveSet(mode byte) {
+	conn.ChangeSaveSet(mode, w.Id())
 }
 
 var windows = list.New()
