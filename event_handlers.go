@@ -4,10 +4,10 @@ import (
 	"x-go-binding.googlecode.com/hg/xgb"
 )
 
-func mapRequest(ev xgb.MapRequestEvent) {
-	l.Print("MapRequestEvent: ", ev)
+func mapRequest(e xgb.MapRequestEvent) {
+	l.Print("MapRequestEvent")
 
-	w := Window(ev.Window)
+	w := Window(e.Window)
 	if !windows.Contains(w) {
 		winAdd(w)
 	}
@@ -15,44 +15,33 @@ func mapRequest(ev xgb.MapRequestEvent) {
 	winFocus(w)
 }
 
-func enterNotify(ev xgb.EnterNotifyEvent) {
-	l.Print("EnterNotifyEvent: ", ev)
-	switch ev.Mode {
-	case xgb.NotifyModeNormal:
-		l.Print("NotifyModeNormal")
-	case xgb.NotifyModeGrab:
-		l.Print("NotifyModeGrab")
-	case xgb.NotifyModeUngrab:
-		l.Print("NotifyModeUngrab")
-	case xgb.NotifyModeWhileGrabbed:
-		l.Print("NotifyModeWhileGrabbed")
-	default:
-		l.Print("unknown notify mode")
+func enterNotify(e xgb.EnterNotifyEvent) {
+	if e.Mode != xgb.NotifyModeNormal {
+		return
 	}
-
-	w := Window(ev.Event)
+	w := Window(e.Event)
 	if windows.Contains(w) {
 		winFocus(w)
 	}
 }
 
-func destroyNotify(ev xgb.DestroyNotifyEvent) {
-	l.Print("DestroyNotifyEvent: ", ev)
+func destroyNotify(e xgb.DestroyNotifyEvent) {
+	l.Print("DestroyNotifyEvent")
 }
 
-func configureNotify(ev xgb.ConfigureNotifyEvent) {
+func configureNotify(e xgb.ConfigureNotifyEvent) {
 	l.Print("ConfigureNotifyEvent")
 }
 
-func configureRequest(ev xgb.ConfigureRequestEvent) {
+func configureRequest(e xgb.ConfigureRequestEvent) {
 	l.Print("ConfigureRequestEvent")
 }
 
 func keyPress(ev xgb.KeyPressEvent) {
-	l.Print("KeyPressEvent: ", ev)
+	l.Print("KeyPressEvent")
 }
 
 func buttonPress(ev xgb.ButtonPressEvent) {
-	l.Print("ButtonPressEvent", ev)
+	l.Print("ButtonPressEvent")
 }
 

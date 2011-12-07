@@ -29,10 +29,11 @@ type Config struct {
 var cfg *Config
 
 func loadConfig() {
+	l.Print("loadConfig")
 	cfg = &Config{
 		NormalBorderColor:  allocColor(0xaaaa, 0xaaaa, 0xaaaa),
 		FocusedBorderColor: allocColor(0xf444, 0x0000, 0x000f),
-		BorderWidth:        1,
+		BorderWidth:        2,
 		Ignore:             List{"Unity-2d-panel", "unity-2d-launcher"},
 	}
 }

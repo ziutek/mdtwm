@@ -9,7 +9,6 @@ import (
 )
 
 var (
-	display string
 	conn    *xgb.Conn
 	screen  *xgb.ScreenInfo
 	root    Window
@@ -21,12 +20,15 @@ func main() {
 	signals()
 	connect()
 	loadConfig()
+	setupAtoms()
+	wmProperties()
 	grabKeys()
 	manageExistingWindows()
 	eventLoop()
 }
 
 func signals() {
+	l.Print("signals")
 	go func() {
 		for sig := range signal.Incoming {
 			if s, ok := sig.(os.UnixSignal); ok {
@@ -42,7 +44,7 @@ func signals() {
 
 func connect() {
 	l.Print("init")
-	display = os.Getenv("DISPLAY")
+	display := os.Getenv("DISPLAY")
 	if display == "" {
 		l.Fatal("There is not DISPLAY environment variable")
 	}
@@ -55,13 +57,26 @@ func connect() {
 	root = Window(screen.Root)
 }
 
+func wmProperties() {
+	l.Print("wmProperties")
+	// Spported atoms
+	/* root.ChangeProp(xgb.PropModeReplace, AtomNetSupported,
+		xgb.AtomAtom,	...) */
+	root.ChangeProp(xgb.PropModeReplace, AtomNetSupportingWmCheck,
+		xgb.AtomWindow, &root)
+	root.ChangeProp(xgb.PropModeReplace, AtomNetWmName, AtomUtf8String, "mdtwm")
+}
+
 func manageExistingWindows() {
+	l.Print("manageExistingWindows")
 	tr, err := conn.QueryTree(root.Id())
 	if err != nil {
 		l.Fatal("Can't get a list of existing windows: ", err)
 	}
 	for _, id := range tr.Children {
-		winAdd(Window(id))
+		w := Window(id)
+		winAdd(w)
+		w.Map()
 	}
 }
 
@@ -73,13 +88,13 @@ func grabKeys() {
 
 func eventLoop() {
 	l.Print("eventLoop")
-
-	// Init event
-	root.EventMask(xgb.EventMaskSubstructureRedirect |
-		xgb.EventMaskStructureNotify | xgb.EventMaskSubstructureNotify |
-		xgb.EventMaskPointerMotion | xgb.EventMaskPropertyChange |
-		xgb.EventMaskEnterWindow)
-	// Event loop
+	root.SetEventMask(
+		xgb.EventMaskSubstructureRedirect |
+		xgb.EventMaskStructureNotify |
+		//xgb.EventMaskPointerMotion |
+		xgb.EventMaskPropertyChange |
+		xgb.EventMaskEnterWindow,
+	)
 	for {
 		event, err := conn.WaitForEvent()
 		if err != nil {
