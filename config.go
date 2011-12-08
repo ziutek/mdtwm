@@ -3,7 +3,7 @@ package main
 func allocColor(r, g, b uint16) uint32 {
 	c, err := conn.AllocColor(screen.DefaultColormap, r, g, b)
 	if err != nil {
-		l.Fatalf("Cannot allocate a color (%x,%x,%x): %v", r, g, b, err)
+		l.Fatalf("Cannot allocate a color (%x,%x,%x): %s", r, g, b, err)
 	}
 	return c.Pixel
 }

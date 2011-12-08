@@ -6,16 +6,37 @@ import (
 	"x-go-binding.googlecode.com/hg/xgb"
 )
 
+type Geometry struct {
+	X, Y int16
+	W, H uint16
+}
+
+func (g Geometry) Enlarge(i int) Geometry {
+	d := i + i
+	return Geometry{
+		Int16(int(g.X) - i), Int16(int(g.Y) - i),
+		Uint16(int(g.W) + d), Uint16(int(g.H) + d),
+	}
+}
+
+func (g Geometry) EnlargeH(i int) Geometry {
+	return Geometry{Int16(int(g.X) - i), g.Y, Uint16(int(g.W) + i + i), g.H}
+}
+
+func (g Geometry) EnlargeV(i int) Geometry {
+	return Geometry{g.X, Int16(int(g.Y) - i), g.W, Uint16(int(g.H) + i + i)}
+}
+
 type Window xgb.Id
 
 // Creates unmaped window with border == 0
-func CreateWindow(parent Window, x, y int16, width, height, class uint16,
+func NewWindow(parent Window, g Geometry, class uint16,
 		mask uint32, vals ...uint32) Window {
 	id := conn.NewId()
 	conn.CreateWindow(
 		xgb.WindowClassCopyFromParent,
 		id,parent.Id(),
-		x, y, width, height, 0,
+		g.X, g.Y, g.W, g.H, 0,
 		class, xgb.WindowClassCopyFromParent,
 		mask, vals,
 	)
@@ -50,37 +71,32 @@ func (w Window) SetInputFocus() {
 	conn.SetInputFocus(xgb.InputFocusPointerRoot, w.Id(), xgb.TimeCurrentTime)
 }
 
-func (w Window) Geometry() (x, y int16, width, height uint16) {
+func (w Window) Geometry() Geometry {
 	g, err := conn.GetGeometry(w.Id())
 	if err != nil {
-		l.Fatal("Can't get geometry of window %v: %v", w, err)
+		l.Fatal("Can't get geometry of window %s: %s", w, err)
 	}
-	return g.X, g.Y, g.Width, g.Height
+	return Geometry{g.X, g.Y, g.Width, g.Height}
 }
 
-func (w Window) SetGeometry(x, y int16, width, height uint16) {
+func (w Window) SetGeometry(g Geometry) {
 	w.Configure(
 		xgb.ConfigWindowX|xgb.ConfigWindowY|
 			xgb.ConfigWindowWidth|xgb.ConfigWindowHeight,
-		uint32(x), uint32(y), uint32(width), uint32(height),
+		uint32(g.X), uint32(g.Y), uint32(g.W), uint32(g.H),
 	)
 }
 
 func (w Window) Attrs() *xgb.GetWindowAttributesReply {
 	a, err := conn.GetWindowAttributes(w.Id())
 	if err != nil {
-		l.Fatalf("Can't get attributes of window %v: %v", w, err)
+		l.Fatalf("Can't get attributes of window %s: %s", w, err)
 	}
 	return a
 }
 
-func (w Window) Prop(prop xgb.Id, max uint32) *xgb.GetPropertyReply {
-	p, err := conn.GetProperty(false, w.Id(), prop, xgb.GetPropertyTypeAny, 0,
-		max)
-	if err != nil {
-		l.Fatalf("Can't get property of window %v: %v", w, err)
-	}
-	return p
+func (w Window) Prop(prop xgb.Id, max uint32) (*xgb.GetPropertyReply, error) {
+	return conn.GetProperty(false, w.Id(), prop, xgb.GetPropertyTypeAny, 0, max)
 }
 
 func (w Window) ChangeProp(mode byte, prop, typ xgb.Id, data interface{}) {
@@ -116,12 +132,18 @@ func (w Window) ChangeProp(mode byte, prop, typ xgb.Id, data interface{}) {
 }
 
 func (w Window) Name() string {
-	p := w.Prop(xgb.AtomWmName, 128)
+	p, err := w.Prop(xgb.AtomWmName, 128)
+	if err != nil {
+		return ""
+	}
 	return string(p.Value)
 }
 
 func (w Window) Class() string {
-	p := w.Prop(xgb.AtomWmClass, 128)
+	p, err := w.Prop(xgb.AtomWmClass, 128)
+	if err != nil {
+		return ""
+	}
 	return string(p.Value)
 }
 

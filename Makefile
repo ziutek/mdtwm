@@ -1,5 +1,7 @@
 include $(GOROOT)/src/Make.inc
 
+GC = $Og -N
+
 TARG=mdtwm
 GOFILES=\
 	main.go\

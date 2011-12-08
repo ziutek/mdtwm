@@ -5,15 +5,22 @@ import (
 )
 
 type Box struct {
-	Frame  Window  // frame window of this box
-	Window Window  // window stored in this box
-	Childs BoxList // child boxes contains childs of windows
+	Window   Window  // window stored in this box
+	Children BoxList // child boxes contains childs of windows
 
 	Float bool // floating box
 }
 
 func NewBox() *Box {
-	return &Box{Childs: NewBoxList()}
+	return &Box{Children: NewBoxList()}
+}
+
+func (b *Box) Geometry() Geometry {
+	return b.Window.Geometry()
+}
+
+func (b *Box) SetGeometry(g Geometry) {
+	b.Window.SetGeometry(g)
 }
 
 type BoxList struct {
@@ -54,7 +61,7 @@ func (bl BoxList) BoxByWindow(w Window) *Box {
 		if b.Window == w {
 			return b
 		}
-		b = b.Childs.BoxByWindow(w)
+		b = b.Children.BoxByWindow(w)
 		if b != nil {
 			return b
 		}
@@ -78,9 +85,9 @@ type BoxListIterator interface {
 }
 
 type boxListIterator struct {
-	current *list.Element
+	current   *list.Element
 	full_tree bool
-	child BoxListIterator
+	child     BoxListIterator
 }
 
 func (i *boxListIterator) Done() bool {
@@ -101,12 +108,12 @@ func (i *frontBoxListIterator) Next() (b *Box) {
 		i.child = nil // There is no more data in child iterator
 	}
 	if i.current == nil {
-		return	// There is no more data at all
+		return // There is no more data at all
 	}
 	b = i.current.Value.(*Box)
 	i.current = i.current.Next()
 	if i.full_tree {
-		i.child = b.Childs.FrontIter(i.full_tree)
+		i.child = b.Children.FrontIter(i.full_tree)
 	}
 	return
 }
@@ -125,12 +132,12 @@ func (i *backBoxListIterator) Next() (b *Box) {
 		i.child = nil // There is no more data in child iterator
 	}
 	if i.current == nil {
-		return	// There is no more data at all
+		return // There is no more data at all
 	}
 	b = i.current.Value.(*Box)
 	i.current = i.current.Prev()
 	if i.full_tree {
-		i.child = b.Childs.BackIter(i.full_tree)
+		i.child = b.Children.BackIter(i.full_tree)
 	}
 	return
 }

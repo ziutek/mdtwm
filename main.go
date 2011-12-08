@@ -9,11 +9,15 @@ import (
 )
 
 var (
-	conn        *xgb.Conn
-	screen      *xgb.ScreenInfo
-	root        Window
-	currentDesk *Box // desk in mdtwm means workspace
-	allDesks    BoxList
+	conn   *xgb.Conn
+	screen *xgb.ScreenInfo
+	root   Window
+
+	// Desk in mdtwm means workspace. Desk contains panels. Panel contains
+	// windows. All they are described by Box structure.
+	allDesks     BoxList
+	currentDesk  *Box
+	currentPanel *Box
 
 	l = log.New(os.Stderr, "mdtwm: ", 0)
 )
@@ -39,7 +43,7 @@ func signals() {
 					os.Exit(0)
 				}
 			}
-			l.Printf("Signal %v received and ignored", sig)
+			l.Printf("Signal %s received and ignored", sig)
 		}
 	}()
 }
@@ -53,15 +57,17 @@ func connect() {
 	var err error
 	conn, err = xgb.Dial(display)
 	if err != nil {
-		l.Fatalf("Can't connect to %s display: %v", display, err)
+		l.Fatalf("Can't connect to %s display: %s", display, err)
 	}
 	screen = conn.DefaultScreen()
 	root = Window(screen.Root)
 
 	// Setup current desk (for now there is only one desk)
 	currentDesk = NewBox()
-	currentDesk.Frame = root
 	currentDesk.Window = root
+	// For now there is only one panel in desk
+	currentPanel = newPanel(root.Geometry())
+	currentDesk.Children.PushFront(currentPanel)
 
 	allDesks = NewBoxList()
 	allDesks.PushFront(currentDesk)
@@ -85,7 +91,7 @@ func manageExistingWindows() {
 	}
 	for _, id := range tr.Children {
 		w := Window(id)
-		winAdd(w)
+		winAdd(w, root)
 		w.Map()
 	}
 }

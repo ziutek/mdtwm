@@ -9,18 +9,19 @@ func mapRequest(e xgb.MapRequestEvent) {
 
 	w := Window(e.Window)
 	if allDesks.BoxByWindow(w) == nil {
-		winAdd(w)
+		winAdd(w, Window(e.Parent))
 	}
 	w.Map()
 	winFocus(w)
 }
 
 func enterNotify(e xgb.EnterNotifyEvent) {
+	l.Print("EnterNotifyEvent")
 	if e.Mode != xgb.NotifyModeNormal {
 		return
 	}
 	w := Window(e.Event)
-	if currentDesk.Childs.BoxByWindow(w) != nil {
+	if currentDesk.Children.BoxByWindow(w) != nil {
 		winFocus(w)
 	}
 }
