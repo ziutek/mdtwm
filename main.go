@@ -9,9 +9,11 @@ import (
 )
 
 var (
-	conn    *xgb.Conn
-	screen  *xgb.ScreenInfo
-	root    Window
+	conn        *xgb.Conn
+	screen      *xgb.ScreenInfo
+	root        Window
+	currentDesk *Box // desk in mdtwm means workspace
+	allDesks    BoxList
 
 	l = log.New(os.Stderr, "mdtwm: ", 0)
 )
@@ -55,13 +57,21 @@ func connect() {
 	}
 	screen = conn.DefaultScreen()
 	root = Window(screen.Root)
+
+	// Setup current desk (for now there is only one desk)
+	currentDesk = NewBox()
+	currentDesk.Frame = root
+	currentDesk.Window = root
+
+	allDesks = NewBoxList()
+	allDesks.PushFront(currentDesk)
 }
 
 func wmProperties() {
 	l.Print("wmProperties")
 	// Spported atoms
 	/* root.ChangeProp(xgb.PropModeReplace, AtomNetSupported,
-		xgb.AtomAtom,	...) */
+	xgb.AtomAtom,	...) */
 	root.ChangeProp(xgb.PropModeReplace, AtomNetSupportingWmCheck,
 		xgb.AtomWindow, &root)
 	root.ChangeProp(xgb.PropModeReplace, AtomNetWmName, AtomUtf8String, "mdtwm")
@@ -82,18 +92,18 @@ func manageExistingWindows() {
 
 func grabKeys() {
 	l.Print("grabKeys")
-	conn.GrabKey(true, root.Id(), xgb.ModMask4, 36, xgb.GrabModeAsync,
-		xgb.GrabModeAsync) // Win + Return
+	// Win + Return
+	root.GrabKey(true, xgb.ModMask4, 36, xgb.GrabModeAsync, xgb.GrabModeAsync)
 }
 
 func eventLoop() {
 	l.Print("eventLoop")
 	root.SetEventMask(
 		xgb.EventMaskSubstructureRedirect |
-		xgb.EventMaskStructureNotify |
-		//xgb.EventMaskPointerMotion |
-		xgb.EventMaskPropertyChange |
-		xgb.EventMaskEnterWindow,
+			xgb.EventMaskStructureNotify |
+			//xgb.EventMaskPointerMotion |
+			xgb.EventMaskPropertyChange |
+			xgb.EventMaskEnterWindow,
 	)
 	for {
 		event, err := conn.WaitForEvent()
@@ -115,7 +125,7 @@ func eventLoop() {
 		case xgb.KeyPressEvent:
 			keyPress(ev)
 		case xgb.ButtonPressEvent:
-			buttonPress(ev )
+			buttonPress(ev)
 		default:
 			l.Print("Unknown event: ", ev)
 		}

@@ -8,6 +8,20 @@ import (
 
 type Window xgb.Id
 
+// Creates unmaped window with border == 0
+func CreateWindow(parent Window, x, y int16, width, height, class uint16,
+		mask uint32, vals ...uint32) Window {
+	id := conn.NewId()
+	conn.CreateWindow(
+		xgb.WindowClassCopyFromParent,
+		id,parent.Id(),
+		x, y, width, height, 0,
+		class, xgb.WindowClassCopyFromParent,
+		mask, vals,
+	)
+	return Window(id)
+}
+
 func (w Window) String() string {
 	return w.Name()
 }
@@ -28,8 +42,8 @@ func (w Window) SetBorderColor(pixel uint32) {
 	w.ChangeAttrs(xgb.CWBorderPixel, pixel)
 }
 
-func (w Window) SetBorderWidth(width uint32) {
-	w.Configure(xgb.ConfigWindowBorderWidth, width)
+func (w Window) SetBorderWidth(width uint16) {
+	w.Configure(xgb.ConfigWindowBorderWidth, uint32(width))
 }
 
 func (w Window) SetInputFocus() {
@@ -125,4 +139,24 @@ func (w Window) SetEventMask(mask uint32) {
 
 func (w Window) ChangeSaveSet(mode byte) {
 	conn.ChangeSaveSet(mode, w.Id())
+}
+
+func (w Window) GrabButton(ownerEvents bool, eventMask uint16,
+		pointerMode, keyboardMode byte, confineTo Window, cursor xgb.Id,
+		button byte, modifiers uint16) {
+	conn.GrabButton(ownerEvents, w.Id(), eventMask, pointerMode, keyboardMode,
+		confineTo.Id(), cursor, button, modifiers)
+}
+
+func (w Window) UngrabButton(button byte, modifiers uint16) {
+	conn.UngrabButton(button, w.Id(), modifiers)
+}
+
+func (w Window) GrabKey(ownerEvents bool, modifiers uint16,
+		key, pointerMode, keyboardMode byte) {
+	conn.GrabKey(ownerEvents, w.Id(), modifiers, key, pointerMode, keyboardMode)
+}
+
+func (w Window) UngrabKey(key byte, modifiers uint16) {
+	conn.UngrabKey(key, w.Id(), modifiers)
 }

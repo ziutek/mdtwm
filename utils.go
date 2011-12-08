@@ -17,7 +17,7 @@ func (l IdList) Contains(id xgb.Id) bool {
 	return false
 }
 
-func propReplyToAtoms(prop *xgb.GetPropertyReply) IdList {
+func propReplyAtoms(prop *xgb.GetPropertyReply) IdList {
 	if prop == nil || prop.ValueLen == 0 {
 		return nil
 	}

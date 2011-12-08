@@ -22,8 +22,9 @@ func (l List) Contains(e interface{}) bool {
 type Config struct {
 	NormalBorderColor  uint32
 	FocusedBorderColor uint32
-	BorderWidth        uint32
+	BorderWidth        uint16
 	Ignore             List
+	Float              List
 }
 
 var cfg *Config
@@ -34,6 +35,7 @@ func loadConfig() {
 		NormalBorderColor:  allocColor(0xaaaa, 0xaaaa, 0xaaaa),
 		FocusedBorderColor: allocColor(0xf444, 0x0000, 0x000f),
 		BorderWidth:        2,
-		Ignore:             List{"Unity-2d-panel", "unity-2d-launcher"},
+		Ignore:             List{"Unity-2d-panel", "Unity-2d-launcher"},
+		Float:              List{"Mplayer", "Gimp"},
 	}
 }
