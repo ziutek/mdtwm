@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"reflect"
 	"syscall"
 	"x-go-binding.googlecode.com/hg/xgb"
 )
@@ -25,9 +26,9 @@ var (
 func main() {
 	signals()
 	connect()
-	loadConfig()
 	setupAtoms()
-	wmProperties()
+	loadConfig()
+	setupWm()
 	grabKeys()
 	manageExistingWindows()
 	eventLoop()
@@ -61,26 +62,26 @@ func connect() {
 	}
 	screen = conn.DefaultScreen()
 	root = Window(screen.Root)
-
-	// Setup current desk (for now there is only one desk)
-	currentDesk = NewBox()
-	currentDesk.Window = root
-	// For now there is only one panel in desk
-	currentPanel = newPanel(root.Geometry())
-	currentDesk.Children.PushFront(currentPanel)
-
-	allDesks = NewBoxList()
-	allDesks.PushFront(currentDesk)
 }
 
-func wmProperties() {
-	l.Print("wmProperties")
+func setupWm() {
+	l.Print("setupDesks")
 	// Spported atoms
 	/* root.ChangeProp(xgb.PropModeReplace, AtomNetSupported,
 	xgb.AtomAtom,	...) */
 	root.ChangeProp(xgb.PropModeReplace, AtomNetSupportingWmCheck,
 		xgb.AtomWindow, &root)
-	root.ChangeProp(xgb.PropModeReplace, AtomNetWmName, AtomUtf8String, "mdtwm")
+	root.SetName("mdtwm")
+
+	// Setup current desk (for now there is only one desk)
+	currentDesk = NewBox()
+	currentDesk.Window = root
+	// For now there is only one panel in desk
+	currentPanel = newPanel(root.Geometry().EnlargeH(-100))
+	currentDesk.Children.PushFront(currentPanel)
+
+	allDesks = NewBoxList()
+	allDesks.PushFront(currentDesk)
 }
 
 func manageExistingWindows() {
@@ -114,26 +115,27 @@ func eventLoop() {
 	for {
 		event, err := conn.WaitForEvent()
 		if err != nil {
-			l.Print("WaitForEvent error: ", err)
+			//l.Print("WaitForEvent error: ", err)
 			continue
 		}
-		switch ev := event.(type) {
+		switch e := event.(type) {
 		case xgb.MapRequestEvent:
-			mapRequest(ev)
+			mapRequest(e)
 		case xgb.EnterNotifyEvent:
-			enterNotify(ev)
+			enterNotify(e)
 		case xgb.DestroyNotifyEvent:
-			destroyNotify(ev)
+			destroyNotify(e)
 		case xgb.ConfigureNotifyEvent:
-			configureNotify(ev)
+			configureNotify(e)
 		case xgb.ConfigureRequestEvent:
-			configureRequest(ev)
+			configureRequest(e)
 		case xgb.KeyPressEvent:
-			keyPress(ev)
+			keyPress(e)
 		case xgb.ButtonPressEvent:
-			buttonPress(ev)
+			buttonPress(e)
 		default:
-			l.Print("Unknown event: ", ev)
+			l.Print("Unhandled event: ", reflect.TypeOf(e))
+
 		}
 	}
 }

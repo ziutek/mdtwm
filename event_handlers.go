@@ -5,8 +5,7 @@ import (
 )
 
 func mapRequest(e xgb.MapRequestEvent) {
-	l.Print("MapRequestEvent")
-
+	l.Print("MapRequestEvent: ", Window(e.Window))
 	w := Window(e.Window)
 	if allDesks.BoxByWindow(w) == nil {
 		winAdd(w, Window(e.Parent))
@@ -16,7 +15,7 @@ func mapRequest(e xgb.MapRequestEvent) {
 }
 
 func enterNotify(e xgb.EnterNotifyEvent) {
-	l.Print("EnterNotifyEvent")
+	l.Print("EnterNotifyEvent: ", Window(e.Event))
 	if e.Mode != xgb.NotifyModeNormal {
 		return
 	}
@@ -27,22 +26,22 @@ func enterNotify(e xgb.EnterNotifyEvent) {
 }
 
 func destroyNotify(e xgb.DestroyNotifyEvent) {
-	l.Print("DestroyNotifyEvent")
+	l.Print("DestroyNotifyEvent: ", Window(e.Event))
 }
 
 func configureNotify(e xgb.ConfigureNotifyEvent) {
-	l.Print("ConfigureNotifyEvent")
+	l.Print("ConfigureNotifyEvent: ", Window(e.Window))
 }
 
 func configureRequest(e xgb.ConfigureRequestEvent) {
-	l.Print("ConfigureRequestEvent")
+	l.Print("ConfigureRequestEvent: ", Window(e.Window))
 }
 
-func keyPress(ev xgb.KeyPressEvent) {
-	l.Print("KeyPressEvent")
+func keyPress(e xgb.KeyPressEvent) {
+	l.Print("KeyPressEvent: ", Window(e.Event))
 }
 
-func buttonPress(ev xgb.ButtonPressEvent) {
-	l.Print("ButtonPressEvent")
+func buttonPress(e xgb.ButtonPressEvent) {
+	l.Print("ButtonPressEvent: ", Window(e.Event))
 }
 

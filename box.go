@@ -7,8 +7,11 @@ import (
 type Box struct {
 	Window   Window  // window stored in this box
 	Children BoxList // child boxes contains childs of windows
+	Float    bool    // floating box
 
-	Float bool // floating box
+	Class string
+	Name  string
+	NameX []uint16 // UCS2 version of name
 }
 
 func NewBox() *Box {
@@ -81,17 +84,12 @@ func (bl BoxList) Remove(f *Box) {
 
 type BoxListIterator interface {
 	Next() *Box
-	Done() bool
 }
 
 type boxListIterator struct {
 	current   *list.Element
 	full_tree bool
 	child     BoxListIterator
-}
-
-func (i *boxListIterator) Done() bool {
-	return i.current == nil && i.child == nil
 }
 
 type frontBoxListIterator struct {

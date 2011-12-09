@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"reflect"
 	"unsafe"
 	"x-go-binding.googlecode.com/hg/xgb"
@@ -9,6 +10,10 @@ import (
 type Geometry struct {
 	X, Y int16
 	W, H uint16
+}
+
+func (g Geometry) String() string {
+	return fmt.Sprintf("(%d,%d,%d,%d)", g.X, g.Y, g.W, g.H)
 }
 
 func (g Geometry) Enlarge(i int) Geometry {
@@ -31,11 +36,11 @@ type Window xgb.Id
 
 // Creates unmaped window with border == 0
 func NewWindow(parent Window, g Geometry, class uint16,
-		mask uint32, vals ...uint32) Window {
+	mask uint32, vals ...uint32) Window {
 	id := conn.NewId()
 	conn.CreateWindow(
 		xgb.WindowClassCopyFromParent,
-		id,parent.Id(),
+		id, parent.Id(),
 		g.X, g.Y, g.W, g.H, 0,
 		class, xgb.WindowClassCopyFromParent,
 		mask, vals,
@@ -74,7 +79,8 @@ func (w Window) SetInputFocus() {
 func (w Window) Geometry() Geometry {
 	g, err := conn.GetGeometry(w.Id())
 	if err != nil {
-		l.Fatal("Can't get geometry of window %s: %s", w, err)
+		l.Fatalf("Can't get geometry of window %s: %s", w, err)
+
 	}
 	return Geometry{g.X, g.Y, g.Width, g.Height}
 }
@@ -132,11 +138,19 @@ func (w Window) ChangeProp(mode byte, prop, typ xgb.Id, data interface{}) {
 }
 
 func (w Window) Name() string {
-	p, err := w.Prop(xgb.AtomWmName, 128)
-	if err != nil {
-		return ""
+	// We prefer utf8 version
+	if p, err := w.Prop(AtomNetWmName, 128); err != nil {
+		return string(p.Value)
 	}
-	return string(p.Value)
+	if p, err := w.Prop(xgb.AtomWmName, 128); err != nil {
+		return string(p.Value)
+	}
+	return ""
+}
+
+func (w Window) SetName(name string) {
+	w.ChangeProp(xgb.PropModeReplace, xgb.AtomWmName, xgb.AtomString, name)
+	w.ChangeProp(xgb.PropModeReplace, AtomNetWmName, AtomUtf8String, name)
 }
 
 func (w Window) Class() string {
@@ -164,8 +178,8 @@ func (w Window) ChangeSaveSet(mode byte) {
 }
 
 func (w Window) GrabButton(ownerEvents bool, eventMask uint16,
-		pointerMode, keyboardMode byte, confineTo Window, cursor xgb.Id,
-		button byte, modifiers uint16) {
+	pointerMode, keyboardMode byte, confineTo Window, cursor xgb.Id,
+	button byte, modifiers uint16) {
 	conn.GrabButton(ownerEvents, w.Id(), eventMask, pointerMode, keyboardMode,
 		confineTo.Id(), cursor, button, modifiers)
 }
@@ -175,7 +189,7 @@ func (w Window) UngrabButton(button byte, modifiers uint16) {
 }
 
 func (w Window) GrabKey(ownerEvents bool, modifiers uint16,
-		key, pointerMode, keyboardMode byte) {
+	key, pointerMode, keyboardMode byte) {
 	conn.GrabKey(ownerEvents, w.Id(), modifiers, key, pointerMode, keyboardMode)
 }
 

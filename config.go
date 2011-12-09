@@ -34,7 +34,7 @@ func loadConfig() {
 	cfg = &Config{
 		NormalBorderColor:  allocColor(0xaaaa, 0xaaaa, 0xaaaa),
 		FocusedBorderColor: allocColor(0xf444, 0x0000, 0x000f),
-		BorderWidth:        2,
+		BorderWidth:        1,
 		Ignore:             List{"Unity-2d-panel", "Unity-2d-launcher"},
 		Float:              List{"Mplayer", "Gimp"},
 	}

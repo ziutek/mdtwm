@@ -2,6 +2,7 @@ package main
 
 import (
 	"math"
+	"unicode/utf16"
 	"x-go-binding.googlecode.com/hg/xgb"
 )
 
@@ -34,7 +35,7 @@ func winAdd(w, parent Window) {
 	}
 	// Check window type
 	p, err := w.Prop(AtomNetWmWindowType, math.MaxUint32)
-	if err != nil {
+	if err == nil {
 		wm_type := propReplyAtoms(p)
 		if wm_type.Contains(AtomNetWmWindowTypeDock) {
 			l.Printf("Window %s is of type dock", w)
@@ -49,6 +50,11 @@ func winAdd(w, parent Window) {
 	} else {
 		l.Printf("Can't get AtomNetWmWindowType from %s: %s", w, err)
 	}
+	// Update informations
+	b.Class = w.Class()
+	b.Name = w.Name()
+	b.NameX = utf16.Encode([]rune(b.Name))
+
 	// Grab left and right mouse buttons for click to focus/rasie
 	w.GrabButton(false, xgb.EventMaskButtonPress, xgb.GrabModeSync,
 		xgb.GrabModeAsync, root, xgb.CursorNone, 1, xgb.ButtonMaskAny)
@@ -69,6 +75,7 @@ func winAdd(w, parent Window) {
 }
 
 func tile(b, parent *Box) {
+	l.Print("Tile: ", b.Window)
 	parent.Children.PushFront(b)
 	b.Window.Reparent(parent.Window, 100, 100)
 	//g := b.Geometry()
@@ -76,8 +83,8 @@ func tile(b, parent *Box) {
 
 func winFocus(w Window) {
 	l.Print("Focusing window: ", w)
-	for bi := currentDesk.Children.FrontIter(true); !bi.Done(); {
-		b := bi.Next()
+	bi := currentDesk.Children.FrontIter(true);
+	for b := bi.Next(); b != nil; b = bi.Next() {
 		if b.Window == w {
 			b.Window.SetBorderColor(cfg.FocusedBorderColor)
 			w.SetInputFocus()
@@ -91,7 +98,8 @@ func winFocus(w Window) {
 // are placed. A desk is organized as collection of panels in some layout
 func newPanel(g Geometry) *Box {
 	p := NewBox()
-	p.Window = NewWindow(root, g, xgb.WindowClassInputOnly,
+	p.Window = NewWindow(root, g, xgb.WindowClassInputOutput,
 		xgb.CWOverrideRedirect|xgb.CWEventMask, 1, WindowEventMask)
+	p.Window.SetName("mdtwm panel")
 	return p
 }
