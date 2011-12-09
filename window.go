@@ -16,7 +16,7 @@ func (g Geometry) String() string {
 	return fmt.Sprintf("(%d,%d,%d,%d)", g.X, g.Y, g.W, g.H)
 }
 
-func (g Geometry) Enlarge(i int) Geometry {
+func (g Geometry) Resize(i int) Geometry {
 	d := i + i
 	return Geometry{
 		Int16(int(g.X) - i), Int16(int(g.Y) - i),
@@ -24,11 +24,11 @@ func (g Geometry) Enlarge(i int) Geometry {
 	}
 }
 
-func (g Geometry) EnlargeH(i int) Geometry {
+func (g Geometry) ResizeH(i int) Geometry {
 	return Geometry{Int16(int(g.X) - i), g.Y, Uint16(int(g.W) + i + i), g.H}
 }
 
-func (g Geometry) EnlargeV(i int) Geometry {
+func (g Geometry) ResizeV(i int) Geometry {
 	return Geometry{g.X, Int16(int(g.Y) - i), g.W, Uint16(int(g.H) + i + i)}
 }
 
@@ -86,11 +86,14 @@ func (w Window) Geometry() Geometry {
 }
 
 func (w Window) SetGeometry(g Geometry) {
-	w.Configure(
-		xgb.ConfigWindowX|xgb.ConfigWindowY|
-			xgb.ConfigWindowWidth|xgb.ConfigWindowHeight,
-		uint32(g.X), uint32(g.Y), uint32(g.W), uint32(g.H),
-	)
+	w.Configure(xgb.ConfigWindowX|xgb.ConfigWindowY|
+		xgb.ConfigWindowWidth|xgb.ConfigWindowHeight,
+		uint32(g.X), uint32(g.Y), uint32(g.W), uint32(g.H))
+}
+
+func (w Window) SetSize(width, height uint16) {
+	w.Configure(xgb.ConfigWindowWidth|xgb.ConfigWindowHeight,
+		uint32(width), uint32(height))
 }
 
 func (w Window) Attrs() *xgb.GetWindowAttributesReply {
@@ -139,7 +142,7 @@ func (w Window) ChangeProp(mode byte, prop, typ xgb.Id, data interface{}) {
 
 func (w Window) Name() string {
 	// We prefer utf8 version
-	if p, err := w.Prop(AtomNetWmName, 128); err != nil {
+	if p, err := w.Prop(AtomNetWmName, 128); err != nil && len(p.Value) != 0 {
 		return string(p.Value)
 	}
 	if p, err := w.Prop(xgb.AtomWmName, 128); err != nil {

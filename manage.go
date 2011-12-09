@@ -61,35 +61,39 @@ func winAdd(w, parent Window) {
 	w.GrabButton(false, xgb.EventMaskButtonPress, xgb.GrabModeSync,
 		xgb.GrabModeAsync, root, xgb.CursorNone, 3, xgb.ButtonMaskAny)
 
-	w.SetEventMask(WindowEventMask)
 	// Nice bechavior if wm will be killed, exited, crashed
 	w.ChangeSaveSet(xgb.SetModeInsert)
 	w.SetBorderWidth(cfg.BorderWidth)
 	w.SetBorderColor(cfg.NormalBorderColor)
 	// Find box in which we have to put this window
-	pbox := currentPanel
+	parentBox := currentPanel
 	if parent != root {
-		pbox = pbox.Children.BoxByWindow(parent)
+		parentBox = parentBox.Children.BoxByWindow(parent)
 	}
-	tile(b, pbox)
-}
-
-func tile(b, parent *Box) {
-	l.Print("Tile: ", b.Window)
-	parent.Children.PushFront(b)
-	b.Window.Reparent(parent.Window, 100, 100)
-	//g := b.Geometry()
+	// Add window to found parentBox
+	w.SetEventMask(xgb.EventMaskNoEvent) // avoid UnmapNotify due to reparenting
+	w.Reparent(parentBox.Window, 0, 0)
+	w.SetEventMask(WindowEventMask) // set desired event mask
+	parentBox.Children.PushBack(b)
+	// Update geometry of windows in parentBox
+	tile(parentBox)
 }
 
 func winFocus(w Window) {
 	l.Print("Focusing window: ", w)
-	bi := currentDesk.Children.FrontIter(true);
-	for b := bi.Next(); b != nil; b = bi.Next() {
-		if b.Window == w {
-			b.Window.SetBorderColor(cfg.FocusedBorderColor)
-			w.SetInputFocus()
-		} else {
-			b.Window.SetBorderColor(cfg.NormalBorderColor)
+	// Iterate over panels
+	pi := currentDesk.Children.FrontIter(false)
+	for p := pi.Next(); p != nil; p = pi.Next() {
+		// Iterate over full tree of windows in panel
+		bi := p.Children.FrontIter(true);
+		for b := bi.Next(); b != nil; b = bi.Next() {
+			if b.Window == w {
+				b.Window.SetBorderColor(cfg.FocusedBorderColor)
+				w.SetInputFocus()
+				currentPanel = p // Change current panel
+			} else {
+				b.Window.SetBorderColor(cfg.NormalBorderColor)
+			}
 		}
 	}
 }

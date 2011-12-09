@@ -20,6 +20,7 @@ func (l List) Contains(e interface{}) bool {
 }
 
 type Config struct {
+	Layout             []Geometry
 	NormalBorderColor  uint32
 	FocusedBorderColor uint32
 	BorderWidth        uint16
@@ -32,10 +33,13 @@ var cfg *Config
 func loadConfig() {
 	l.Print("loadConfig")
 	cfg = &Config{
+		Layout: []Geometry{{440, 0, 1000, 1080}, {0, 0, 440, 1080}},
+
 		NormalBorderColor:  allocColor(0xaaaa, 0xaaaa, 0xaaaa),
 		FocusedBorderColor: allocColor(0xf444, 0x0000, 0x000f),
-		BorderWidth:        1,
-		Ignore:             List{"Unity-2d-panel", "Unity-2d-launcher"},
-		Float:              List{"Mplayer", "Gimp"},
+		BorderWidth:        2,
+
+		Ignore: List{"Unity-2d-panel", "Unity-2d-launcher"},
+		Float:  List{"Mplayer", "Gimp"},
 	}
 }

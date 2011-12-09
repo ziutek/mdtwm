@@ -12,5 +12,6 @@ GOFILES=\
 	atoms.go\
 	utils.go\
 	box.go\
+	tile.go\
 
 include $(GOROOT)/src/Make.cmd

@@ -16,9 +16,10 @@ var (
 
 	// Desk in mdtwm means workspace. Desk contains panels. Panel contains
 	// windows. All they are described by Box structure.
-	allDesks     BoxList
-	currentDesk  *Box
-	currentPanel *Box
+	allDesks      BoxList
+	currentDesk   *Box
+	currentPanel  *Box
+	currentWindow *Box
 
 	l = log.New(os.Stderr, "mdtwm: ", 0)
 )
@@ -42,6 +43,8 @@ func signals() {
 				switch s {
 				case syscall.SIGTERM, syscall.SIGINT:
 					os.Exit(0)
+				case syscall.SIGWINCH:
+					continue
 				}
 			}
 			l.Printf("Signal %s received and ignored", sig)
@@ -73,15 +76,18 @@ func setupWm() {
 		xgb.AtomWindow, &root)
 	root.SetName("mdtwm")
 
-	// Setup current desk (for now there is only one desk)
+	// Setup list of desk (for now there is only one desk)
+	allDesks = NewBoxList()
 	currentDesk = NewBox()
 	currentDesk.Window = root
-	// For now there is only one panel in desk
-	currentPanel = newPanel(root.Geometry().EnlargeH(-100))
-	currentDesk.Children.PushFront(currentPanel)
-
-	allDesks = NewBoxList()
-	allDesks.PushFront(currentDesk)
+	allDesks.PushBack(currentDesk)
+	// Setup panels from configured layout
+	for _, g := range cfg.Layout {
+		currentDesk.Children.PushBack(newPanel(g))
+	}
+	currentPanel = currentDesk.Children.Front()
+	// Initial value of currentWindow
+	currentWindow = currentDesk
 }
 
 func manageExistingWindows() {

@@ -34,6 +34,14 @@ func NewBoxList() BoxList {
 	return BoxList{list.New()}
 }
 
+func (bl BoxList) Front() *Box {
+	return bl.raw.Front().Value.(*Box)
+}
+
+func (bl BoxList) Back() *Box {
+	return bl.raw.Back().Value.(*Box)
+}
+
 func (bl BoxList) PushFront(f *Box) {
 	bl.raw.PushFront(f)
 }
