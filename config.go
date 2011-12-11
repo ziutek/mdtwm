@@ -23,7 +23,7 @@ type Config struct {
 	Layout             []Geometry
 	NormalBorderColor  uint32
 	FocusedBorderColor uint32
-	BorderWidth        uint16
+	BorderWidth        int16
 	Ignore             List
 	Float              List
 }

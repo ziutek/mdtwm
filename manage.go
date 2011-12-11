@@ -22,7 +22,8 @@ var x int16
 
 func winAdd(w, parent Window) {
 	l.Print("manageWindow: ", w)
-	if cfg.Ignore.Contains(w.Class()) {
+	_, class := w.Class()
+	if cfg.Ignore.Contains(class) {
 		return
 	}
 	b := NewBox()
@@ -40,7 +41,7 @@ func winAdd(w, parent Window) {
 		if wm_type.Contains(AtomNetWmWindowTypeDock) {
 			l.Printf("Window %s is of type dock", w)
 		}
-		if cfg.Float.Contains(w.Class()) ||
+		if cfg.Float.Contains(class) ||
 			wm_type.Contains(AtomNetWmWindowTypeDialog) ||
 			wm_type.Contains(AtomNetWmWindowTypeUtility) ||
 			wm_type.Contains(AtomNetWmWindowTypeToolbar) ||
@@ -51,7 +52,6 @@ func winAdd(w, parent Window) {
 		l.Printf("Can't get AtomNetWmWindowType from %s: %s", w, err)
 	}
 	// Update informations
-	b.Class = w.Class()
 	b.Name = w.Name()
 	b.NameX = utf16.Encode([]rune(b.Name))
 

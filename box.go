@@ -9,7 +9,6 @@ type Box struct {
 	Children BoxList // child boxes contains childs of windows
 	Float    bool    // floating box
 
-	Class string
 	Name  string
 	NameX []uint16 // UCS2 version of name
 }

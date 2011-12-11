@@ -4,32 +4,30 @@ import (
 	"fmt"
 	"reflect"
 	"unsafe"
+	"bytes"
 	"x-go-binding.googlecode.com/hg/xgb"
 )
 
 type Geometry struct {
-	X, Y int16
-	W, H uint16
+	X, Y, W, H int16
+	// int16 for W and H (see "Why X Is Not Our Ideal Window System")
 }
 
 func (g Geometry) String() string {
 	return fmt.Sprintf("(%d,%d,%d,%d)", g.X, g.Y, g.W, g.H)
 }
 
-func (g Geometry) Resize(i int) Geometry {
+func (g Geometry) Resize(i int16) Geometry {
 	d := i + i
-	return Geometry{
-		Int16(int(g.X) - i), Int16(int(g.Y) - i),
-		Uint16(int(g.W) + d), Uint16(int(g.H) + d),
-	}
+	return Geometry{g.X-i, g.Y-i, g.W + d, g.H + d}
 }
 
-func (g Geometry) ResizeH(i int) Geometry {
-	return Geometry{Int16(int(g.X) - i), g.Y, Uint16(int(g.W) + i + i), g.H}
+func (g Geometry) ResizeH(i int16) Geometry {
+	return Geometry{g.X - i, g.Y, g.W + i + i, g.H}
 }
 
-func (g Geometry) ResizeV(i int) Geometry {
-	return Geometry{g.X, Int16(int(g.Y) - i), g.W, Uint16(int(g.H) + i + i)}
+func (g Geometry) ResizeV(i int16) Geometry {
+	return Geometry{g.X, g.Y - i, g.W, g.H + i + i}
 }
 
 type Window xgb.Id
@@ -41,7 +39,7 @@ func NewWindow(parent Window, g Geometry, class uint16,
 	conn.CreateWindow(
 		xgb.WindowClassCopyFromParent,
 		id, parent.Id(),
-		g.X, g.Y, g.W, g.H, 0,
+		g.X, g.Y, Uint16(g.W), Uint16(g.H), 0,
 		class, xgb.WindowClassCopyFromParent,
 		mask, vals,
 	)
@@ -68,7 +66,7 @@ func (w Window) SetBorderColor(pixel uint32) {
 	w.ChangeAttrs(xgb.CWBorderPixel, pixel)
 }
 
-func (w Window) SetBorderWidth(width uint16) {
+func (w Window) SetBorderWidth(width int16) {
 	w.Configure(xgb.ConfigWindowBorderWidth, uint32(width))
 }
 
@@ -82,16 +80,16 @@ func (w Window) Geometry() Geometry {
 		l.Fatalf("Can't get geometry of window %s: %s", w, err)
 
 	}
-	return Geometry{g.X, g.Y, g.Width, g.Height}
+	return Geometry{g.X, g.Y, Int16(g.Width), Int16(g.Height)}
 }
 
 func (w Window) SetGeometry(g Geometry) {
 	w.Configure(xgb.ConfigWindowX|xgb.ConfigWindowY|
 		xgb.ConfigWindowWidth|xgb.ConfigWindowHeight,
-		uint32(g.X), uint32(g.Y), uint32(g.W), uint32(g.H))
+		uint32(g.X), uint32(g.Y), uint32(Pint16(g.W)), uint32(Pint16(g.H)))
 }
 
-func (w Window) SetSize(width, height uint16) {
+func (w Window) SetSize(width, height int16) {
 	w.Configure(xgb.ConfigWindowWidth|xgb.ConfigWindowHeight,
 		uint32(width), uint32(height))
 }
@@ -142,10 +140,10 @@ func (w Window) ChangeProp(mode byte, prop, typ xgb.Id, data interface{}) {
 
 func (w Window) Name() string {
 	// We prefer utf8 version
-	if p, err := w.Prop(AtomNetWmName, 128); err != nil && len(p.Value) != 0 {
+	if p, err := w.Prop(AtomNetWmName, 128); err == nil && len(p.Value) > 0 {
 		return string(p.Value)
 	}
-	if p, err := w.Prop(xgb.AtomWmName, 128); err != nil {
+	if p, err := w.Prop(xgb.AtomWmName, 128); err == nil && len(p.Value) > 0 {
 		return string(p.Value)
 	}
 	return ""
@@ -156,12 +154,17 @@ func (w Window) SetName(name string) {
 	w.ChangeProp(xgb.PropModeReplace, AtomNetWmName, AtomUtf8String, name)
 }
 
-func (w Window) Class() string {
+func (w Window) Class() (instance, class string) {
 	p, err := w.Prop(xgb.AtomWmClass, 128)
 	if err != nil {
-		return ""
+		return
 	}
-	return string(p.Value)
+	v := p.Value
+	i := bytes.IndexByte(v, 0)
+	if i == -1 {
+		return
+	}
+	return string(v[:i]), string(v[i+1:len(v)-1])
 }
 
 func (w Window) Map() {
