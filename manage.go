@@ -22,6 +22,10 @@ var x int16
 
 func winAdd(w, parent Window) {
 	l.Print("manageWindow: ", w)
+	if allDesks.BoxByWindow(w) != nil {
+		l.Printf("  %s - alredy managed", w)
+		return
+	}
 	_, class := w.Class()
 	if cfg.Ignore.Contains(class) {
 		return

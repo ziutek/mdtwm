@@ -7,9 +7,7 @@ import (
 func mapRequest(e xgb.MapRequestEvent) {
 	l.Print("MapRequestEvent: ", Window(e.Window))
 	w := Window(e.Window)
-	if allDesks.BoxByWindow(w) == nil {
-		winAdd(w, Window(e.Parent))
-	}
+	winAdd(w, Window(e.Parent))
 	w.Map()
 	winFocus(w)
 }
