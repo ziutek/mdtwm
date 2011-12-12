@@ -15,11 +15,10 @@ var (
 	root   Window
 
 	// Desk in mdtwm means workspace. Desk contains panels. Panel contains
-	// windows. All they are described by Box structure.
+	// panels or windows.
 	allDesks      BoxList
-	currentDesk   *Box
-	currentPanel  *Box
-	currentWindow *Box
+	currentDesk   *PanelBox
+	currentPanel  *PanelBox
 
 	l = log.New(os.Stderr, "mdtwm: ", 0)
 )
@@ -64,7 +63,7 @@ func connect() {
 		l.Fatalf("Can't connect to %s display: %s", display, err)
 	}
 	screen = conn.DefaultScreen()
-	root = Window(screen.Root)
+	root = RawWindow(screen.Root)
 }
 
 func setupWm() {
@@ -74,19 +73,21 @@ func setupWm() {
 	xgb.AtomAtom,	...) */
 	root.ChangeProp(xgb.PropModeReplace, AtomNetSupportingWmCheck,
 		xgb.AtomWindow, &root)
+	root.SetClass("mdtwm", "Mdtwm")
 	root.SetName("mdtwm root")
 
 	// Setup list of desk (for now there is only one desk)
 	allDesks = NewBoxList()
-	currentDesk = NewBox(BoxTypePanelH, root)
+	currentDesk = NewPanelBox(Horizontal)
+	currentDesk.Map()
+	l.Print("Doszedl: ", currentDesk.Geometry())
 	allDesks.PushBack(currentDesk)
 	// Setup two main panels
 	// TODO: Use configuration for this
-	newPanel(BoxTypePanelV, currentDesk)
-	newPanel(BoxTypePanelV, currentDesk)
+	currentDesk.Insert(NewPanelBox(Vertical))
+	currentDesk.Insert(NewPanelBox(Vertical))
 	// Initial value of currentPanel and currentWindow
-	currentPanel = currentDesk.Children.Front()
-	currentWindow = currentDesk
+	currentPanel = currentDesk.Children().Front().(*PanelBox)
 }
 
 func manageExistingWindows() {
@@ -96,7 +97,7 @@ func manageExistingWindows() {
 		l.Fatal("Can't get a list of existing windows: ", err)
 	}
 	for _, id := range tr.Children {
-		manageWindow(Window(id), currentPanel)
+		manage(RawWindow(id), currentPanel)
 	}
 }
 

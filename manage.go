@@ -2,7 +2,6 @@ package main
 
 import (
 	"math"
-	"unicode/utf16"
 	"x-go-binding.googlecode.com/hg/xgb"
 )
 
@@ -21,26 +20,25 @@ const (
 
 var x int16
 
-func manageWindow(w Window, panel *Box) {
-	l.Print("manageWindow: ", w)
-	_, class := w.Class()
+func manage(w Window, panel *PanelBox) {
+	// We need to use b because b implements caching (TODO)
+	b := NewWindowBox(w)
+	l.Print("manageWindow: ", b)
+	_, class := b.Class()
 	if cfg.Ignore.Contains(class) {
 		return
 	}
-	if allDesks.BoxByWindow(w, true) != nil {
-		l.Printf("  %s - alredy managed", w)
+	if allDesks.BoxByWindow(b, true) != nil {
+		l.Printf("  %s - alredy managed", b)
 		return
 	}
-	attr := w.Attrs()
+	attr := b.Attrs()
 	// Don't manage and don't map if unvisible or has OverrideRedirect flag
 	if attr.MapState != xgb.MapStateViewable || attr.OverrideRedirect {
 		return
 	}
-
-	b := NewBox(BoxTypeWindow, w)
-
 	// Check window type
-	p, err := w.Prop(AtomNetWmWindowType, math.MaxUint32)
+	p, err := b.Prop(AtomNetWmWindowType, math.MaxUint32)
 	if err == nil {
 		wm_type := propReplyAtoms(p)
 		if wm_type.Contains(AtomNetWmWindowTypeDock) {
@@ -56,72 +54,6 @@ func manageWindow(w Window, panel *Box) {
 	} else {
 		l.Printf("Can't get AtomNetWmWindowType from %s: %s", w, err)
 	}
-	// Update informations
-	b.Name = w.Name()
-	b.NameX = utf16.Encode([]rune(b.Name))
-
-	insertNewBox(panel, b)
-}
-
-func insertNewBox(panel, b *Box) {
-	l.Print("insertNewBox: ", b.Window)
-	w := b.Window
-	// Set window attributes
-	if b.Type == BoxTypeWindow {
-		w.SetBorderWidth(cfg.BorderWidth)
-		w.SetBorderColor(cfg.NormalBorderColor)
-	}
-	// Grab right mouse buttons for WM actions 
-	w.GrabButton(false, xgb.EventMaskButtonPress, xgb.GrabModeSync,
-		xgb.GrabModeAsync, root, xgb.CursorNone, 3, xgb.ButtonMaskAny)
-	// Add window to found parentBox
-	w.SetEventMask(xgb.EventMaskNoEvent) // avoid UnmapNotify due to reparenting
-	w.Reparent(panel.Window, 0, 0)
-	w.SetEventMask(EventMask)
-	// Update geometry of windows in panel
-	panel.Children.PushBack(b)
-	tile(panel)
-	// Show the window
-	w.Map()
-}
-
-func winFocus(w Window) {
-	l.Print("Focusing window: ", w)
-	if currentDesk.Window == w {
-		currentDesk.Window.SetInputFocus()
-		currentPanel = currentDesk
-	}
-	// Iterate over all boxes in current desk
-	panel := currentPanel
-	bi := currentDesk.Children.FrontIter(true)
-	for b := bi.Next(); b != nil; b = bi.Next() {
-		if b.Type == BoxTypeWindow {
-			if b.Window == w {
-				w.SetBorderColor(cfg.FocusedBorderColor)
-				currentPanel = panel
-				w.SetInputFocus()
-			} else {
-				b.Window.SetBorderColor(cfg.NormalBorderColor)
-			}
-		} else {
-			panel = b
-			if b.Window == w {
-				currentPanel = panel
-				b.Window.SetInputFocus()
-			}
-		}
-	}
-}
-
-// Panel is a box with transparent window in which a real windows or other
-// panels are placed.
-func newPanel(typ BoxType, parent *Box) {
-	l.Print("newPanel")
-	if parent.Type == BoxTypeWindow {
-		panic("Can't create panel in BoxTypeWindow box")
-	}
-	w := NewWindow(parent.Window, Geometry{0, 0, 1, 1},
-		xgb.WindowClassInputOutput, 0)
-	w.SetName("mdtwm panel")
-	insertNewBox(parent, NewBox(typ, w))
+	// Insert new box in a panel
+	panel.Insert(b)
 }

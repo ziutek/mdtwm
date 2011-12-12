@@ -5,40 +5,42 @@ import (
 )
 
 func mapRequest(e xgb.MapRequestEvent) {
-	l.Print("MapRequestEvent: ", Window(e.Window))
-	w := Window(e.Window)
-	manageWindow(w, currentPanel)
-	winFocus(w)
+	w := RawWindow(e.Window)
+	l.Print("MapRequestEvent: ", w)
+	manage(w, currentPanel)
 }
 
 func enterNotify(e xgb.EnterNotifyEvent) {
-	l.Print("EnterNotifyEvent: ", Window(e.Event))
+	l.Print("EnterNotifyEvent: ", RawWindow(e.Event))
 	if e.Mode != xgb.NotifyModeNormal {
 		return
 	}
-	w := Window(e.Event)
-	if currentDesk.Children.BoxByWindow(w, true) != nil {
-		winFocus(w)
+	currentDesk.SetFocus(currentDesk.Id() == e.Event)
+	// Iterate over all boxes in current desk
+	bi := currentDesk.Children().FrontIter(true)
+	for b := bi.Next(); b != nil; b = bi.Next() {
+		b.SetFocus(b.Id() == e.Event)
 	}
+
 }
 
 func destroyNotify(e xgb.DestroyNotifyEvent) {
-	l.Print("DestroyNotifyEvent: ", Window(e.Event))
+	l.Print("DestroyNotifyEvent: ", RawWindow(e.Event))
 }
 
 func configureNotify(e xgb.ConfigureNotifyEvent) {
-	l.Print("ConfigureNotifyEvent: ", Window(e.Window))
+	l.Print("ConfigureNotifyEvent: ", RawWindow(e.Window))
 }
 
 func configureRequest(e xgb.ConfigureRequestEvent) {
-	l.Print("ConfigureRequestEvent: ", Window(e.Window))
+	l.Print("ConfigureRequestEvent: ", RawWindow(e.Window))
 }
 
 func keyPress(e xgb.KeyPressEvent) {
-	l.Print("KeyPressEvent: ", Window(e.Event))
+	l.Print("KeyPressEvent: ", RawWindow(e.Event))
 }
 
 func buttonPress(e xgb.ButtonPressEvent) {
-	l.Print("ButtonPressEvent: ", Window(e.Event))
+	l.Print("ButtonPressEvent: ", RawWindow(e.Event))
 }
 
