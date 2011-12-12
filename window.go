@@ -18,16 +18,15 @@ func (g Geometry) String() string {
 }
 
 func (g Geometry) Resize(i int16) Geometry {
-	d := i + i
-	return Geometry{g.X-i, g.Y-i, g.W + d, g.H + d}
+	return Geometry{g.X, g.Y, g.W + i, g.H + i}
 }
 
 func (g Geometry) ResizeH(i int16) Geometry {
-	return Geometry{g.X - i, g.Y, g.W + i + i, g.H}
+	return Geometry{g.X, g.Y, g.W + i, g.H}
 }
 
 func (g Geometry) ResizeV(i int16) Geometry {
-	return Geometry{g.X, g.Y - i, g.W, g.H + i + i}
+	return Geometry{g.X, g.Y, g.W, g.H + i}
 }
 
 type Window xgb.Id

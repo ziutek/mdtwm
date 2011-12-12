@@ -7,8 +7,7 @@ import (
 func mapRequest(e xgb.MapRequestEvent) {
 	l.Print("MapRequestEvent: ", Window(e.Window))
 	w := Window(e.Window)
-	winAdd(w, Window(e.Parent))
-	w.Map()
+	manageWindow(w, currentPanel)
 	winFocus(w)
 }
 
@@ -18,7 +17,7 @@ func enterNotify(e xgb.EnterNotifyEvent) {
 		return
 	}
 	w := Window(e.Event)
-	if currentDesk.Children.BoxByWindow(w) != nil {
+	if currentDesk.Children.BoxByWindow(w, true) != nil {
 		winFocus(w)
 	}
 }

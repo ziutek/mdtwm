@@ -7,37 +7,38 @@ import (
 )
 
 const (
-	WindowEventMask = xgb.EventMaskPropertyChange |
+	/* WindowEventMask = xgb.EventMaskPropertyChange |
 		xgb.EventMaskButtonRelease |
-		//xgb.EventMaskPointerMotion |
+		xgb.EventMaskPointerMotion |
 		xgb.EventMaskExposure | // window needs to be redrawn
 		xgb.EventMaskStructureNotify | // window gets destroyed
 		xgb.EventMaskSubstructureRedirect | // app tries to resize itself
 		xgb.EventMaskSubstructureNotify | // subwindows get notifies
-		xgb.EventMaskEnterWindow |
-		xgb.EventMaskFocusChange
+		xgb.EventMaskFocusChange |
+		xgb.EventMaskEnterWindow */
+	WindowEventMask = xgb.EventMaskEnterWindow
 )
 
 var x int16
 
-func winAdd(w, parent Window) {
+func manageWindow(w Window, panel *Box) {
 	l.Print("manageWindow: ", w)
-	if allDesks.BoxByWindow(w) != nil {
-		l.Printf("  %s - alredy managed", w)
-		return
-	}
 	_, class := w.Class()
 	if cfg.Ignore.Contains(class) {
 		return
 	}
-	b := NewBox()
-	b.Window = w
-
-	// Don't map if unvisible or has OverrideRedirect flag
+	if allDesks.BoxByWindow(w, true) != nil {
+		l.Printf("  %s - alredy managed", w)
+		return
+	}
 	attr := w.Attrs()
+	// Don't manage and don't map if unvisible or has OverrideRedirect flag
 	if attr.MapState != xgb.MapStateViewable || attr.OverrideRedirect {
 		return
 	}
+
+	b := NewBox(BoxTypeWindow, w)
+
 	// Check window type
 	p, err := w.Prop(AtomNetWmWindowType, math.MaxUint32)
 	if err == nil {
@@ -50,7 +51,7 @@ func winAdd(w, parent Window) {
 			wm_type.Contains(AtomNetWmWindowTypeUtility) ||
 			wm_type.Contains(AtomNetWmWindowTypeToolbar) ||
 			wm_type.Contains(AtomNetWmWindowTypeSplash) {
-			b.Float = true
+			l.Printf("Window %s should be treated as float", w)
 		}
 	} else {
 		l.Printf("Can't get AtomNetWmWindowType from %s: %s", w, err)
@@ -59,44 +60,54 @@ func winAdd(w, parent Window) {
 	b.Name = w.Name()
 	b.NameX = utf16.Encode([]rune(b.Name))
 
-	// Grab left and right mouse buttons for click to focus/rasie
-	w.GrabButton(false, xgb.EventMaskButtonPress, xgb.GrabModeSync,
-		xgb.GrabModeAsync, root, xgb.CursorNone, 1, xgb.ButtonMaskAny)
+	insertNewBox(panel, b)
+}
+
+func insertNewBox(panel, b *Box) {
+	l.Print("insertNewBox: ", b.Window)
+	w := b.Window
+	// Set window attributes
+	if b.Type == BoxTypeWindow {
+		w.SetBorderWidth(cfg.BorderWidth)
+		w.SetBorderColor(cfg.NormalBorderColor)
+	}
+	// Grab right mouse buttons for WM actions 
 	w.GrabButton(false, xgb.EventMaskButtonPress, xgb.GrabModeSync,
 		xgb.GrabModeAsync, root, xgb.CursorNone, 3, xgb.ButtonMaskAny)
-
-	// Nice bechavior if wm will be killed, exited, crashed
-	w.ChangeSaveSet(xgb.SetModeInsert)
-	w.SetBorderWidth(cfg.BorderWidth)
-	w.SetBorderColor(cfg.NormalBorderColor)
-	// Find box in which we have to put this window
-	parentBox := currentPanel
-	if parent != root {
-		parentBox = parentBox.Children.BoxByWindow(parent)
-	}
 	// Add window to found parentBox
 	w.SetEventMask(xgb.EventMaskNoEvent) // avoid UnmapNotify due to reparenting
-	w.Reparent(parentBox.Window, 0, 0)
-	w.SetEventMask(WindowEventMask) // set desired event mask
-	parentBox.Children.PushBack(b)
-	// Update geometry of windows in parentBox
-	tile(parentBox)
+	w.Reparent(panel.Window, 0, 0)
+	w.SetEventMask(WindowEventMask)
+	// Update geometry of windows in panel
+	panel.Children.PushBack(b)
+	tile(panel)
+	// Show the window
+	w.Map()
 }
 
 func winFocus(w Window) {
 	l.Print("Focusing window: ", w)
-	// Iterate over panels
-	pi := currentDesk.Children.FrontIter(false)
-	for p := pi.Next(); p != nil; p = pi.Next() {
-		// Iterate over full tree of windows in panel
-		bi := p.Children.FrontIter(true);
-		for b := bi.Next(); b != nil; b = bi.Next() {
+	if currentDesk.Window == w {
+		currentDesk.Window.SetInputFocus()
+		currentPanel = currentDesk
+	}
+	// Iterate over all boxes in current desk
+	panel := currentPanel
+	bi := currentDesk.Children.FrontIter(true)
+	for b := bi.Next(); b != nil; b = bi.Next() {
+		if b.Type == BoxTypeWindow {
 			if b.Window == w {
-				b.Window.SetBorderColor(cfg.FocusedBorderColor)
+				w.SetBorderColor(cfg.FocusedBorderColor)
+				currentPanel = panel
 				w.SetInputFocus()
-				currentPanel = p // Change current panel
 			} else {
 				b.Window.SetBorderColor(cfg.NormalBorderColor)
+			}
+		} else {
+			panel = b
+			if b.Window == w {
+				currentPanel = panel
+				b.Window.SetInputFocus()
 			}
 		}
 	}
@@ -104,10 +115,18 @@ func winFocus(w Window) {
 
 // Panel is a box with InputOnly (transparent) window in which a real windows
 // are placed. A desk is organized as collection of panels in some layout
-func newPanel(g Geometry) *Box {
-	p := NewBox()
-	p.Window = NewWindow(root, g, xgb.WindowClassInputOutput,
-		xgb.CWOverrideRedirect|xgb.CWEventMask, 1, WindowEventMask)
+func newPanel(typ BoxType, parent *Box) {
+	l.Print("newPanel")
+	if parent.Type == BoxTypeWindow {
+		panic("Can't create panel in BoxTypeWindow box")
+	}
+	p := NewBox(
+		typ,
+		NewWindow(
+			parent.Window, Geometry{0, 0, 1, 1}, xgb.WindowClassInputOutput,
+			xgb.CWOverrideRedirect|xgb.CWEventMask, 1, WindowEventMask,
+		),
+	)
 	p.Window.SetName("mdtwm panel")
-	return p
+	insertNewBox(parent, p)
 }

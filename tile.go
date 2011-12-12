@@ -1,32 +1,63 @@
 package main
 
-func tile(b *Box) {
-	l.Print("Tile", b)
-	// Obtain a number of tiling boxes in parent
-	i, n := b.Children.FrontIter(false), int16(0)
-	for c := i.Next(); c != nil; c = i.Next() {
-		if !c.Float {
-			n++
-		}
-	}
+// Update geometry for boxes in panel
+func tile(panel *Box) {
+	n := int16(panel.Children.Len())
 	if n == 0 {
-		return // there is no tiling boxes in b
+		return // there is no boxes in panel
 	}
-	// Calculate new geometry for boxes in parent
 	borderSpace := 2 * cfg.BorderWidth
-	bg := b.Window.Geometry()
-	h := bg.H / n - 2 * cfg.BorderWidth // new height
-	g := Geometry{0, 0, bg.W - borderSpace, h}
-	// Set new height for windows
-	i, n = b.Children.FrontIter(false), n-1
-	for c := i.Next(); c != nil; c = i.Next() {
-		c.Window.SetGeometry(g)
-		if n--; n > 0 {
+	pg := panel.Window.Geometry()
+	switch panel.Type {
+	case BoxTypePanelV:
+		l.Print("tile V in: ", panel.Window)
+		h := pg.H / n
+		// Set new geometry for all boxes in panel
+		g := Geometry{0, 0, pg.W, h}
+		i := panel.Children.FrontIter(false)
+		for n > 1 {
+			b := i.Next()
+			if b.Type == BoxTypeWindow {
+				b.Window.SetGeometry(g.Resize(-borderSpace))
+			} else {
+				b.Window.SetGeometry(g)
+			}
 			g.Y += h
-		} else {
-			// Last window obtain all remaining space
-			g.Y = g.Y + h
-			g.H = bg.Y-g.Y - borderSpace
+			n--
 		}
+		// Last window obtain all remaining space
+		b := i.Next()
+		g.H = pg.H - g.Y
+		if b.Type == BoxTypeWindow {
+			b.Window.SetGeometry(g.Resize(-borderSpace))
+		} else {
+			b.Window.SetGeometry(g)
+		}
+	case BoxTypePanelH:
+		l.Print("tile H in:", panel.Window)
+		w := pg.W / n
+		// Set new geometry for all boxes in panel
+		g := Geometry{0, 0, w, pg.H}
+		i := panel.Children.FrontIter(false)
+		for n > 1 {
+			b := i.Next()
+			if b.Type == BoxTypeWindow {
+				b.Window.SetGeometry(g.Resize(-borderSpace))
+			} else {
+				b.Window.SetGeometry(g)
+			}
+			g.X += w
+			n--
+		}
+		// Last window obtain all remaining space
+		b := i.Next()
+		g.W = pg.W - g.X
+		if b.Type == BoxTypeWindow {
+			b.Window.SetGeometry(g.Resize(-borderSpace))
+		} else {
+			b.Window.SetGeometry(g)
+		}
+	default:
+		panic("Tile on unknown panel type")
 	}
 }

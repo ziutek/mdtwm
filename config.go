@@ -33,7 +33,7 @@ var cfg *Config
 func loadConfig() {
 	l.Print("loadConfig")
 	cfg = &Config{
-		Layout: []Geometry{{440, 0, 1000, 1080}, {0, 0, 440, 1080}},
+		Layout: []Geometry{{0, 0, 500, 400}},
 
 		NormalBorderColor:  allocColor(0xaaaa, 0xaaaa, 0xaaaa),
 		FocusedBorderColor: allocColor(0xf444, 0x0000, 0x000f),

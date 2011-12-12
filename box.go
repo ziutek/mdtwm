@@ -4,17 +4,25 @@ import (
 	"container/list"
 )
 
+type BoxType int
+
+const (
+	BoxTypeWindow = BoxType(iota)
+	BoxTypePanelV
+	BoxTypePanelH
+)
+
 type Box struct {
 	Window   Window  // window stored in this box
 	Children BoxList // child boxes contains childs of windows
-	Float    bool    // floating box
+	Type BoxType
 
 	Name  string
 	NameX []uint16 // UCS2 version of name
 }
 
-func NewBox() *Box {
-	return &Box{Children: NewBoxList()}
+func NewBox(typ BoxType, w Window) *Box {
+	return &Box{Window: w, Children: NewBoxList(), Type: typ}
 }
 
 func (b *Box) Geometry() Geometry {
@@ -65,15 +73,17 @@ func (bl BoxList) BackIter(full_tree bool) BoxListIterator {
 	}
 }
 
-func (bl BoxList) BoxByWindow(w Window) *Box {
+func (bl BoxList) BoxByWindow(w Window, full_tree bool) *Box {
 	for e := bl.raw.Front(); e != nil; e = e.Next() {
 		b := e.Value.(*Box)
 		if b.Window == w {
 			return b
 		}
-		b = b.Children.BoxByWindow(w)
-		if b != nil {
-			return b
+		if full_tree {
+			b = b.Children.BoxByWindow(w, true)
+			if b != nil {
+				return b
+			}
 		}
 	}
 	return nil

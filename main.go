@@ -74,32 +74,29 @@ func setupWm() {
 	xgb.AtomAtom,	...) */
 	root.ChangeProp(xgb.PropModeReplace, AtomNetSupportingWmCheck,
 		xgb.AtomWindow, &root)
-	root.SetName("mdtwm")
+	root.SetName("mdtwm root")
 
 	// Setup list of desk (for now there is only one desk)
 	allDesks = NewBoxList()
-	currentDesk = NewBox()
-	currentDesk.Window = root
+	currentDesk = NewBox(BoxTypePanelH, root)
 	allDesks.PushBack(currentDesk)
-	// Setup panels from configured layout
-	for _, g := range cfg.Layout {
-		currentDesk.Children.PushBack(newPanel(g))
-	}
+	// Setup two main panels
+	// TODO: Use configuration for this
+	newPanel(BoxTypePanelV, currentDesk)
+	newPanel(BoxTypePanelV, currentDesk)
+	// Initial value of currentPanel and currentWindow
 	currentPanel = currentDesk.Children.Front()
-	// Initial value of currentWindow
 	currentWindow = currentDesk
 }
 
 func manageExistingWindows() {
 	l.Print("manageExistingWindows")
-	tr, err := conn.QueryTree(root.Id())
+	tr, err := conn.QueryTree(currentDesk.Window.Id())
 	if err != nil {
 		l.Fatal("Can't get a list of existing windows: ", err)
 	}
 	for _, id := range tr.Children {
-		w := Window(id)
-		winAdd(w, root)
-		w.Map()
+		manageWindow(Window(id), currentPanel)
 	}
 }
 
@@ -112,11 +109,12 @@ func grabKeys() {
 func eventLoop() {
 	l.Print("eventLoop")
 	root.SetEventMask(
-		xgb.EventMaskSubstructureRedirect |
+		/*xgb.EventMaskSubstructureRedirect |
 			xgb.EventMaskStructureNotify |
 			//xgb.EventMaskPointerMotion |
 			xgb.EventMaskPropertyChange |
-			xgb.EventMaskEnterWindow,
+			xgb.EventMaskEnterWindow,*/
+		xgb.EventMaskSubstructureRedirect | xgb.EventMaskEnterWindow,
 	)
 	for {
 		event, err := conn.WaitForEvent()
