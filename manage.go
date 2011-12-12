@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	/* WindowEventMask = xgb.EventMaskPropertyChange |
+	/* EventMask = xgb.EventMaskPropertyChange |
 		xgb.EventMaskButtonRelease |
 		xgb.EventMaskPointerMotion |
 		xgb.EventMaskExposure | // window needs to be redrawn
@@ -16,7 +16,7 @@ const (
 		xgb.EventMaskSubstructureNotify | // subwindows get notifies
 		xgb.EventMaskFocusChange |
 		xgb.EventMaskEnterWindow */
-	WindowEventMask = xgb.EventMaskEnterWindow
+	EventMask = xgb.EventMaskEnterWindow
 )
 
 var x int16
@@ -77,7 +77,7 @@ func insertNewBox(panel, b *Box) {
 	// Add window to found parentBox
 	w.SetEventMask(xgb.EventMaskNoEvent) // avoid UnmapNotify due to reparenting
 	w.Reparent(panel.Window, 0, 0)
-	w.SetEventMask(WindowEventMask)
+	w.SetEventMask(EventMask)
 	// Update geometry of windows in panel
 	panel.Children.PushBack(b)
 	tile(panel)
@@ -113,20 +113,15 @@ func winFocus(w Window) {
 	}
 }
 
-// Panel is a box with InputOnly (transparent) window in which a real windows
-// are placed. A desk is organized as collection of panels in some layout
+// Panel is a box with transparent window in which a real windows or other
+// panels are placed.
 func newPanel(typ BoxType, parent *Box) {
 	l.Print("newPanel")
 	if parent.Type == BoxTypeWindow {
 		panic("Can't create panel in BoxTypeWindow box")
 	}
-	p := NewBox(
-		typ,
-		NewWindow(
-			parent.Window, Geometry{0, 0, 1, 1}, xgb.WindowClassInputOutput,
-			xgb.CWOverrideRedirect|xgb.CWEventMask, 1, WindowEventMask,
-		),
-	)
-	p.Window.SetName("mdtwm panel")
-	insertNewBox(parent, p)
+	w := NewWindow(parent.Window, Geometry{0, 0, 1, 1},
+		xgb.WindowClassInputOutput, 0)
+	w.SetName("mdtwm panel")
+	insertNewBox(parent, NewBox(typ, w))
 }
