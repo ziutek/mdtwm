@@ -16,9 +16,9 @@ var (
 
 	// Desk in mdtwm means workspace. Desk contains panels. Panel contains
 	// panels or windows.
-	allDesks      BoxList
-	currentDesk   *PanelBox
-	currentPanel  *PanelBox
+	allDesks     BoxList
+	currentDesk  *PanelBox
+	currentPanel *PanelBox
 
 	l = log.New(os.Stderr, "mdtwm: ", 0)
 )
@@ -95,7 +95,7 @@ func manageExistingWindows() {
 		l.Fatal("Can't get a list of existing windows: ", err)
 	}
 	for _, id := range tr.Children {
-		manage(RawWindow(id), currentPanel)
+		manage(RawWindow(id), currentPanel, true)
 	}
 }
 
@@ -107,14 +107,11 @@ func grabKeys() {
 
 func eventLoop() {
 	l.Print("eventLoop")
-	root.SetEventMask(
-		/*xgb.EventMaskSubstructureRedirect |
-			xgb.EventMaskStructureNotify |
-			//xgb.EventMaskPointerMotion |
-			xgb.EventMaskPropertyChange |
-			xgb.EventMaskEnterWindow,*/
-		xgb.EventMaskSubstructureRedirect | xgb.EventMaskEnterWindow,
-	)
+	root.SetEventMask(xgb.EventMaskSubstructureRedirect |
+		xgb.EventMaskStructureNotify |
+		//xgb.EventMaskPointerMotion |
+		xgb.EventMaskPropertyChange |
+		xgb.EventMaskEnterWindow)
 	for {
 		event, err := conn.WaitForEvent()
 		if err != nil {
@@ -126,6 +123,8 @@ func eventLoop() {
 			mapRequest(e)
 		case xgb.EnterNotifyEvent:
 			enterNotify(e)
+		case xgb.UnmapNotifyEvent:
+			unmapNotify(e)
 		case xgb.DestroyNotifyEvent:
 			destroyNotify(e)
 		case xgb.ConfigureNotifyEvent:

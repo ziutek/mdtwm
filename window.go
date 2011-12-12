@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"fmt"
 	"reflect"
 	"unsafe"
 	"x-go-binding.googlecode.com/hg/xgb"
@@ -20,7 +21,7 @@ type Window interface {
 	SetClass(instance, class string)
 
 	// Configuration
-	Configure(mask uint16, vals ...uint32)
+	Configure(mask uint16, vals ...interface{})
 	SetGeometry(g Geometry)
 	SetPosition(x, y int16)
 	SetSize(width, height int16)
@@ -129,8 +130,24 @@ func (w RawWindow) ChangeAttrs(mask uint32, vals ...uint32) {
 	conn.ChangeWindowAttributes(w.Id(), mask, vals)
 }
 
-func (w RawWindow) Configure(mask uint16, vals ...uint32) {
-	conn.ConfigureWindow(w.Id(), mask, vals)
+func (w RawWindow) Configure(mask uint16, vals ...interface{}) {
+	data := make([]uint32, len(vals))
+	for i, v:= range vals {
+		r := reflect.ValueOf(v)
+		switch r.Kind() {
+		case  reflect.Uint8, reflect.Uint16, reflect.Uint32:
+			data[i] = uint32(r.Uint())
+		case reflect.Int8, reflect.Int16, reflect.Int32:
+			data[i] = uint32(r.Int())
+		default:
+			panic(fmt.Sprintf(
+				"vals[%d] type is %s; accepted: int8-32, uint8-32 ",
+				i, r.Type(),
+			))
+		}
+
+	}
+	conn.ConfigureWindow(w.Id(), mask, data)
 }
 
 func (w RawWindow) Geometry() Geometry {
@@ -184,23 +201,21 @@ func (w RawWindow) SetGeometry(g Geometry) {
 		xgb.ConfigWindowX|xgb.ConfigWindowY|
 			xgb.ConfigWindowWidth|xgb.ConfigWindowHeight|
 			xgb.ConfigWindowBorderWidth,
-		uint32(g.X), uint32(g.Y),
-		uint32(Pint16(g.W)), uint32(Pint16(g.H)),
-		uint32(g.B),
+		g.X, g.Y, Pint16(g.W), Pint16(g.H), g.B,
 	)
 }
 
 func (w RawWindow) SetPosition(x, y int16) {
-	w.Configure(xgb.ConfigWindowX|xgb.ConfigWindowY, uint32(x), uint32(y))
+	w.Configure(xgb.ConfigWindowX|xgb.ConfigWindowY, x, y)
 }
 
 func (w RawWindow) SetSize(width, height int16) {
 	w.Configure(xgb.ConfigWindowWidth|xgb.ConfigWindowHeight,
-		uint32(Pint16(width)), uint32(Pint16(height)))
+		Pint16(width), Pint16(height))
 }
 
 func (w RawWindow) SetBorderWidth(width int16) {
-	w.Configure(xgb.ConfigWindowBorderWidth, uint32(width))
+	w.Configure(xgb.ConfigWindowBorderWidth, width)
 }
 
 func (w RawWindow) SetBorderColor(pixel uint32) {

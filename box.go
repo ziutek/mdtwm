@@ -5,6 +5,20 @@ import (
 	"x-go-binding.googlecode.com/hg/xgb"
 )
 
+const (
+	/*boxEventMask = xgb.EventMaskButtonPress |
+		xgb.EventMaskButtonRelease |
+		//xgb.EventMaskPointerMotion |
+		xgb.EventMaskExposure | // window needs to be redrawn
+		xgb.EventMaskStructureNotify | // window gets destroyed
+		xgb.EventMaskSubstructureRedirect | // app tries to resize itself
+		xgb.EventMaskSubstructureNotify | // subwindows get notifies
+		xgb.EventMaskEnterWindow |
+		xgb.EventMaskPropertyChange |
+		xgb.EventMaskFocusChange*/
+	boxEventMask = xgb.EventMaskEnterWindow | xgb.EventMaskStructureNotify
+)
+
 type Box interface {
 	Window
 
@@ -19,7 +33,7 @@ type Box interface {
 }
 
 type commonBox struct {
-	Window // window stored in this box
+	Window             // window stored in this box
 	parent   *PanelBox // parent panel
 	children BoxList   // child boxes contains childs of this box
 }
@@ -31,7 +45,7 @@ func (b *commonBox) init(w Window) {
 	b.GrabButton(false, xgb.EventMaskButtonPress, xgb.GrabModeSync,
 		xgb.GrabModeAsync, root, xgb.CursorNone, 3, xgb.ButtonMaskAny)
 	// Chose events that WM is interested in
-	b.SetEventMask(EventMask)
+	b.SetEventMask(boxEventMask)
 }
 
 func (b *commonBox) NameX() []uint16 {
@@ -42,15 +56,13 @@ func (b *commonBox) Parent() *PanelBox {
 	return b.parent
 }
 
-
 func (b *commonBox) Children() BoxList {
 	return b.children
 }
-
 
 func (b *commonBox) SetParent(p *PanelBox) {
 	b.parent = p
 	b.SetEventMask(xgb.EventMaskNoEvent) // avoid UnmapNotify due to reparenting
 	b.Reparent(p, 0, 0)
-	b.SetEventMask(EventMask)
+	b.SetEventMask(boxEventMask)
 }

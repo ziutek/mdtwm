@@ -11,7 +11,6 @@ sleep 2
 
 xterm &
 xterm &
-xterm &
 
 sleep 2
 
