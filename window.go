@@ -8,6 +8,7 @@ import (
 )
 
 type Window interface {
+	String() string
 	Id() xgb.Id
 
 	// Properties
@@ -90,6 +91,13 @@ func (w RawWindow) ChangeProp(mode byte, prop, typ xgb.Id, data interface{}) {
 	case reflect.String:
 		format = 1
 		content = []byte(d.String())
+	case reflect.Int8, reflect.Uint8, reflect.Int16, reflect.Uint16,
+			reflect.Int32, reflect.Uint32, reflect.Int64, reflect.Uint64,
+			reflect.Int, reflect.Uint:
+		p := reflect.New(d.Type())
+		p.Elem().Set(d)
+		d = p // now d is a pointer to an integer
+		fallthrough
 	case reflect.Ptr:
 		format = int(d.Type().Elem().Size())
 		length := format
@@ -101,7 +109,7 @@ func (w RawWindow) ChangeProp(mode byte, prop, typ xgb.Id, data interface{}) {
 		addr := unsafe.Pointer(d.Index(0).UnsafeAddr())
 		content = (*[1<<31 - 1]byte)(addr)[:length]
 	default:
-		panic("Property data should be a string, a pointer or a slice")
+		panic("Property data should be an integer, a string, a pointer or a slice")
 	}
 	if format > 255 {
 		panic("format > 255")
@@ -233,7 +241,11 @@ func (w RawWindow) Class() (instance, class string) {
 }
 
 func (w RawWindow) SetClass(instance, class string) {
-	l.Print("SetClass: unimplemented")
+	v := make([]byte, 0, len(instance) + len(class) + 2)
+	v = append(v, instance...)
+	v = append(v, 0)
+	v = append(v, class...)
+	w.ChangeProp(xgb.PropModeReplace,xgb.AtomWmClass, xgb.AtomString, v)
 }
 
 func (w RawWindow) SetEventMask(mask uint32) {

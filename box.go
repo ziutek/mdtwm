@@ -20,7 +20,6 @@ type Box interface {
 
 type commonBox struct {
 	Window // window stored in this box
-
 	parent   *PanelBox // parent panel
 	children BoxList   // child boxes contains childs of this box
 }

@@ -23,6 +23,15 @@ func NewPanelBox(typ Orientation) *PanelBox {
 	return &p
 }
 
+func DeskPanelBox(typ Orientation) *PanelBox {
+	var p PanelBox
+	p.init(NewRawWindow(root, root.Geometry(), xgb.WindowClassInputOutput, 0))
+	p.typ = typ
+	p.SetClass("mdtwm", "Mdtwm")
+	p.SetName("mdtwm desktop")
+	return &p
+}
+
 func (p *PanelBox) SetPosSize(x, y, width, height int16) {
 	p.SetGeometry(Geometry{x, y, width, height, 0})
 }
@@ -30,7 +39,7 @@ func (p *PanelBox) SetPosSize(x, y, width, height int16) {
 func (p *PanelBox) SetFocus(f bool) {
 	if f {
 		currentPanel = p
-		p.Window.SetInputFocus()
+		p.SetInputFocus()
 	}
 }
 

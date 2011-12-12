@@ -9,7 +9,6 @@ export XAUTHORITY=$xauthFile
 export DISPLAY=$display
 sleep 2
 
-xsetroot -solid white
 xterm &
 xterm &
 xterm &

@@ -21,9 +21,9 @@ func (w *WindowBox) SetPosSize(x, y, width, height int16) {
 func (w *WindowBox) SetFocus(f bool) {
 	if f {
 		currentPanel = w.parent
-		w.Window.SetInputFocus()
+		w.SetInputFocus()
 		w.SetBorderColor(cfg.FocusedBorderColor)
 	} else {
-		w.Window.SetBorderColor(cfg.NormalBorderColor)
+		w.SetBorderColor(cfg.NormalBorderColor)
 	}
 }

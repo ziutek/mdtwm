@@ -67,20 +67,18 @@ func connect() {
 }
 
 func setupWm() {
-	l.Print("setupDesks")
+	l.Print("setupWm")
 	// Spported atoms
 	/* root.ChangeProp(xgb.PropModeReplace, AtomNetSupported,
 	xgb.AtomAtom,	...) */
 	root.ChangeProp(xgb.PropModeReplace, AtomNetSupportingWmCheck,
-		xgb.AtomWindow, &root)
+		xgb.AtomWindow, root)
 	root.SetClass("mdtwm", "Mdtwm")
 	root.SetName("mdtwm root")
-
 	// Setup list of desk (for now there is only one desk)
 	allDesks = NewBoxList()
-	currentDesk = NewPanelBox(Horizontal)
+	currentDesk = DeskPanelBox(Horizontal)
 	currentDesk.Map()
-	l.Print("Doszedl: ", currentDesk.Geometry())
 	allDesks.PushBack(currentDesk)
 	// Setup two main panels
 	// TODO: Use configuration for this
@@ -92,7 +90,7 @@ func setupWm() {
 
 func manageExistingWindows() {
 	l.Print("manageExistingWindows")
-	tr, err := conn.QueryTree(currentDesk.Window.Id())
+	tr, err := conn.QueryTree(root.Id())
 	if err != nil {
 		l.Fatal("Can't get a list of existing windows: ", err)
 	}

@@ -23,7 +23,7 @@ var x int16
 func manage(w Window, panel *PanelBox) {
 	// We need to use b because b implements caching (TODO)
 	b := NewWindowBox(w)
-	l.Print("manageWindow: ", b)
+	l.Print("manage: ", b)
 	_, class := b.Class()
 	if cfg.Ignore.Contains(class) {
 		return
