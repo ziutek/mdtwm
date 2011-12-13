@@ -69,8 +69,9 @@ func (b *commonBox) grabInput(confineTo Window) {
 	// Grab right mouse buttons for WM actions
 	b.w.GrabButton(false, xgb.EventMaskButtonPress, xgb.GrabModeSync,
 		xgb.GrabModeAsync, confineTo, xgb.CursorNone, 3, xgb.ButtonMaskAny)
-	// Win + Return
-	b.w.GrabKey(true, cfg.ModMask, 36, xgb.GrabModeAsync, xgb.GrabModeAsync)
+	for k, _ := range cfg.Keys {
+		b.w.GrabKey(true, cfg.ModMask, k, xgb.GrabModeAsync, xgb.GrabModeAsync)
+	}
 }
 
 func (b *commonBox) Parent() ParentBox {

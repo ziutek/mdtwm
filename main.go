@@ -33,7 +33,6 @@ func main() {
 }
 
 func signals() {
-	l.Print("signals")
 	go func() {
 		for sig := range signal.Incoming {
 			if s, ok := sig.(os.UnixSignal); ok {
@@ -42,15 +41,21 @@ func signals() {
 					os.Exit(0)
 				case syscall.SIGWINCH:
 					continue
+				case syscall.SIGCHLD:
+					var status syscall.WaitStatus
+					_, err := syscall.Wait4(-1, &status, 0, nil)
+					if err != nil {
+						l.Print("syscal.Wait4: ", err)
+					}
+					continue
 				}
 			}
-			l.Printf("Signal %s received and ignored", sig)
+			l.Printf("Signal '%s' received and ignored", sig)
 		}
 	}()
 }
 
 func connect() {
-	l.Print("init")
 	display := os.Getenv("DISPLAY")
 	if display == "" {
 		l.Fatal("There is not DISPLAY environment variable")
@@ -64,7 +69,6 @@ func connect() {
 }
 
 func setupWm() {
-	l.Print("setupWm")
 	// Setup root window (RootPanel)
 	root = NewRootPanel()
 	// Setup list of desk (for now there is only one desk)
@@ -79,7 +83,6 @@ func setupWm() {
 }
 
 func manageExistingWindows() {
-	l.Print("manageExistingWindows")
 	tr, err := conn.QueryTree(root.Window().Id())
 	if err != nil {
 		l.Fatal("Can't get a list of existing windows: ", err)
@@ -90,11 +93,10 @@ func manageExistingWindows() {
 }
 
 func eventLoop() {
-	l.Print("eventLoop")
 	for {
 		event, err := conn.WaitForEvent()
 		if err != nil {
-			//l.Print("WaitForEvent error: ", err)
+			l.Print("WaitForEvent error: ", err)
 			continue
 		}
 		switch e := event.(type) {

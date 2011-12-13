@@ -41,7 +41,6 @@ func getAtomId(name string) xgb.Id {
 }
 
 func setupAtoms() {
-	l.Print("setupAtoms")
 	AtomNetSupported = getAtomId("_NET_SUPPORTED")
 	AtomNetSupportingWmCheck = getAtomId("_NET_SUPPORTING_WM_CHECK")
 	AtomNetWmName = getAtomId("_NET_WM_NAME")

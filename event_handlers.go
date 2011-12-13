@@ -5,13 +5,13 @@ import (
 )
 
 func mapRequest(e xgb.MapRequestEvent) {
-	l.Print("MapRequestEvent: ", Window(e.Window))
+	//l.Print("MapRequestEvent: ", Window(e.Window))
 	w := Window(e.Window)
 	manage(w, currentPanel, false)
 }
 
 func enterNotify(e xgb.EnterNotifyEvent) {
-	l.Print("EnterNotifyEvent: ", Window(e.Event))
+	//l.Print("EnterNotifyEvent: ", Window(e.Event))
 	if e.Mode != xgb.NotifyModeNormal {
 		return
 	}
@@ -26,12 +26,12 @@ func enterNotify(e xgb.EnterNotifyEvent) {
 }
 
 func destroyNotify(e xgb.DestroyNotifyEvent) {
-	l.Print("DestroyNotifyEvent: ", Window(e.Event))
+	//l.Print("DestroyNotifyEvent: ", Window(e.Event))
 	unmapNotify(xgb.UnmapNotifyEvent{Event: e.Event, Window: e.Window})
 }
 
 func unmapNotify(e xgb.UnmapNotifyEvent) {
-	l.Print("xgb.UnmapNotifyEvent: ", Window(e.Event), e)
+	//l.Print("xgb.UnmapNotifyEvent: ", Window(e.Event), e)
 	w := Window(e.Event)
 	if b := root.Children().BoxByWindow(w, true); b != nil {
 		b.Parent().Remove(b)
@@ -43,7 +43,7 @@ func configureNotify(e xgb.ConfigureNotifyEvent) {
 }
 
 func configureRequest(e xgb.ConfigureRequestEvent) {
-	l.Print("ConfigureRequestEvent: ", Window(e.Window))
+	//l.Print("ConfigureRequestEvent: ", Window(e.Window))
 	w := Window(e.Window)
 	if root.Children().BoxByWindow(w, true) == nil {
 		// Unmanaged window - execute its request
@@ -75,12 +75,22 @@ func configureRequest(e xgb.ConfigureRequestEvent) {
 		}
 		w.Configure(mask, v...)
 	} else {
-		l.Print("  alredy managed")
+		l.Print("ConfigureRequestEvent from managed window")
 	}
 }
 
 func keyPress(e xgb.KeyPressEvent) {
 	l.Print("KeyPressEvent: ", Window(e.Event))
+	// Simply run terminal
+	if e.State == cfg.ModMask {
+		cmd, ok := cfg.Keys[e.Detail]
+		if !ok {
+			l.Print("Unhandled key: ", e.Detail)
+		}
+		if err := cmd.Run(); err != nil {
+			l.Printf("cmd(%s): %s", cmd.Param, err)
+		}
+	}
 }
 
 func buttonPress(e xgb.ButtonPressEvent) {
