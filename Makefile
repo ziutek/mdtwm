@@ -8,9 +8,10 @@ GOFILES=\
 	geometry.go\
 	window.go\
 	box.go\
-	window_box.go\
-	panel_box.go\
-	box_list.go \
+	box_list.go\
+	root_panel.go\
+	panel.go\
+	tiled_window.go \
 	config.go \
 	event_handlers.go\
 	manage.go\

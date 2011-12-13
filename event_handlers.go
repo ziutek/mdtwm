@@ -5,46 +5,47 @@ import (
 )
 
 func mapRequest(e xgb.MapRequestEvent) {
-	l.Print("MapRequestEvent: ", RawWindow(e.Window))
-	w := RawWindow(e.Window)
+	l.Print("MapRequestEvent: ", Window(e.Window))
+	w := Window(e.Window)
 	manage(w, currentPanel, false)
 }
 
 func enterNotify(e xgb.EnterNotifyEvent) {
-	l.Print("EnterNotifyEvent: ", RawWindow(e.Event))
+	l.Print("EnterNotifyEvent: ", Window(e.Event))
 	if e.Mode != xgb.NotifyModeNormal {
 		return
 	}
-	currentDesk.SetFocus(currentDesk.Id() == e.Event)
+	w := Window(e.Event)
+	currentDesk.SetFocus(currentDesk.Window() == w)
 	// Iterate over all boxes in current desk
 	bi := currentDesk.Children().FrontIter(true)
 	for b := bi.Next(); b != nil; b = bi.Next() {
-		b.SetFocus(b.Id() == e.Event)
+		b.SetFocus(b.Window() == w)
 	}
 
 }
 
 func destroyNotify(e xgb.DestroyNotifyEvent) {
-	l.Print("DestroyNotifyEvent: ", RawWindow(e.Event))
+	l.Print("DestroyNotifyEvent: ", Window(e.Event))
 	unmapNotify(xgb.UnmapNotifyEvent{Event: e.Event, Window: e.Window})
 }
 
 func unmapNotify(e xgb.UnmapNotifyEvent) {
-	l.Print("xgb.UnmapNotifyEvent: ", RawWindow(e.Event), e)
-	w := RawWindow(e.Event)
-	if b := allDesks.BoxByWindow(w, true); b != nil {
+	l.Print("xgb.UnmapNotifyEvent: ", Window(e.Event), e)
+	w := Window(e.Event)
+	if b := root.Children().BoxByWindow(w, true); b != nil {
 		b.Parent().Remove(b)
 	}
 }
 
 func configureNotify(e xgb.ConfigureNotifyEvent) {
-	l.Print("ConfigureNotifyEvent: ", RawWindow(e.Window))
+	l.Print("ConfigureNotifyEvent: ", Window(e.Window))
 }
 
 func configureRequest(e xgb.ConfigureRequestEvent) {
-	l.Print("ConfigureRequestEvent: ", RawWindow(e.Window))
-	w := RawWindow(e.Window)
-	if allDesks.BoxByWindow(w, true) == nil {
+	l.Print("ConfigureRequestEvent: ", Window(e.Window))
+	w := Window(e.Window)
+	if root.Children().BoxByWindow(w, true) == nil {
 		// Unmanaged window - execute its request
 		mask := (xgb.ConfigWindowX|xgb.ConfigWindowY|
 			xgb.ConfigWindowWidth|xgb.ConfigWindowHeight|
@@ -79,10 +80,10 @@ func configureRequest(e xgb.ConfigureRequestEvent) {
 }
 
 func keyPress(e xgb.KeyPressEvent) {
-	l.Print("KeyPressEvent: ", RawWindow(e.Event))
+	l.Print("KeyPressEvent: ", Window(e.Event))
 }
 
 func buttonPress(e xgb.ButtonPressEvent) {
-	l.Print("ButtonPressEvent: ", RawWindow(e.Event))
+	l.Print("ButtonPressEvent: ", Window(e.Event))
 }
 

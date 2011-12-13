@@ -5,66 +5,59 @@ import (
 )
 
 // Box for WM window (panel)
-type PanelBox struct {
+type Panel struct {
 	commonBox
 
 	typ Orientation // panel type (vertical or horizontal)
 }
 
-// New PanelBox has parent set to nil and its window
+// New Panel has parent set to nil and its window
 // parent is root window. 
-func NewPanelBox(typ Orientation) *PanelBox {
-	var p PanelBox
-	p.init(NewRawWindow(root, Geometry{0, 0, 1, 1, 0},
+func NewPanel(typ Orientation) *Panel {
+	var p Panel
+	p.init(NewWindow(root.Window(), Geometry{0, 0, 1, 1, 0},
 		xgb.WindowClassInputOutput, 0))
-	p.typ = typ
-	p.SetClass("mdtwm", "Mdtwm")
+	p.SetClass(cfg.Instance, cfg.Class)
 	p.SetName("mdtwm panel")
-	return &p
-}
-
-func DeskPanelBox(typ Orientation) *PanelBox {
-	var p PanelBox
-	p.init(NewRawWindow(root, root.Geometry(), xgb.WindowClassInputOutput, 0))
 	p.typ = typ
-	p.SetClass("mdtwm", "Mdtwm")
-	p.SetName("mdtwm desktop")
+	p.w.SetEventMask(boxEventMask)
+	p.grabInput(root.Window())
 	return &p
 }
 
-func (p *PanelBox) SetPosSize(x, y, width, height int16) {
-	p.SetGeometry(Geometry{x, y, width, height, 0})
+func (p *Panel) SetPosSize(x, y, width, height int16) {
+	p.w.SetGeometry(Geometry{x, y, width, height, 0})
 }
 
-func (p *PanelBox) SetFocus(f bool) {
+func (p *Panel) SetFocus(f bool) {
 	if f {
 		currentPanel = p
-		p.SetInputFocus()
+		p.w.SetInputFocus()
 	}
 }
 
 // Inserts a box into panel 
-func (p *PanelBox) Insert(b Box) {
+func (p *Panel) Insert(b Box) {
 	b.SetParent(p)
 	// TODO: Implement finding of best place to insert
 	p.children.PushBack(b)
 	// Rearange panel and show new box
 	p.tile()
-	b.Map()
+	b.Window().Map()
 }
 
-func (p *PanelBox) Remove(b Box) {
+func (p *Panel) Remove(b Box) {
 	p.children.Remove(b)
 	p.tile()
 }
 
 // Update geometry for boxes in panel
-func (p *PanelBox) tile() {
+func (p *Panel) tile() {
 	n := int16(p.children.Len())
 	if n == 0 {
 		return // there is no boxes in panel
 	}
-	pg := p.Geometry()
+	pg := p.w.Geometry()
 	if p.typ == Vertical {
 		l.Print("tile V in: ", p)
 		h := pg.H / n

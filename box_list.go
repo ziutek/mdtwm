@@ -47,7 +47,7 @@ func (bl BoxList) BackIter(full_tree bool) BoxListIterator {
 func (bl BoxList) BoxByWindow(w Window, full_tree bool) Box {
 	for e := bl.raw.Front(); e != nil; e = e.Next() {
 		b := e.Value.(Box)
-		if b.Id() == w.Id() {
+		if b.Window() == w {
 			return b
 		}
 		if full_tree {

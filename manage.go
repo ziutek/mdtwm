@@ -7,13 +7,13 @@ import (
 
 var x int16
 
-func manage(w Window, panel *PanelBox, vievableOnly bool) {
+func manage(w Window, panel ParentBox, vievableOnly bool) {
 	l.Printf("manage %s in %s", w, panel)
 	_, class := w.Class()
 	if cfg.Ignore.Contains(class) {
 		return
 	}
-	if allDesks.BoxByWindow(w, true) != nil {
+	if root.Children().BoxByWindow(w, true) != nil {
 		l.Printf("  %s - alredy managed", w)
 		return
 	}
@@ -46,5 +46,5 @@ func manage(w Window, panel *PanelBox, vievableOnly bool) {
 	}
 	// Insert new box in a panel.
 	// NewWindowBox(w) changes some property of w so it can't be used before!
-	panel.Insert(NewWindowBox(w))
+	panel.Insert(NewTiledWindow(w))
 }

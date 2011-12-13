@@ -1,58 +1,79 @@
 package main
 
 import (
+	"fmt"
 	"unicode/utf16"
 	"x-go-binding.googlecode.com/hg/xgb"
 )
 
 const (
 	/*boxEventMask = xgb.EventMaskButtonPress |
-		xgb.EventMaskButtonRelease |
-		//xgb.EventMaskPointerMotion |
-		xgb.EventMaskExposure | // window needs to be redrawn
-		xgb.EventMaskStructureNotify | // window gets destroyed
-		xgb.EventMaskSubstructureRedirect | // app tries to resize itself
-		xgb.EventMaskSubstructureNotify | // subwindows get notifies
-		xgb.EventMaskEnterWindow |
-		xgb.EventMaskPropertyChange |
-		xgb.EventMaskFocusChange*/
+	xgb.EventMaskButtonRelease |
+	//xgb.EventMaskPointerMotion |
+	xgb.EventMaskExposure | // window needs to be redrawn
+	xgb.EventMaskStructureNotify | // window gets destroyed
+	xgb.EventMaskSubstructureRedirect | // app tries to resize itself
+	xgb.EventMaskSubstructureNotify | // subwindows get notifies
+	xgb.EventMaskEnterWindow |
+	xgb.EventMaskPropertyChange |
+	xgb.EventMaskFocusChange*/
 	boxEventMask = xgb.EventMaskEnterWindow | xgb.EventMaskStructureNotify
 )
 
 type Box interface {
-	Window
+	String() string
 
-	NameX() []uint16 // UCS2 encoded name
-
-	Parent() *PanelBox
-	SetParent(p *PanelBox)
+	Window() Window
+	Parent() ParentBox
+	SetParent(p ParentBox)
 	Children() BoxList
 
 	SetPosSize(x, y, width, height int16) // Set position and EXTERNAL size
 	SetFocus(cur bool)
+
+	// Properties
+	Name() string
+	NameX() []uint16 // UCS2 encoded name
+	SetName(name string)
+	Class() (instance, class string)
+	SetClass(instance, class string)
+}
+
+type ParentBox interface {
+	Box
+
+	Insert(b Box)
+	Remove(b Box)
 }
 
 type commonBox struct {
-	Window             // window stored in this box
-	parent   *PanelBox // parent panel
-	children BoxList   // child boxes contains childs of this box
+	w        Window     // window stored in this box
+	parent   ParentBox // parent panel
+	children BoxList    // child boxes contains childs of this box
+}
+
+func (b *commonBox) String() string {
+	return fmt.Sprintf("%s (%s)", b.Name(), b.w)
+}
+
+func (b *commonBox) Window() Window {
+	return b.w
 }
 
 func (b *commonBox) init(w Window) {
-	b.Window = w
+	b.w = w
 	b.children = NewBoxList()
+}
+
+func (b *commonBox) grabInput(confineTo Window) {
 	// Grab right mouse buttons for WM actions
-	b.GrabButton(false, xgb.EventMaskButtonPress, xgb.GrabModeSync,
-		xgb.GrabModeAsync, root, xgb.CursorNone, 3, xgb.ButtonMaskAny)
-	// Chose events that WM is interested in
-	b.SetEventMask(boxEventMask)
+	b.w.GrabButton(false, xgb.EventMaskButtonPress, xgb.GrabModeSync,
+		xgb.GrabModeAsync, confineTo, xgb.CursorNone, 3, xgb.ButtonMaskAny)
+	// Win + Return
+	b.w.GrabKey(true, cfg.ModMask, 36, xgb.GrabModeAsync, xgb.GrabModeAsync)
 }
 
-func (b *commonBox) NameX() []uint16 {
-	return utf16.Encode([]rune(b.Name()))
-}
-
-func (b *commonBox) Parent() *PanelBox {
+func (b *commonBox) Parent() ParentBox {
 	return b.parent
 }
 
@@ -60,9 +81,43 @@ func (b *commonBox) Children() BoxList {
 	return b.children
 }
 
-func (b *commonBox) SetParent(p *PanelBox) {
+func (b *commonBox) SetParent(p ParentBox) {
 	b.parent = p
-	b.SetEventMask(xgb.EventMaskNoEvent) // avoid UnmapNotify due to reparenting
-	b.Reparent(p, 0, 0)
-	b.SetEventMask(boxEventMask)
+	b.w.SetEventMask(xgb.EventMaskNoEvent) // avoid UnmapNotify
+	b.w.Reparent(p.Window(), 0, 0)
+	b.w.SetEventMask(boxEventMask)
+}
+
+// Properties
+
+func (b *commonBox) Name() string {
+	// We prefer utf8 version
+	if p, err := b.w.Prop(AtomNetWmName, 128); err == nil && len(p.Value) > 0 {
+		return string(p.Value)
+	}
+	if p, err := b.w.Prop(xgb.AtomWmName, 128); err == nil && len(p.Value) > 0 {
+		return string(p.Value)
+	}
+	return ""
+}
+
+func (b *commonBox) NameX() []uint16 {
+	return utf16.Encode([]rune(b.Name()))
+}
+
+func (b *commonBox) SetName(name string) {
+	b.w.ChangeProp(xgb.PropModeReplace, xgb.AtomWmName, xgb.AtomString, name)
+	b.w.ChangeProp(xgb.PropModeReplace, AtomNetWmName, AtomUtf8String, name)
+}
+
+func (b *commonBox) Class() (instance, class string) {
+	return b.w.Class()
+}
+
+func (b *commonBox) SetClass(instance, class string) {
+	v := make([]byte, 0, len(instance)+len(class)+2)
+	v = append(v, instance...)
+	v = append(v, 0)
+	v = append(v, class...)
+	b.w.ChangeProp(xgb.PropModeReplace, xgb.AtomWmClass, xgb.AtomString, v)
 }

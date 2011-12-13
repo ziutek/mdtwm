@@ -12,13 +12,12 @@ import (
 var (
 	conn   *xgb.Conn
 	screen *xgb.ScreenInfo
-	root   Window
 
 	// Desk in mdtwm means workspace. Desk contains panels. Panel contains
 	// panels or windows.
-	allDesks     BoxList
-	currentDesk  *PanelBox
-	currentPanel *PanelBox
+	root         ParentBox
+	currentDesk  ParentBox
+	currentPanel ParentBox
 
 	l = log.New(os.Stderr, "mdtwm: ", 0)
 )
@@ -29,7 +28,6 @@ func main() {
 	setupAtoms()
 	loadConfig()
 	setupWm()
-	grabKeys()
 	manageExistingWindows()
 	eventLoop()
 }
@@ -63,55 +61,36 @@ func connect() {
 		l.Fatalf("Can't connect to %s display: %s", display, err)
 	}
 	screen = conn.DefaultScreen()
-	root = RawWindow(screen.Root)
 }
 
 func setupWm() {
 	l.Print("setupWm")
-	// Spported atoms
-	/* root.ChangeProp(xgb.PropModeReplace, AtomNetSupported,
-	xgb.AtomAtom,	...) */
-	root.ChangeProp(xgb.PropModeReplace, AtomNetSupportingWmCheck,
-		xgb.AtomWindow, root)
-	root.SetClass("mdtwm", "Mdtwm")
-	root.SetName("mdtwm root")
+	// Setup root window (RootPanel)
+	root = NewRootPanel()
 	// Setup list of desk (for now there is only one desk)
-	allDesks = NewBoxList()
-	currentDesk = DeskPanelBox(Horizontal)
-	currentDesk.Map()
-	allDesks.PushBack(currentDesk)
+	currentDesk = NewPanel(Horizontal)
+	root.Insert(currentDesk)
 	// Setup two main panels
 	// TODO: Use configuration for this
-	currentDesk.Insert(NewPanelBox(Vertical))
-	currentDesk.Insert(NewPanelBox(Vertical))
+	currentDesk.Insert(NewPanel(Vertical))
+	currentDesk.Insert(NewPanel(Vertical))
 	// Initial value of currentPanel and currentWindow
-	currentPanel = currentDesk.Children().Front().(*PanelBox)
+	currentPanel = currentDesk.Children().Front().(*Panel)
 }
 
 func manageExistingWindows() {
 	l.Print("manageExistingWindows")
-	tr, err := conn.QueryTree(root.Id())
+	tr, err := conn.QueryTree(root.Window().Id())
 	if err != nil {
 		l.Fatal("Can't get a list of existing windows: ", err)
 	}
 	for _, id := range tr.Children {
-		manage(RawWindow(id), currentPanel, true)
+		manage(Window(id), currentPanel, true)
 	}
-}
-
-func grabKeys() {
-	l.Print("grabKeys")
-	// Win + Return
-	root.GrabKey(true, xgb.ModMask4, 36, xgb.GrabModeAsync, xgb.GrabModeAsync)
 }
 
 func eventLoop() {
 	l.Print("eventLoop")
-	root.SetEventMask(xgb.EventMaskSubstructureRedirect |
-		xgb.EventMaskStructureNotify |
-		//xgb.EventMaskPointerMotion |
-		xgb.EventMaskPropertyChange |
-		xgb.EventMaskEnterWindow)
 	for {
 		event, err := conn.WaitForEvent()
 		if err != nil {

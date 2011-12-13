@@ -8,52 +8,11 @@ import (
 	"x-go-binding.googlecode.com/hg/xgb"
 )
 
-type Window interface {
-	String() string
-	Id() xgb.Id
-
-	// Properties
-	Prop(prop xgb.Id, max uint32) (*xgb.GetPropertyReply, error)
-	ChangeProp(mode byte, prop, typ xgb.Id, data interface{})
-	Name() string
-	SetName(name string)
-	Class() (instance, class string)
-	SetClass(instance, class string)
-
-	// Configuration
-	Configure(mask uint16, vals ...interface{})
-	SetGeometry(g Geometry)
-	SetPosition(x, y int16)
-	SetSize(width, height int16)
-	SetBorderWidth(width int16)
-
-	// Attributes
-	Attrs() *xgb.GetWindowAttributesReply
-	ChangeAttrs(mask uint32, vals ...uint32)
-	SetBorderColor(pixel uint32)
-	SetEventMask(mask uint32)
-
-	// Other
-	Geometry() Geometry
-	Map()
-	SetInputFocus()
-	Reparent(parent Window, x, y int16)
-	GrabButton(ownerEvents bool, eventMask uint16,
-		pointerMode, keyboardMode byte,
-		confineTo Window, cursor xgb.Id,
-		button byte, modifiers uint16)
-	UngrabButton(button byte, modifiers uint16)
-	GrabKey(ownerEvents bool, modifiers uint16, key,
-		pointerMode, keyboardMode byte)
-	UngrabKey(key byte, modifiers uint16)
-	ChangeSaveSet(mode byte)
-}
-
-type RawWindow xgb.Id
+type Window xgb.Id
 
 // Creates unmaped window
-func NewRawWindow(parent Window, g Geometry, class uint16,
-	mask uint32, vals ...uint32) RawWindow {
+func NewWindow(parent Window, g Geometry, class uint16,
+	mask uint32, vals ...uint32) Window {
 	id := conn.NewId()
 	conn.CreateWindow(
 		xgb.WindowClassCopyFromParent,
@@ -62,39 +21,39 @@ func NewRawWindow(parent Window, g Geometry, class uint16,
 		class, xgb.WindowClassCopyFromParent,
 		mask, vals,
 	)
-	return RawWindow(id)
+	return Window(id)
 }
 
-func (w RawWindow) String() string {
-	return w.Name()
+func (w Window) String() string {
+	return fmt.Sprint(w.Id())
 }
 
-func (w RawWindow) Id() xgb.Id {
+func (w Window) Id() xgb.Id {
 	return xgb.Id(w)
 }
 
 // Base methods from XGB
 
-func (w RawWindow) Prop(prop xgb.Id, max uint32) (*xgb.GetPropertyReply, error) {
+func (w Window) Prop(prop xgb.Id, max uint32) (*xgb.GetPropertyReply, error) {
 	return conn.GetProperty(false, w.Id(), prop, xgb.GetPropertyTypeAny, 0, max)
 }
 
-func (w RawWindow) ChangeProp(mode byte, prop, typ xgb.Id, data interface{}) {
-	if data == nil {
+func (w Window) ChangeProp(mode byte, prop, typ xgb.Id, val interface{}) {
+	if val == nil {
 		panic("nil property")
 	}
 	var (
 		format  int
 		content []byte
 	)
-	d := reflect.ValueOf(data)
+	d := reflect.ValueOf(val)
 	switch d.Kind() {
 	case reflect.String:
 		format = 1
 		content = []byte(d.String())
 	case reflect.Int8, reflect.Uint8, reflect.Int16, reflect.Uint16,
-			reflect.Int32, reflect.Uint32, reflect.Int64, reflect.Uint64,
-			reflect.Int, reflect.Uint:
+		reflect.Int32, reflect.Uint32, reflect.Int64, reflect.Uint64,
+		reflect.Int, reflect.Uint:
 		p := reflect.New(d.Type())
 		p.Elem().Set(d)
 		d = p // now d is a pointer to an integer
@@ -110,7 +69,7 @@ func (w RawWindow) ChangeProp(mode byte, prop, typ xgb.Id, data interface{}) {
 		addr := unsafe.Pointer(d.Index(0).UnsafeAddr())
 		content = (*[1<<31 - 1]byte)(addr)[:length]
 	default:
-		panic("Property data should be an integer, a string, a pointer or a slice")
+		panic("Property value should be an integer, a string, a pointer or a slice")
 	}
 	if format > 255 {
 		panic("format > 255")
@@ -118,7 +77,7 @@ func (w RawWindow) ChangeProp(mode byte, prop, typ xgb.Id, data interface{}) {
 	conn.ChangeProperty(mode, w.Id(), prop, typ, byte(format*8), content)
 }
 
-func (w RawWindow) Attrs() *xgb.GetWindowAttributesReply {
+func (w Window) Attrs() *xgb.GetWindowAttributesReply {
 	a, err := conn.GetWindowAttributes(w.Id())
 	if err != nil {
 		l.Fatalf("Can't get attributes of window %s: %s", w, err)
@@ -126,16 +85,16 @@ func (w RawWindow) Attrs() *xgb.GetWindowAttributesReply {
 	return a
 }
 
-func (w RawWindow) ChangeAttrs(mask uint32, vals ...uint32) {
+func (w Window) ChangeAttrs(mask uint32, vals ...uint32) {
 	conn.ChangeWindowAttributes(w.Id(), mask, vals)
 }
 
-func (w RawWindow) Configure(mask uint16, vals ...interface{}) {
+func (w Window) Configure(mask uint16, vals ...interface{}) {
 	data := make([]uint32, len(vals))
-	for i, v:= range vals {
+	for i, v := range vals {
 		r := reflect.ValueOf(v)
 		switch r.Kind() {
-		case  reflect.Uint8, reflect.Uint16, reflect.Uint32:
+		case reflect.Uint8, reflect.Uint16, reflect.Uint32:
 			data[i] = uint32(r.Uint())
 		case reflect.Int8, reflect.Int16, reflect.Int32:
 			data[i] = uint32(r.Int())
@@ -150,7 +109,7 @@ func (w RawWindow) Configure(mask uint16, vals ...interface{}) {
 	conn.ConfigureWindow(w.Id(), mask, data)
 }
 
-func (w RawWindow) Geometry() Geometry {
+func (w Window) Geometry() Geometry {
 	g, err := conn.GetGeometry(w.Id())
 	if err != nil {
 		l.Fatalf("Can't get geometry of window %s: %s", w, err)
@@ -163,40 +122,42 @@ func (w RawWindow) Geometry() Geometry {
 	}
 }
 
-func (w RawWindow) Map() {
+func (w Window) Map() {
 	conn.MapWindow(w.Id())
 }
 
-func (w RawWindow) Reparent(parent Window, x, y int16) {
+func (w Window) SetEventMask(mask uint32) {
+	w.ChangeAttrs(xgb.CWEventMask, mask)
+}
+
+func (w Window) Reparent(parent Window, x, y int16) {
 	conn.ReparentWindow(w.Id(), parent.Id(), x, y)
 }
-func (w RawWindow) ChangeSaveSet(mode byte) {
+func (w Window) ChangeSaveSet(mode byte) {
 	conn.ChangeSaveSet(mode, w.Id())
 }
 
-func (w RawWindow) GrabButton(ownerEvents bool, eventMask uint16,
+func (w Window) GrabButton(ownerEvents bool, eventMask uint16,
 	pointerMode, keyboardMode byte, confineTo Window, cursor xgb.Id,
 	button byte, modifiers uint16) {
 	conn.GrabButton(ownerEvents, w.Id(), eventMask, pointerMode, keyboardMode,
 		confineTo.Id(), cursor, button, modifiers)
 }
 
-func (w RawWindow) UngrabButton(button byte, modifiers uint16) {
+func (w Window) UngrabButton(button byte, modifiers uint16) {
 	conn.UngrabButton(button, w.Id(), modifiers)
 }
 
-func (w RawWindow) GrabKey(ownerEvents bool, modifiers uint16,
+func (w Window) GrabKey(ownerEvents bool, modifiers uint16,
 	key, pointerMode, keyboardMode byte) {
 	conn.GrabKey(ownerEvents, w.Id(), modifiers, key, pointerMode, keyboardMode)
 }
 
-func (w RawWindow) UngrabKey(key byte, modifiers uint16) {
+func (w Window) UngrabKey(key byte, modifiers uint16) {
 	conn.UngrabKey(key, w.Id(), modifiers)
 }
 
-// Utility methods
-
-func (w RawWindow) SetGeometry(g Geometry) {
+func (w Window) SetGeometry(g Geometry) {
 	w.Configure(
 		xgb.ConfigWindowX|xgb.ConfigWindowY|
 			xgb.ConfigWindowWidth|xgb.ConfigWindowHeight|
@@ -205,44 +166,30 @@ func (w RawWindow) SetGeometry(g Geometry) {
 	)
 }
 
-func (w RawWindow) SetPosition(x, y int16) {
+func (w Window) SetPosition(x, y int16) {
 	w.Configure(xgb.ConfigWindowX|xgb.ConfigWindowY, x, y)
 }
 
-func (w RawWindow) SetSize(width, height int16) {
+func (w Window) SetSize(width, height int16) {
 	w.Configure(xgb.ConfigWindowWidth|xgb.ConfigWindowHeight,
 		Pint16(width), Pint16(height))
 }
 
-func (w RawWindow) SetBorderWidth(width int16) {
+func (w Window) SetBorderWidth(width int16) {
 	w.Configure(xgb.ConfigWindowBorderWidth, width)
 }
 
-func (w RawWindow) SetBorderColor(pixel uint32) {
+func (w Window) SetBorderColor(pixel uint32) {
 	w.ChangeAttrs(xgb.CWBorderPixel, pixel)
 }
 
-func (w RawWindow) SetInputFocus() {
+func (w Window) SetInputFocus() {
 	conn.SetInputFocus(xgb.InputFocusPointerRoot, w.Id(), xgb.TimeCurrentTime)
 }
 
-func (w RawWindow) Name() string {
-	// We prefer utf8 version
-	if p, err := w.Prop(AtomNetWmName, 128); err == nil && len(p.Value) > 0 {
-		return string(p.Value)
-	}
-	if p, err := w.Prop(xgb.AtomWmName, 128); err == nil && len(p.Value) > 0 {
-		return string(p.Value)
-	}
-	return ""
-}
-
-func (w RawWindow) SetName(name string) {
-	w.ChangeProp(xgb.PropModeReplace, xgb.AtomWmName, xgb.AtomString, name)
-	w.ChangeProp(xgb.PropModeReplace, AtomNetWmName, AtomUtf8String, name)
-}
-
-func (w RawWindow) Class() (instance, class string) {
+// Class properity is implemented in Window because it is needed to check if
+// WM need to ignore some window
+func (w Window) Class() (instance, class string) {
 	p, err := w.Prop(xgb.AtomWmClass, 128)
 	if err != nil {
 		return
@@ -253,16 +200,4 @@ func (w RawWindow) Class() (instance, class string) {
 		return
 	}
 	return string(v[:i]), string(v[i+1 : len(v)-1])
-}
-
-func (w RawWindow) SetClass(instance, class string) {
-	v := make([]byte, 0, len(instance) + len(class) + 2)
-	v = append(v, instance...)
-	v = append(v, 0)
-	v = append(v, class...)
-	w.ChangeProp(xgb.PropModeReplace,xgb.AtomWmClass, xgb.AtomString, v)
-}
-
-func (w RawWindow) SetEventMask(mask uint32) {
-	w.ChangeAttrs(xgb.CWEventMask, mask)
 }
