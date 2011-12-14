@@ -73,6 +73,7 @@ func setupWm() {
 	root = NewRootPanel()
 	// Setup list of desk (for now there is only one desk)
 	currentDesk = NewPanel(Horizontal)
+	currentDesk.Window().SetBgColor(cfg.BackgroundColor)
 	root.Insert(currentDesk)
 	// Setup two main panels
 	// TODO: Use configuration for this

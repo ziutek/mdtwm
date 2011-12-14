@@ -7,10 +7,18 @@ import (
 	"x-go-binding.googlecode.com/hg/xgb"
 )
 
-func allocColor(r, g, b uint16) uint32 {
+func rgbColor(r, g, b uint16) uint32 {
 	c, err := conn.AllocColor(screen.DefaultColormap, r, g, b)
 	if err != nil {
 		l.Fatalf("Cannot allocate a color (%x,%x,%x): %s", r, g, b, err)
+	}
+	return c.Pixel
+}
+
+func namedColor(name string) uint32 {
+	c, err := conn.AllocNamedColor(screen.DefaultColormap, name)
+	if err != nil {
+		l.Fatalf("Cannot allocate a color by name '%s': %s", name, err)
 	}
 	return c.Pixel
 }
@@ -95,6 +103,7 @@ type Config struct {
 	Instance string
 	Class    string
 
+	BackgroundColor    uint32
 	NormalBorderColor  uint32
 	FocusedBorderColor uint32
 	BorderWidth        int16
@@ -113,8 +122,9 @@ func loadConfig() {
 		Instance: filepath.Base(os.Args[0]),
 		Class:    "Mdtwm",
 
-		NormalBorderColor:  allocColor(0xaaaa, 0xaaaa, 0xaaaa),
-		FocusedBorderColor: allocColor(0xf444, 0x0000, 0x000f),
+		BackgroundColor:    namedColor("gray"),
+		NormalBorderColor:  rgbColor(0x8888, 0x8888, 0x8888),
+		FocusedBorderColor: rgbColor(0xeeee, 0x0000, 0x1111),
 		BorderWidth:        1,
 
 		ModMask: xgb.ModMask1,

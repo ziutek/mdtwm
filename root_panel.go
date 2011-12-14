@@ -14,9 +14,9 @@ func NewRootPanel() *RootPanel {
 	p.init(Window(screen.Root))
 	p.SetClass(cfg.Instance, cfg.Class)
 	p.SetName("mdtwm root")
-	/* // Supported WM properities
-	root.ChangeProp(xgb.PropModeReplace, AtomNetSupported,
-	xgb.AtomAtom,	...) */
+	// Supported WM properities
+	/*root.ChangeProp(xgb.PropModeReplace, AtomNetSupported,
+	xgb.AtomAtom,	...)*/
 	p.w.ChangeProp(xgb.PropModeReplace, AtomNetSupportingWmCheck,
 		xgb.AtomWindow, p.w)
 	// Event mask for WM root
