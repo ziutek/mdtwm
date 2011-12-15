@@ -1,9 +1,9 @@
 package main
 
 import (
+	"code.google.com/p/x-go-binding/xgb"
 	"fmt"
 	"unicode/utf16"
-	"x-go-binding.googlecode.com/hg/xgb"
 )
 
 const (
@@ -48,9 +48,9 @@ type ParentBox interface {
 }
 
 type commonBox struct {
-	w        Window     // window stored in this box
+	w        Window    // window stored in this box
 	parent   ParentBox // parent panel
-	children BoxList    // child boxes contains childs of this box
+	children BoxList   // child boxes contains childs of this box
 }
 
 func (b *commonBox) String() string {

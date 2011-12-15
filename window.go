@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"reflect"
 	"unsafe"
-	"x-go-binding.googlecode.com/hg/xgb"
+	"code.google.com/p/x-go-binding/xgb"
 )
 
 type Window xgb.Id
@@ -142,8 +142,12 @@ func (w Window) SetBorderColor(pixel uint32) {
 	w.ChangeAttrs(xgb.CWBorderPixel, pixel)
 }
 
-func (w Window) SetBgColor(pixel uint32) {
+func (w Window) SetBackColor(pixel uint32) {
 	w.ChangeAttrs(xgb.CWBackPixel, pixel)
+}
+
+func (w Window) SetBackPixmap(id uint32) {
+	w.ChangeAttrs(xgb.CWBackPixmap, id)
 }
 
 func (w Window) SetEventMask(mask uint32) {

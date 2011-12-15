@@ -1,8 +1,8 @@
 package main
 
 import (
+	"code.google.com/p/x-go-binding/xgb"
 	"math"
-	"x-go-binding.googlecode.com/hg/xgb"
 )
 
 var x int16
@@ -20,11 +20,11 @@ func manage(w Window, panel ParentBox, vievableOnly bool) {
 	attr := w.Attrs()
 	// Don't manage if OverrideRedirect flag is set
 	if attr.OverrideRedirect {
-		l.Print(  "OverrideRedirect")
+		l.Print("OverrideRedirect")
 		return
 	}
 	if vievableOnly && attr.MapState != xgb.MapStateViewable {
-		l.Print(  "not vievable")
+		l.Print("not vievable")
 		return
 	}
 	// Check window type

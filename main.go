@@ -1,12 +1,12 @@
 package main
 
 import (
+	"code.google.com/p/x-go-binding/xgb"
 	"log"
 	"os"
 	"os/signal"
 	"reflect"
 	"syscall"
-	"x-go-binding.googlecode.com/hg/xgb"
 )
 
 var (
@@ -19,6 +19,8 @@ var (
 	currentDesk  ParentBox
 	currentPanel ParentBox
 
+	cfg *Config
+
 	l = log.New(os.Stderr, "mdtwm: ", 0)
 )
 
@@ -26,8 +28,7 @@ func main() {
 	signals()
 	connect()
 	setupAtoms()
-	loadConfig()
-	setupWm()
+	configure()
 	manageExistingWindows()
 	eventLoop()
 }
@@ -66,21 +67,6 @@ func connect() {
 		l.Fatalf("Can't connect to %s display: %s", display, err)
 	}
 	screen = conn.DefaultScreen()
-}
-
-func setupWm() {
-	// Setup root window (RootPanel)
-	root = NewRootPanel()
-	// Setup list of desk (for now there is only one desk)
-	currentDesk = NewPanel(Horizontal)
-	currentDesk.Window().SetBgColor(cfg.BackgroundColor)
-	root.Insert(currentDesk)
-	// Setup two main panels
-	// TODO: Use configuration for this
-	currentDesk.Insert(NewPanel(Vertical))
-	currentDesk.Insert(NewPanel(Vertical))
-	// Initial value of currentPanel and currentWindow
-	currentPanel = currentDesk.Children().Front().(*Panel)
 }
 
 func manageExistingWindows() {

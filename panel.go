@@ -1,7 +1,7 @@
 package main
 
 import (
-	"x-go-binding.googlecode.com/hg/xgb"
+	"code.google.com/p/x-go-binding/xgb"
 )
 
 // Box for WM window (panel)
@@ -20,6 +20,7 @@ func NewPanel(typ Orientation) *Panel {
 	p.SetClass(cfg.Instance, cfg.Class)
 	p.SetName("mdtwm panel")
 	p.typ = typ
+	p.w.SetBackPixmap(xgb.BackPixmapParentRelative)
 	p.w.SetEventMask(boxEventMask)
 	p.grabInput(root.Window())
 	return &p

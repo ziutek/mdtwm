@@ -10,9 +10,10 @@ export DISPLAY=$display
 sleep 2
 
 xterm &
-xterm &
 
-sleep 2
+xsetroot  -solid gray -cursor_name left_ptr
+
+sleep 1
 
 ./mdtwm
 

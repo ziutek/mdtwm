@@ -1,7 +1,7 @@
 package main
 
 import (
-	"x-go-binding.googlecode.com/hg/xgb"
+	"code.google.com/p/x-go-binding/xgb"
 )
 
 func mapRequest(e xgb.MapRequestEvent) {
@@ -47,30 +47,30 @@ func configureRequest(e xgb.ConfigureRequestEvent) {
 	w := Window(e.Window)
 	if root.Children().BoxByWindow(w, true) == nil {
 		// Unmanaged window - execute its request
-		mask := (xgb.ConfigWindowX|xgb.ConfigWindowY|
-			xgb.ConfigWindowWidth|xgb.ConfigWindowHeight|
-			xgb.ConfigWindowBorderWidth|xgb.ConfigWindowSibling|
+		mask := (xgb.ConfigWindowX | xgb.ConfigWindowY |
+			xgb.ConfigWindowWidth | xgb.ConfigWindowHeight |
+			xgb.ConfigWindowBorderWidth | xgb.ConfigWindowSibling |
 			xgb.ConfigWindowStackMode) & e.ValueMask
 		v := make([]interface{}, 0, 7)
-		if mask & xgb.ConfigWindowX != 0 {
+		if mask&xgb.ConfigWindowX != 0 {
 			v = append(v, e.X)
 		}
-		if mask & xgb.ConfigWindowY != 0 {
+		if mask&xgb.ConfigWindowY != 0 {
 			v = append(v, e.Y)
 		}
-		if mask & xgb.ConfigWindowWidth != 0 {
+		if mask&xgb.ConfigWindowWidth != 0 {
 			v = append(v, e.Width)
 		}
-		if mask & xgb.ConfigWindowHeight!= 0 {
+		if mask&xgb.ConfigWindowHeight != 0 {
 			v = append(v, e.Height)
 		}
-		if mask & xgb.ConfigWindowBorderWidth!= 0 {
+		if mask&xgb.ConfigWindowBorderWidth != 0 {
 			v = append(v, e.BorderWidth)
 		}
-		if mask & xgb.ConfigWindowSibling != 0 {
+		if mask&xgb.ConfigWindowSibling != 0 {
 			v = append(v, e.Sibling)
 		}
-		if mask & xgb.ConfigWindowStackMode != 0 {
+		if mask&xgb.ConfigWindowStackMode != 0 {
 			v = append(v, e.StackMode)
 		}
 		w.Configure(mask, v...)
@@ -96,4 +96,3 @@ func keyPress(e xgb.KeyPressEvent) {
 func buttonPress(e xgb.ButtonPressEvent) {
 	l.Print("ButtonPressEvent: ", Window(e.Event))
 }
-
