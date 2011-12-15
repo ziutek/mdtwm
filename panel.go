@@ -8,18 +8,21 @@ import (
 type Panel struct {
 	commonBox
 
-	typ Orientation // panel type (vertical or horizontal)
+	typ   Orientation // panel type (vertical or horizontal)
+	ratio float64     // ratio of width/height betwen two neighboring subwindows
 }
 
 // New Panel has parent set to nil and its window
-// parent is root window. 
-func NewPanel(typ Orientation) *Panel {
+// parent is root window.
+// ratio == 1 means all subwindows in panel are equal in size.
+func NewPanel(typ Orientation, ratio float64) *Panel {
 	var p Panel
 	p.init(NewWindow(root.Window(), Geometry{0, 0, 1, 1, 0},
 		xgb.WindowClassInputOutput, 0))
+	p.typ = typ
+	p.ratio = ratio
 	p.SetClass(cfg.Instance, cfg.Class)
 	p.SetName("mdtwm panel")
-	p.typ = typ
 	p.w.SetBackPixmap(xgb.BackPixmapParentRelative)
 	p.w.SetEventMask(boxEventMask)
 	p.grabInput(root.Window())
@@ -61,11 +64,11 @@ func (p *Panel) tile() {
 	pg := p.w.Geometry()
 	if p.typ == Vertical {
 		l.Print("tile V in: ", p)
-		h := pg.H / n
-		// Set new geometry for all boxes in panel
-		y, w, h := int16(0), pg.W, h
+		hg := NewSizeGen(pg.H, n, p.ratio)
 		i := p.children.FrontIter(false)
+		y, w := int16(0), pg.W
 		for ; n > 1; n-- {
+			h := hg.Next()
 			i.Next().SetPosSize(0, y, w, h)
 			y += h
 		}
@@ -73,15 +76,33 @@ func (p *Panel) tile() {
 		i.Next().SetPosSize(0, y, w, pg.H-y)
 	} else {
 		l.Print("tile H in:", p)
-		w := pg.W / n
-		// Set new geometry for all boxes in panel
-		x, w, h := int16(0), w, pg.H
+		wg := NewSizeGen(pg.W, n, p.ratio)
+		x, h := int16(0), pg.H
 		i := p.children.FrontIter(false)
 		for ; n > 1; n-- {
+			w := wg.Next()
 			i.Next().SetPosSize(x, 0, w, h)
 			x += w
 		}
 		// Last window obtain all remaining space
 		i.Next().SetPosSize(x, 0, pg.W-x, h)
 	}
+}
+
+type SizeGen struct {
+	s, ratio float64
+}
+
+func NewSizeGen(allSpace, n int16, ratio float64) *SizeGen {
+	d := 1.0
+	for ; n > 1; n-- {
+		d = d*ratio + 1
+	}
+	return &SizeGen{float64(allSpace) / d, ratio}
+}
+
+func (g *SizeGen) Next() (s int16) {
+	s = int16(g.s)
+	g.s *= g.ratio
+	return
 }

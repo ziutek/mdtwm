@@ -2,6 +2,7 @@ package main
 
 import (
 	"code.google.com/p/x-go-binding/xgb"
+	"io"
 	"log"
 	"os"
 	"os/signal"
@@ -83,6 +84,10 @@ func eventLoop() {
 	for {
 		event, err := conn.WaitForEvent()
 		if err != nil {
+			if err == io.EOF {
+				conn.Close()
+				os.Exit(0)
+			}
 			l.Print("WaitForEvent error: ", err)
 			continue
 		}

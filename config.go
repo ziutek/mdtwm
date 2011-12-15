@@ -29,12 +29,11 @@ func configure() {
 		Instance: filepath.Base(os.Args[0]),
 		Class:    "Mdtwm",
 
-		BackgroundColor:    namedColor("gray"),
 		NormalBorderColor:  rgbColor(0x8888, 0x8888, 0x8888),
 		FocusedBorderColor: rgbColor(0xeeee, 0x0000, 0x1111),
 		BorderWidth:        1,
 
-		ModMask: xgb.ModMask1,
+		ModMask: xgb.ModMask4,
 		Keys: map[byte]Cmd{
 			KeyEnter:  {spawn, "xterm"},
 			KeyBspace: {spawn, "xkill"},
@@ -47,12 +46,11 @@ func configure() {
 	// Initial layout
 
 	root = NewRootPanel()
-	//root.Window().SetBackColor(cfg.BackgroundColor)
 	// Setup list of desk (for now there is only one desk)
-	currentDesk = NewPanel(Horizontal)
+	currentDesk = NewPanel(Horizontal, 1.75)
 	root.Insert(currentDesk)
 	// Setup two main panels
-	currentPanel = NewPanel(Vertical)
+	currentPanel = NewPanel(Vertical, 1)
 	currentDesk.Insert(currentPanel)
-	currentDesk.Insert(NewPanel(Vertical))
+	currentDesk.Insert(NewPanel(Vertical, 0.3))
 }

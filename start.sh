@@ -10,6 +10,7 @@ export DISPLAY=$display
 sleep 2
 
 xterm &
+xterm &
 
 xsetroot  -solid gray -cursor_name left_ptr
 
