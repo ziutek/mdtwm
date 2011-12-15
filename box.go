@@ -11,9 +11,10 @@ const (
 	xgb.EventMaskButtonRelease |
 	//xgb.EventMaskPointerMotion |
 	xgb.EventMaskExposure | // window needs to be redrawn
-	xgb.EventMaskStructureNotify | // window gets destroyed
-	xgb.EventMaskSubstructureRedirect | // app tries to resize itself
-	xgb.EventMaskSubstructureNotify | // subwindows get notifies
+	xgb.EventMaskStructureNotify | // Any change in window configuration.
+	xgb.EventMaskSubstructureRedirect | // Redirect reconfiguration of children
+	xgb.EventMaskSubstructureNotify | //Notify about reconfiguration of children
+
 	xgb.EventMaskEnterWindow |
 	xgb.EventMaskPropertyChange |
 	xgb.EventMaskFocusChange*/
