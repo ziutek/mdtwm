@@ -5,8 +5,6 @@ import (
 	"math"
 )
 
-var x int16
-
 func manage(w Window, panel ParentBox, vievableOnly bool) {
 	l.Printf("manage %s in %s", w, panel)
 	_, class := w.Class()
