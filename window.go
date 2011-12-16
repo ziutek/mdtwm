@@ -43,6 +43,21 @@ func (w Window) ChangeSaveSet(mode byte) {
 	conn.ChangeSaveSet(mode, w.Id())
 }
 
+/*func (w Window) GrabPointer(ownerEvents bool, eventMask uint16,
+    pointerMode, keyboardMode byte, confineTo Window, cursor xgb.Id) {
+	r, err := GrabPointer(ownerEvents, w.Id(), eventMask, pointerMode,
+		keyboardMode, confineTo, cursor, xgb.TimeCurrentTime)
+(*GrabPointerReply, error)
+}*/
+
+func (w Window) QueryPointer() *xgb.QueryPointerReply {
+	r, err := conn.QueryPointer(w.Id())
+	if err != nil {
+		l.Fatal("Can't query a pointer: ", err)
+	}
+	return r
+}
+
 func (w Window) GrabButton(ownerEvents bool, eventMask uint16,
 	pointerMode, keyboardMode byte, confineTo Window, cursor xgb.Id,
 	button byte, modifiers uint16) {
@@ -93,7 +108,6 @@ func (w Window) Geometry() Geometry {
 	g, err := conn.GetGeometry(w.Id())
 	if err != nil {
 		l.Fatalf("Can't get geometry of window %s: %s", w, err)
-
 	}
 	return Geometry{
 		g.X, g.Y,

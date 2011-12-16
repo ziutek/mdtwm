@@ -16,9 +16,9 @@ var (
 
 	// Desk in mdtwm means workspace. Desk contains panels. Panel contains
 	// panels or windows.
-	root         ParentBox
-	currentDesk  ParentBox
-	currentPanel ParentBox
+	root         *RootPanel
+	currentDesk  *Panel
+	currentBox   Box
 
 	cfg *Config
 
@@ -76,7 +76,7 @@ func manageExistingWindows() {
 		l.Fatal("Can't get a list of existing windows: ", err)
 	}
 	for _, id := range tr.Children {
-		manage(Window(id), currentPanel, true)
+		manage(Window(id), currentPanel(), true)
 	}
 }
 
@@ -108,6 +108,10 @@ func eventLoop() {
 			keyPress(e)
 		case xgb.ButtonPressEvent:
 			buttonPress(e)
+		case xgb.ButtonReleaseEvent:
+			buttonRelease(e)
+		case xgb.MotionNotifyEvent:
+			motionNotify(e)
 		default:
 			l.Print("Unhandled event: ", reflect.TypeOf(e))
 

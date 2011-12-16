@@ -29,6 +29,7 @@ type Box interface {
 	SetParent(p ParentBox)
 	Children() BoxList
 
+	PosSize() (x, y, width, height int16) // Position and EXTERNAL size
 	SetPosSize(x, y, width, height int16) // Set position and EXTERNAL size
 	SetFocus(cur bool)
 
@@ -68,11 +69,13 @@ func (b *commonBox) init(w Window) {
 
 func (b *commonBox) grabInput(confineTo Window) {
 	// Grab right mouse buttons for WM actions
-	b.w.GrabButton(false, xgb.EventMaskButtonPress, xgb.GrabModeSync,
-		xgb.GrabModeAsync, confineTo, xgb.CursorNone, 3, xgb.ButtonMaskAny)
-	for k, _ := range cfg.Keys {
-		b.w.GrabKey(true, cfg.ModMask, k, xgb.GrabModeAsync, xgb.GrabModeAsync)
-	}
+	/*b.w.GrabButton(false, xgb.EventMaskButtonPress, xgb.GrabModeSync,
+		xgb.GrabModeAsync, confineTo, xgb.CursorNone, 3,
+		xgb.ButtonMaskAny)*/
+	/*for k, _ := range cfg.Keys {
+		b.w.GrabKey(true, cfg.ModMask, k, xgb.GrabModeAsync,
+			xgb.GrabModeAsync)
+	}*/
 }
 
 func (b *commonBox) Parent() ParentBox {
@@ -110,6 +113,12 @@ func (b *commonBox) NameX() []uint16 {
 func (b *commonBox) SetName(name string) {
 	b.w.ChangeProp(xgb.PropModeReplace, xgb.AtomWmName, xgb.AtomString, name)
 	b.w.ChangeProp(xgb.PropModeReplace, AtomNetWmName, AtomUtf8String, name)
+}
+
+func (b *commonBox) PosSize() (x, y, width, height int16) {
+	g := b.w.Geometry()
+	bb := 2 * g.B
+	return g.X, g.Y, g.W + bb, g.H + bb
 }
 
 func (b *commonBox) Class() (instance, class string) {

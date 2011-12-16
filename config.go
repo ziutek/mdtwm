@@ -33,7 +33,7 @@ func configure() {
 		FocusedBorderColor: rgbColor(0xeeee, 0x0000, 0x1111),
 		BorderWidth:        1,
 
-		ModMask: xgb.ModMask4,
+		ModMask: xgb.ModMask1,
 		Keys: map[byte]Cmd{
 			KeyEnter:  {spawn, "xterm"},
 			KeyBspace: {spawn, "xkill"},
@@ -50,7 +50,8 @@ func configure() {
 	currentDesk = NewPanel(Horizontal, 1.75)
 	root.Insert(currentDesk)
 	// Setup two main panels
-	currentPanel = NewPanel(Vertical, 1)
-	currentDesk.Insert(currentPanel)
+	currentDesk.Insert(NewPanel(Vertical, 1))
 	currentDesk.Insert(NewPanel(Vertical, 0.3))
+	// All windows that exists during startup will be placed in currentBox
+	currentBox = currentDesk.Children().Front()
 }

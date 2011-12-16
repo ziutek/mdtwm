@@ -23,7 +23,7 @@ func (t *TiledWindow) SetPosSize(x, y, width, height int16) {
 
 func (t *TiledWindow) SetFocus(f bool) {
 	if f {
-		currentPanel = t.parent
+		currentBox = t
 		t.w.SetInputFocus()
 		t.w.SetBorderColor(cfg.FocusedBorderColor)
 	} else {

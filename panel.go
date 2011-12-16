@@ -35,7 +35,7 @@ func (p *Panel) SetPosSize(x, y, width, height int16) {
 
 func (p *Panel) SetFocus(f bool) {
 	if f {
-		currentPanel = p
+		currentBox = p
 		p.w.SetInputFocus()
 	}
 }

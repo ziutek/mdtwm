@@ -8,6 +8,13 @@ import (
 	"unsafe"
 )
 
+func currentPanel() ParentBox {
+	if p, ok := currentBox.(ParentBox); ok {
+		return p
+	}
+	return currentBox.Parent()
+}
+
 type IdList []xgb.Id
 
 func (l IdList) Contains(id xgb.Id) bool {

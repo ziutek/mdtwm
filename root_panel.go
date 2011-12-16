@@ -20,12 +20,23 @@ func NewRootPanel() *RootPanel {
 	p.w.ChangeProp(xgb.PropModeReplace, AtomNetSupportingWmCheck,
 		xgb.AtomWindow, p.w)
 	// Event mask for WM root
-	p.w.SetEventMask(xgb.EventMaskSubstructureRedirect |
-		xgb.EventMaskStructureNotify |
-		//xgb.EventMaskPointerMotion |
-		xgb.EventMaskPropertyChange |
-		xgb.EventMaskEnterWindow)
-	p.grabInput(p.w)
+	p.w.SetEventMask(
+		xgb.EventMaskSubstructureRedirect | // all config. req. redireted to WM
+			xgb.EventMaskStructureNotify,
+	)
+	// Grab right mouse buttons for WM actions
+	p.w.GrabButton(
+		false,
+		xgb.EventMaskButtonPress|xgb.EventMaskButtonRelease|
+			xgb.EventMaskPointerMotion,
+		xgb.GrabModeAsync, xgb.GrabModeAsync,
+		p.w, xgb.CursorNone, 3,
+		xgb.ButtonMaskAny,
+	)
+	// Grab keys for WM actions
+	for k, _ := range cfg.Keys {
+		p.w.GrabKey(true, cfg.ModMask, k, xgb.GrabModeAsync, xgb.GrabModeAsync)
+	}
 	return &p
 }
 
