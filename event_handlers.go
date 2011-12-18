@@ -91,6 +91,8 @@ var move struct {
 	x, y int16
 }
 
+var i uint16
+
 func buttonPress(e xgb.ButtonPressEvent) {
 	l.Println("ButtonPressEvent:", Window(e.Event), Window(e.Child))
 	if _, ok := currentBox.(ParentBox); ok {
@@ -100,6 +102,11 @@ func buttonPress(e xgb.ButtonPressEvent) {
 	move.b = currentBox
 	move.x, move.y = e.RootX, e.RootY
 	move.b.Parent().Remove(move.b)
+
+	/*l.Print("  pointer number ", i)
+	conn.ChangeActivePointerGrab(stdCursor(i),xgb.TimeCurrentTime,
+		xgb.EventMaskButtonPress|xgb.EventMaskButtonRelease)
+	i += 2*/
 }
 
 func buttonRelease(e xgb.ButtonReleaseEvent) {

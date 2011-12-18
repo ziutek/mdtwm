@@ -25,7 +25,9 @@ func manage(w Window, panel ParentBox, vievableOnly bool) {
 		l.Print("not vievable")
 		return
 	}
-	// Check window type
+	// NewWindowBox(w) changes some property of w so it can't be used before!
+	b := NewBoxedWindow(w)
+	/// Check window type
 	p, err := w.Prop(AtomNetWmWindowType, math.MaxUint32)
 	if err == nil {
 		wm_type := propReplyAtoms(p)
@@ -38,11 +40,11 @@ func manage(w Window, panel ParentBox, vievableOnly bool) {
 			wm_type.Contains(AtomNetWmWindowTypeToolbar) ||
 			wm_type.Contains(AtomNetWmWindowTypeSplash) {
 			l.Printf(" window %s should be treated as float", w)
+			b.SetFloat(true)
 		}
 	} else {
 		l.Printf("  can't get AtomNetWmWindowType from %s: %s", w, err)
 	}
 	// Insert new box in a panel.
-	// NewWindowBox(w) changes some property of w so it can't be used before!
-	panel.Insert(NewTiledWindow(w))
+	panel.Insert(b)
 }

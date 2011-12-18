@@ -11,7 +11,7 @@ GOFILES=\
 	box_list.go\
 	root_panel.go\
 	panel.go\
-	tiled_window.go \
+	boxed_window.go \
 	config.go \
 	event_handlers.go\
 	manage.go\

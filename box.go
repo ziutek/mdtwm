@@ -32,6 +32,9 @@ type Box interface {
 	SetPosSize(x, y, width, height int16) // Set position and EXTERNAL size
 	SetFocus(cur bool)
 
+	Float() bool
+	SetFloat(float bool)
+
 	// Properties
 	Name() string
 	NameX() []uint16 // UCS2 encoded name
@@ -51,6 +54,8 @@ type commonBox struct {
 	w        Window    // window stored in this box
 	parent   ParentBox // parent panel
 	children BoxList   // child boxes contains childs of this box
+
+	float bool
 }
 
 func (b *commonBox) String() string {
@@ -71,10 +76,6 @@ func (b *commonBox) Parent() ParentBox {
 	return b.parent
 }
 
-func (b *commonBox) Children() BoxList {
-	return b.children
-}
-
 func (b *commonBox) SetParent(p ParentBox) {
 	x, y, _, _ := b.PosSize()
 	x, y, _, _ = p.Window().TranslateCoordinates(b.parent.Window(), x, y)
@@ -83,6 +84,18 @@ func (b *commonBox) SetParent(p ParentBox) {
 	// Don't change a position during reparention
 	b.w.Reparent(p.Window(), x, y)
 	b.w.SetEventMask(boxEventMask)
+}
+
+func (b *commonBox) Children() BoxList {
+	return b.children
+}
+
+func (b *commonBox) Float() bool {
+	return b.float
+}
+
+func (b *commonBox) SetFloat(float bool) {
+	b.float = float
 }
 
 // Properties

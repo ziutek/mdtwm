@@ -35,7 +35,7 @@ func configure() {
 		FocusedBorderColor: rgbColor(0xeeee, 0x0000, 0x1111),
 		BorderWidth:        1,
 
-		MoveCursor: stdCursor(58),
+		MoveCursor: stdCursor(52),
 
 		ModMask: xgb.ModMask1,
 		Keys: map[byte]Cmd{

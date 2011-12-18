@@ -43,12 +43,15 @@ func (w Window) ChangeSaveSet(mode byte) {
 	conn.ChangeSaveSet(mode, w.Id())
 }
 
-/*func (w Window) GrabPointer(ownerEvents bool, eventMask uint16,
-    pointerMode, keyboardMode byte, confineTo Window, cursor xgb.Id) {
-	r, err := GrabPointer(ownerEvents, w.Id(), eventMask, pointerMode,
-		keyboardMode, confineTo, cursor, xgb.TimeCurrentTime)
-(*GrabPointerReply, error)
-}*/
+func (w Window) GrabPointer(ownerEvents bool, eventMask uint16,
+    pointerMode, keyboardMode byte, confineTo Window, cursor xgb.Id) byte {
+	r, err := conn.GrabPointer(ownerEvents, w.Id(), eventMask, pointerMode,
+		keyboardMode, confineTo.Id(), cursor, xgb.TimeCurrentTime)
+	if err != nil {
+		l.Fatal("Can't grab a pointer: ", err)
+	}
+	return r.Status
+}
 
 func (w Window) QueryPointer() *xgb.QueryPointerReply {
 	r, err := conn.QueryPointer(w.Id())
