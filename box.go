@@ -14,7 +14,6 @@ const (
 	xgb.EventMaskStructureNotify | // Any change in window configuration.
 	xgb.EventMaskSubstructureRedirect | // Redirect reconfiguration of children
 	xgb.EventMaskSubstructureNotify | //Notify about reconfiguration of children
-
 	xgb.EventMaskEnterWindow |
 	xgb.EventMaskPropertyChange |
 	xgb.EventMaskFocusChange*/
@@ -64,18 +63,8 @@ func (b *commonBox) Window() Window {
 
 func (b *commonBox) init(w Window) {
 	b.w = w
+	b.parent = root
 	b.children = NewBoxList()
-}
-
-func (b *commonBox) grabInput(confineTo Window) {
-	// Grab right mouse buttons for WM actions
-	/*b.w.GrabButton(false, xgb.EventMaskButtonPress, xgb.GrabModeSync,
-		xgb.GrabModeAsync, confineTo, xgb.CursorNone, 3,
-		xgb.ButtonMaskAny)*/
-	/*for k, _ := range cfg.Keys {
-		b.w.GrabKey(true, cfg.ModMask, k, xgb.GrabModeAsync,
-			xgb.GrabModeAsync)
-	}*/
 }
 
 func (b *commonBox) Parent() ParentBox {
@@ -87,9 +76,12 @@ func (b *commonBox) Children() BoxList {
 }
 
 func (b *commonBox) SetParent(p ParentBox) {
+	x, y, _, _ := b.PosSize()
+	x, y, _, _ = p.Window().TranslateCoordinates(b.parent.Window(), x, y)
 	b.parent = p
 	b.w.SetEventMask(xgb.EventMaskNoEvent) // avoid UnmapNotify
-	b.w.Reparent(p.Window(), 0, 0)
+	// Don't change a position during reparention
+	b.w.Reparent(p.Window(), x, y)
 	b.w.SetEventMask(boxEventMask)
 }
 

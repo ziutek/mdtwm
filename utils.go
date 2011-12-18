@@ -15,6 +15,15 @@ func currentPanel() ParentBox {
 	return currentBox.Parent()
 }
 
+func changeFocusTo(w Window) {
+	currentDesk.SetFocus(currentDesk.Window() == w)
+	// Iterate over all boxes in current desk
+	bi := currentDesk.Children().FrontIter(true)
+	for b := bi.Next(); b != nil; b = bi.Next() {
+		b.SetFocus(b.Window() == w)
+	}
+}
+
 type IdList []xgb.Id
 
 func (l IdList) Contains(id xgb.Id) bool {
@@ -98,6 +107,8 @@ func (c *Cmd) Run() error {
 }
 
 func spawn(cmd string) error {
+	// TODO: check what filedescriptors are inherited from WM by cmd when
+	// exec.Command is used
 	return exec.Command(cmd).Start()
 }
 
@@ -152,3 +163,16 @@ const (
 	KeyRight = 114
 	KeyDown  = 116
 )
+
+var stdCursorFont xgb.Id
+
+func stdCursor(id uint16) xgb.Id {
+	if stdCursorFont == 0 {
+		stdCursorFont = conn.NewId()
+		conn.OpenFont(stdCursorFont, "cursor")
+	}
+	cursor := conn.NewId()
+	conn.CreateGlyphCursor(cursor, stdCursorFont, stdCursorFont, id, id+1,
+		0, 0, 0, 0xffff, 0xffff, 0xffff)
+	return cursor
+}

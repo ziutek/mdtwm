@@ -1,5 +1,9 @@
 package main
 
+import (
+	"code.google.com/p/x-go-binding/xgb"
+)
+
 // Box for APP window
 type TiledWindow struct {
 	commonBox
@@ -8,11 +12,11 @@ type TiledWindow struct {
 // Warning! This function modifies some properities of window w.
 func NewTiledWindow(w Window) *TiledWindow {
 	var t TiledWindow
+	w.ChangeSaveSet(xgb.SetModeInsert)
 	t.init(w)
 	t.w.SetBorderWidth(cfg.BorderWidth)
 	t.w.SetBorderColor(cfg.NormalBorderColor)
 	t.w.SetEventMask(boxEventMask)
-	t.grabInput(root.Window())
 	return &t
 }
 

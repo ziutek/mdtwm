@@ -92,8 +92,12 @@ func eventLoop() {
 			continue
 		}
 		switch e := event.(type) {
+		// *Request events
 		case xgb.MapRequestEvent:
 			mapRequest(e)
+		case xgb.ConfigureRequestEvent:
+			configureRequest(e)
+		// *Notify events
 		case xgb.EnterNotifyEvent:
 			enterNotify(e)
 		case xgb.UnmapNotifyEvent:
@@ -102,8 +106,7 @@ func eventLoop() {
 			destroyNotify(e)
 		case xgb.ConfigureNotifyEvent:
 			configureNotify(e)
-		case xgb.ConfigureRequestEvent:
-			configureRequest(e)
+		// Keyboard and mouse events
 		case xgb.KeyPressEvent:
 			keyPress(e)
 		case xgb.ButtonPressEvent:
@@ -113,7 +116,7 @@ func eventLoop() {
 		case xgb.MotionNotifyEvent:
 			motionNotify(e)
 		default:
-			l.Print("Unhandled event: ", reflect.TypeOf(e))
+			l.Print("*** Unhandled event: ", reflect.TypeOf(e))
 
 		}
 	}

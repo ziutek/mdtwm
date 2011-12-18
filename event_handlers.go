@@ -15,14 +15,7 @@ func enterNotify(e xgb.EnterNotifyEvent) {
 	if e.Mode != xgb.NotifyModeNormal {
 		return
 	}
-	w := Window(e.Event)
-	currentDesk.SetFocus(currentDesk.Window() == w)
-	// Iterate over all boxes in current desk
-	bi := currentDesk.Children().FrontIter(true)
-	for b := bi.Next(); b != nil; b = bi.Next() {
-		b.SetFocus(b.Window() == w)
-	}
-
+	changeFocusTo(Window(e.Event))
 }
 
 func destroyNotify(e xgb.DestroyNotifyEvent) {
@@ -93,30 +86,42 @@ func keyPress(e xgb.KeyPressEvent) {
 	}
 }
 
-var moveStart struct {
-	b     Box
+var move struct {
+	b    Box
 	x, y int16
 }
 
 func buttonPress(e xgb.ButtonPressEvent) {
 	l.Println("ButtonPressEvent:", Window(e.Event), Window(e.Child))
-	l.Print("   ", currentBox)
-	moveStart.b = currentBox
-	moveStart.x, moveStart.y = e.RootX, e.RootY
+	if _, ok := currentBox.(ParentBox); ok {
+		// For now, we don't move panels
+		return
+	}
+	move.b = currentBox
+	move.x, move.y = e.RootX, e.RootY
+	move.b.Parent().Remove(move.b)
 }
 
 func buttonRelease(e xgb.ButtonReleaseEvent) {
 	l.Println("ButtonReleaseEvent:", Window(e.Event), Window(e.Child))
-	if moveStart.b == nil {
+	if move.b == nil {
 		return
 	}
-	defer func(){moveStart.b = nil}()
-	l.Println("   ", currentBox)
-	return
-	moveStart.b.Parent().Remove(moveStart.b)
-	currentPanel().Insert(moveStart.b)
+	// Border coolor will be set properly by EnterNotify event.
+	move.b.Window().SetBorderColor(cfg.NormalBorderColor)
+	currentPanel().Insert(move.b)
+	//changeFocusTo(move.b.Window()) // Always set moved window focused
+	move.b = nil
 }
 
 func motionNotify(e xgb.MotionNotifyEvent) {
 	l.Print("xgb.MotionNotifyEvent: ", Window(e.Event), Window(e.Child))
+	if move.b == nil {
+		return
+	}
+	dx, dy := e.RootX-move.x, e.RootY-move.y
+	x, y, w, h := move.b.PosSize()
+	move.b.SetPosSize(x+dx, y+dy, w, h)
+	move.x += dx
+	move.y += dy
 }

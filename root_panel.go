@@ -26,11 +26,11 @@ func NewRootPanel() *RootPanel {
 	)
 	// Grab right mouse buttons for WM actions
 	p.w.GrabButton(
-		false,
-		xgb.EventMaskButtonPress|xgb.EventMaskButtonRelease|
-			xgb.EventMaskPointerMotion,
+		true, // Needed for EnterNotify events during grab
+		xgb.EventMaskButtonPress|xgb.EventMaskButtonRelease,
+			//|xgb.EventMaskPointerMotion*/,
 		xgb.GrabModeAsync, xgb.GrabModeAsync,
-		p.w, xgb.CursorNone, 3,
+		xgb.WindowNone, cfg.MoveCursor, 3,
 		xgb.ButtonMaskAny,
 	)
 	// Grab keys for WM actions

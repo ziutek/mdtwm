@@ -25,7 +25,6 @@ func NewPanel(typ Orientation, ratio float64) *Panel {
 	p.SetName("mdtwm panel")
 	p.w.SetBackPixmap(xgb.BackPixmapParentRelative)
 	p.w.SetEventMask(boxEventMask)
-	p.grabInput(root.Window())
 	return &p
 }
 
@@ -51,6 +50,7 @@ func (p *Panel) Insert(b Box) {
 }
 
 func (p *Panel) Remove(b Box) {
+	b.SetParent(root)
 	p.children.Remove(b)
 	p.tile()
 }

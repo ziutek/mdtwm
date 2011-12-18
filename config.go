@@ -15,6 +15,8 @@ type Config struct {
 	FocusedBorderColor uint32
 	BorderWidth        int16
 
+	MoveCursor xgb.Id
+
 	ModMask uint16
 	Keys    map[byte]Cmd
 
@@ -32,6 +34,8 @@ func configure() {
 		NormalBorderColor:  rgbColor(0x8888, 0x8888, 0x8888),
 		FocusedBorderColor: rgbColor(0xeeee, 0x0000, 0x1111),
 		BorderWidth:        1,
+
+		MoveCursor: stdCursor(58),
 
 		ModMask: xgb.ModMask1,
 		Keys: map[byte]Cmd{

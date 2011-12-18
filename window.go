@@ -2,10 +2,10 @@ package main
 
 import (
 	"bytes"
+	"code.google.com/p/x-go-binding/xgb"
 	"fmt"
 	"reflect"
 	"unsafe"
-	"code.google.com/p/x-go-binding/xgb"
 )
 
 type Window xgb.Id
@@ -80,6 +80,15 @@ func (w Window) UngrabKey(key byte, modifiers uint16) {
 
 func (w Window) SetInputFocus() {
 	conn.SetInputFocus(xgb.InputFocusPointerRoot, w.Id(), xgb.TimeCurrentTime)
+}
+
+func (w Window) TranslateCoordinates(srcW Window, srcX, srcY int16) (x, y int16,
+child Window, sameScreen bool) {
+	r, err := conn.TranslateCoordinates(srcW.Id(), w.Id(), srcX, srcY)
+	if err != nil {
+		l.Fatal("Can't translate coordinates: ", err)
+	}
+	return int16(r.DstX), int16(r.DstY), Window(r.Child), r.SameScreen
 }
 
 // Configuration
