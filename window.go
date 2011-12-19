@@ -25,9 +25,8 @@ func NewWindow(parent Window, g Geometry, class uint16,
 	return Window(id)
 }
 
-func (w *Window) Destroy() {
+func (w Window) Destroy() {
 	conn.DestroyWindow(w.Id())
-	*w = 0
 }
 
 func (w Window) String() string {
@@ -40,6 +39,9 @@ func (w Window) Id() xgb.Id {
 
 func (w Window) Map() {
 	conn.MapWindow(w.Id())
+}
+func (w Window) Unmap() {
+	conn.UnmapWindow(w.Id())
 }
 
 func (w Window) Reparent(parent Window, x, y int16) {
@@ -101,25 +103,7 @@ func (w Window) TranslateCoordinates(srcW Window, srcX, srcY int16) (x, y int16,
 }
 
 func (w Window) SendEvent(propagate bool, eventMask uint32, event xgb.Event) {
-	var buf = make([]byte, 27)
-	switch e := event.(type) {
-	case xgb.ConfigureNotifyEvent:
-		buf[0] = xgb.ConfigureNotify
-		put32(buf[4:], uint32(e.Event))
-		put32(buf[8:], uint32(e.Window))
-		put32(buf[12:], uint32(e.AboveSibling))
-		put16(buf[16:], uint16(e.X))
-		put16(buf[18:], uint16(e.Y))
-		put16(buf[20:], e.Width)
-		put16(buf[22:], e.Height)
-		put16(buf[24:], e.BorderWidth)
-		if e.OverrideRedirect {
-			buf[26] = 1
-		}
-	default:
-		panic("Unsupported event type")
-	}
-	conn.SendEvent(propagate, w.Id(), eventMask, buf)
+	conn.SendEvent(propagate, w.Id(), eventMask, event)
 }
 
 // Configuration

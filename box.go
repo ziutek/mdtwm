@@ -47,7 +47,7 @@ type ParentBox interface {
 	Box
 
 	Insert(b Box)
-	Remove(b Box)
+	Remove(b Box, unmap bool)
 }
 
 type commonBox struct {

@@ -4,6 +4,9 @@ import (
 	"code.google.com/p/x-go-binding/xgb"
 )
 
+const rightButtonEventMask = xgb.EventMaskButtonPress |
+	xgb.EventMaskButtonRelease | xgb.EventMaskPointerMotion
+
 // Box for root window
 type RootPanel struct {
 	commonBox
@@ -13,7 +16,7 @@ func NewRootPanel() *RootPanel {
 	var p RootPanel
 	p.init(
 		Window(screen.Root),
-		xgb.EventMaskSubstructureRedirect | xgb.EventMaskStructureNotify,
+		xgb.EventMaskSubstructureRedirect|xgb.EventMaskStructureNotify,
 	)
 	p.width = int16(screen.WidthInPixels)
 	p.height = int16(screen.HeightInPixels)
@@ -29,8 +32,7 @@ func NewRootPanel() *RootPanel {
 	// Grab right mouse buttons for WM actions
 	p.w.GrabButton(
 		true, // Needed for EnterNotify events during grab
-		xgb.EventMaskButtonPress|xgb.EventMaskButtonRelease,
-		//|xgb.EventMaskPointerMotion*/,
+		rightButtonEventMask,
 		xgb.GrabModeAsync, xgb.GrabModeAsync,
 		xgb.WindowNone, cfg.DefaultCursor, 3,
 		xgb.ButtonMaskAny,
@@ -66,6 +68,9 @@ func (p *RootPanel) Insert(b Box) {
 	b.Window().Map()
 }
 
-func (p *RootPanel) Remove(b Box) {
+func (p *RootPanel) Remove(b Box, unmap bool) {
+	if unmap {
+		b.Window().Unmap()
+	}
 	p.children.Remove(b)
 }

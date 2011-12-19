@@ -15,8 +15,10 @@ type Config struct {
 	FocusedBorderColor uint32
 	BorderWidth        int16
 
-	DefaultCursor xgb.Id
-	MoveCursor    xgb.Id
+	DefaultCursor    xgb.Id
+	MoveCursor       xgb.Id
+	MultiClickTime  xgb.Timestamp
+	MovedClickRadius int
 
 	ModMask uint16
 	Keys    map[byte]Cmd
@@ -36,8 +38,10 @@ func configure() {
 		FocusedBorderColor: rgbColor(0xeeee, 0x0000, 0x1111),
 		BorderWidth:        1,
 
-		DefaultCursor: stdCursor(68),
-		MoveCursor:    stdCursor(52),
+		DefaultCursor:    stdCursor(68),
+		MoveCursor:       stdCursor(52),
+		MultiClickTime:   300, // maximum interfal for multiclick [ms]
+		MovedClickRadius: 5,  // minimal radius for moved click [pixel]
 
 		ModMask: xgb.ModMask1,
 		Keys: map[byte]Cmd{
@@ -48,6 +52,8 @@ func configure() {
 		Ignore: List{"Unity-2d-panel", "Unity-2d-launcher"},
 		Float:  List{"Mplayer", "Gimp"},
 	}
+	// We use square of radius
+	cfg.MovedClickRadius *= cfg.MovedClickRadius
 
 	// Initial layout
 

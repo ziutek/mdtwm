@@ -43,3 +43,15 @@ func (b *BoxedWindow) SetFocus(f bool) {
 		b.w.SetBorderColor(cfg.NormalBorderColor)
 	}
 }
+
+type WmState uint32
+const (
+	WmStateWithdrawn = WmState(iota)
+	WmStateNormal
+	WmStateIconic
+)
+
+func (b *BoxedWindow) SetWmState(state WmState) {
+	data := []uint32{uint32(state), uint32(xgb.WindowNone)}
+	b.w.ChangeProp(xgb.PropModeReplace, AtomWmState, AtomWmState, data)
+}

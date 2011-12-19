@@ -153,8 +153,8 @@ func stdCursor(id uint16) xgb.Id {
 	return cursor
 }
 
-func removeWindow(w Window) {
+func removeWindow(w Window, unmap bool) {
 	if b := root.Children().BoxByWindow(w, true); b != nil {
-		b.Parent().Remove(b)
+		b.Parent().Remove(b, unmap)
 	}
 }
