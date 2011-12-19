@@ -5,7 +5,6 @@ import (
 	"io"
 	"os"
 	"os/signal"
-	"reflect"
 	"syscall"
 )
 
@@ -71,31 +70,6 @@ func eventLoop() {
 			l.Print("WaitForEvent error: ", err)
 			continue
 		}
-		switch e := event.(type) {
-		// *Request events
-		case xgb.MapRequestEvent:
-			mapRequest(e)
-		case xgb.ConfigureRequestEvent:
-			configureRequest(e)
-		// *Notify events
-		case xgb.EnterNotifyEvent:
-			enterNotify(e)
-		case xgb.UnmapNotifyEvent:
-			unmapNotify(e)
-		case xgb.DestroyNotifyEvent:
-			destroyNotify(e)
-		// Keyboard and mouse events
-		case xgb.KeyPressEvent:
-			keyPress(e)
-		case xgb.ButtonPressEvent:
-			buttonPress(e)
-		case xgb.ButtonReleaseEvent:
-			buttonRelease(e)
-		case xgb.MotionNotifyEvent:
-			motionNotify(e)
-		default:
-			l.Print("*** Unhandled event: ", reflect.TypeOf(e))
-
-		}
+		handleEvent(event)
 	}
 }

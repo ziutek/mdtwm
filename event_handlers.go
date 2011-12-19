@@ -2,7 +2,37 @@ package main
 
 import (
 	"code.google.com/p/x-go-binding/xgb"
+	"reflect"
+	"time"
 )
+
+func handleEvent(event xgb.Event) {
+	switch e := event.(type) {
+	// *Request events
+	case xgb.MapRequestEvent:
+		mapRequest(e)
+	case xgb.ConfigureRequestEvent:
+		configureRequest(e)
+	// *Notify events
+	case xgb.EnterNotifyEvent:
+		enterNotify(e)
+	case xgb.UnmapNotifyEvent:
+		unmapNotify(e)
+	case xgb.DestroyNotifyEvent:
+		destroyNotify(e)
+	// Keyboard and mouse events
+	case xgb.KeyPressEvent:
+		keyPress(e)
+	case xgb.ButtonPressEvent:
+		buttonPress(e)
+	case xgb.ButtonReleaseEvent:
+		buttonRelease(e)
+	case xgb.MotionNotifyEvent:
+		motionNotify(e)
+	default:
+		l.Print("*** Unhandled event: ", reflect.TypeOf(e))
+	}
+}
 
 func mapRequest(e xgb.MapRequestEvent) {
 	l.Print("MapRequestEvent: ", Window(e.Window))
@@ -101,6 +131,9 @@ var move struct {
 
 func buttonPress(e xgb.ButtonPressEvent) {
 	l.Println("ButtonPressEvent:", Window(e.Event), Window(e.Child))
+	// Wait for double-click
+	time.Sleep(200 * time.Millisecond)
+
 	if _, ok := currentBox.(ParentBox); ok {
 		// For now, we don't move panels
 		return
