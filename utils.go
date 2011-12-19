@@ -2,7 +2,6 @@ package main
 
 import (
 	"code.google.com/p/x-go-binding/xgb"
-	"math"
 	"os/exec"
 	"reflect"
 	"unsafe"
@@ -45,29 +44,6 @@ func propReplyAtoms(prop *xgb.GetPropertyReply) IdList {
 	}
 	num_atoms := prop.ValueLen / uint32(atom_size)
 	return (*[1 << 24]xgb.Id)(unsafe.Pointer(&prop.Value[0]))[:num_atoms]
-}
-
-func Uint16(x int16) uint16 {
-	if x < 0 {
-		panic("Can't convert negative int16 to uint16")
-	}
-	return uint16(x)
-}
-
-func Pint16(x int16) uint16 {
-	r := Uint16(x)
-	if r == 0 {
-		l.Print("Warn: Pint16(0)")
-		return 1
-	}
-	return r
-}
-
-func Int16(x uint16) int16 {
-	if x > math.MaxInt16 {
-		panic("Can't convert big uint16 to int16")
-	}
-	return int16(x)
 }
 
 func rgbColor(r, g, b uint16) uint32 {
@@ -175,4 +151,10 @@ func stdCursor(id uint16) xgb.Id {
 	conn.CreateGlyphCursor(cursor, stdCursorFont, stdCursorFont, id, id+1,
 		0, 0, 0, 0xffff, 0xffff, 0xffff)
 	return cursor
+}
+
+func removeWindow(w Window) {
+	if b := root.Children().BoxByWindow(w, true); b != nil {
+		b.Parent().Remove(b)
+	}
 }

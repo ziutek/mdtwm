@@ -11,7 +11,7 @@ sleep 3
 
 gnome-terminal &
 
-xsetroot  -solid gray -cursor_name left_ptr
+#xsetroot  -solid gray -cursor_name left_ptr
 
 sleep 2
 

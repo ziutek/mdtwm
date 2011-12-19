@@ -46,5 +46,9 @@ func manage(w Window, panel ParentBox, vievableOnly bool) {
 		l.Printf("  can't get AtomNetWmWindowType from %s: %s", w, err)
 	}
 	// Insert new box in a panel.
-	panel.Insert(b)
+	if b.float {
+		currentDesk.Insert(b)
+	} else {
+		panel.Insert(b)
+	}
 }

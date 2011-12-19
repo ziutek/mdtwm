@@ -11,26 +11,28 @@ type RootPanel struct {
 
 func NewRootPanel() *RootPanel {
 	var p RootPanel
-	p.init(Window(screen.Root))
+	p.init(
+		Window(screen.Root),
+		xgb.EventMaskSubstructureRedirect | xgb.EventMaskStructureNotify,
+	)
+	p.width = int16(screen.WidthInPixels)
+	p.height = int16(screen.HeightInPixels)
+	p.w.ChangeAttrs(xgb.CWCursor, uint32(cfg.DefaultCursor))
 	p.SetClass(cfg.Instance, cfg.Class)
 	p.SetName("mdtwm root")
+	p.w.ChangeProp(xgb.PropModeReplace, xgb.AtomCursor, xgb.AtomWindow, p.w)
 	// Supported WM properities
 	/*root.ChangeProp(xgb.PropModeReplace, AtomNetSupported,
 	xgb.AtomAtom,	...)*/
 	p.w.ChangeProp(xgb.PropModeReplace, AtomNetSupportingWmCheck,
 		xgb.AtomWindow, p.w)
-	// Event mask for WM root
-	p.w.SetEventMask(
-		xgb.EventMaskSubstructureRedirect | // all config. req. redireted to WM
-			xgb.EventMaskStructureNotify,
-	)
 	// Grab right mouse buttons for WM actions
 	p.w.GrabButton(
 		true, // Needed for EnterNotify events during grab
 		xgb.EventMaskButtonPress|xgb.EventMaskButtonRelease,
-			//|xgb.EventMaskPointerMotion*/,
+		//|xgb.EventMaskPointerMotion*/,
 		xgb.GrabModeAsync, xgb.GrabModeAsync,
-		xgb.WindowNone, cfg.MoveCursor, 3,
+		xgb.WindowNone, cfg.DefaultCursor, 3,
 		xgb.ButtonMaskAny,
 	)
 	// Grab keys for WM actions
@@ -38,6 +40,13 @@ func NewRootPanel() *RootPanel {
 		p.w.GrabKey(true, cfg.ModMask, k, xgb.GrabModeAsync, xgb.GrabModeAsync)
 	}
 	return &p
+}
+
+func (p *RootPanel) Geometry() Geometry {
+	return Geometry{
+		X: p.x, Y: p.y,
+		W: p.width, H: p.height,
+	}
 }
 
 func (p *RootPanel) SetPosSize(x, y, width, height int16) {
@@ -52,8 +61,7 @@ func (p *RootPanel) SetFocus(f bool) {
 func (p *RootPanel) Insert(b Box) {
 	b.SetParent(p)
 	p.children.PushBack(b)
-	g := p.w.Geometry()
-	b.SetPosSize(g.X, g.Y, g.W, g.H)
+	b.SetPosSize(p.x, p.y, p.width, p.height)
 	b.SetName("mdtwm desktop")
 	b.Window().Map()
 }

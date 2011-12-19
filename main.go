@@ -3,26 +3,10 @@ package main
 import (
 	"code.google.com/p/x-go-binding/xgb"
 	"io"
-	"log"
 	"os"
 	"os/signal"
 	"reflect"
 	"syscall"
-)
-
-var (
-	conn   *xgb.Conn
-	screen *xgb.ScreenInfo
-
-	// Desk in mdtwm means workspace. Desk contains panels. Panel contains
-	// panels or windows.
-	root         *RootPanel
-	currentDesk  *Panel
-	currentBox   Box
-
-	cfg *Config
-
-	l = log.New(os.Stderr, "mdtwm: ", 0)
 )
 
 func main() {
@@ -58,14 +42,10 @@ func signals() {
 }
 
 func connect() {
-	display := os.Getenv("DISPLAY")
-	if display == "" {
-		l.Fatal("There is not DISPLAY environment variable")
-	}
 	var err error
-	conn, err = xgb.Dial(display)
+	conn, err = xgb.Dial("")
 	if err != nil {
-		l.Fatalf("Can't connect to %s display: %s", display, err)
+		l.Fatal("Can't connect to display: ", err)
 	}
 	screen = conn.DefaultScreen()
 }
@@ -104,8 +84,6 @@ func eventLoop() {
 			unmapNotify(e)
 		case xgb.DestroyNotifyEvent:
 			destroyNotify(e)
-		case xgb.ConfigureNotifyEvent:
-			configureNotify(e)
 		// Keyboard and mouse events
 		case xgb.KeyPressEvent:
 			keyPress(e)

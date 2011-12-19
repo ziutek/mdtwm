@@ -9,7 +9,7 @@ import (
 const (
 	/*boxEventMask = xgb.EventMaskButtonPress |
 	xgb.EventMaskButtonRelease |
-	//xgb.EventMaskPointerMotion |
+	xgb.EventMaskPointerMotion |
 	xgb.EventMaskExposure | // window needs to be redrawn
 	xgb.EventMaskStructureNotify | // Any change in window configuration.
 	xgb.EventMaskSubstructureRedirect | // Redirect reconfiguration of children
@@ -17,7 +17,6 @@ const (
 	xgb.EventMaskEnterWindow |
 	xgb.EventMaskPropertyChange |
 	xgb.EventMaskFocusChange*/
-	boxEventMask = xgb.EventMaskEnterWindow | xgb.EventMaskStructureNotify
 )
 
 type Box interface {
@@ -28,7 +27,8 @@ type Box interface {
 	SetParent(p ParentBox)
 	Children() BoxList
 
-	PosSize() (x, y, width, height int16) // Position and EXTERNAL size
+	Geometry() Geometry // Cached geometry
+	PosSize() (x, y, width, height int16) // Cached position and EXTERNAL size
 	SetPosSize(x, y, width, height int16) // Set position and EXTERNAL size
 	SetFocus(cur bool)
 
@@ -54,8 +54,12 @@ type commonBox struct {
 	w        Window    // window stored in this box
 	parent   ParentBox // parent panel
 	children BoxList   // child boxes contains childs of this box
+	eventMask uint32
 
 	float bool
+
+	// Box configuration
+	x, y, width, height int16
 }
 
 func (b *commonBox) String() string {
@@ -66,10 +70,12 @@ func (b *commonBox) Window() Window {
 	return b.w
 }
 
-func (b *commonBox) init(w Window) {
+func (b *commonBox) init(w Window, eventMask uint32) {
 	b.w = w
 	b.parent = root
 	b.children = NewBoxList()
+	b.eventMask = eventMask
+	b.w.SetEventMask(eventMask)
 }
 
 func (b *commonBox) Parent() ParentBox {
@@ -77,13 +83,15 @@ func (b *commonBox) Parent() ParentBox {
 }
 
 func (b *commonBox) SetParent(p ParentBox) {
-	x, y, _, _ := b.PosSize()
-	x, y, _, _ = p.Window().TranslateCoordinates(b.parent.Window(), x, y)
+	// Translate current coordinates to new parent coordinates (useful when new
+	// parent is root and window should stay in place.
+	b.x, b.y, _, _ = p.Window().TranslateCoordinates(
+		b.parent.Window(), b.x, b.y,
+	)
 	b.parent = p
-	b.w.SetEventMask(xgb.EventMaskNoEvent) // avoid UnmapNotify
-	// Don't change a position during reparention
-	b.w.Reparent(p.Window(), x, y)
-	b.w.SetEventMask(boxEventMask)
+	b.w.SetEventMask(xgb.EventMaskNoEvent) // avoid UnmpNotify
+	b.w.Reparent(p.Window(), b.x, b.y)
+	b.w.SetEventMask(b.eventMask)
 }
 
 func (b *commonBox) Children() BoxList {
@@ -121,9 +129,7 @@ func (b *commonBox) SetName(name string) {
 }
 
 func (b *commonBox) PosSize() (x, y, width, height int16) {
-	g := b.w.Geometry()
-	bb := 2 * g.B
-	return g.X, g.Y, g.W + bb, g.H + bb
+	return b.x, b.y, b.width, b.height
 }
 
 func (b *commonBox) Class() (instance, class string) {

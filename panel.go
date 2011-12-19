@@ -17,18 +17,31 @@ type Panel struct {
 // ratio == 1 means all subwindows in panel are equal in size.
 func NewPanel(typ Orientation, ratio float64) *Panel {
 	var p Panel
-	p.init(NewWindow(root.Window(), Geometry{0, 0, 1, 1, 0},
-		xgb.WindowClassInputOutput, 0))
+	p.init(
+		NewWindow(root.Window(), Geometry{0, 0, 1, 1, 0},
+			xgb.WindowClassInputOutput, 0),
+		xgb.EventMaskEnterWindow|xgb.EventMaskStructureNotify|
+			xgb.EventMaskSubstructureRedirect,
+	)
+	p.width = 1
+	p.height = 1
 	p.typ = typ
 	p.ratio = ratio
 	p.SetClass(cfg.Instance, cfg.Class)
 	p.SetName("mdtwm panel")
 	p.w.SetBackPixmap(xgb.BackPixmapParentRelative)
-	p.w.SetEventMask(boxEventMask)
 	return &p
 }
 
+func (p *Panel) Geometry() Geometry {
+	return Geometry{
+		X: p.x, Y: p.y,
+		W: p.width, H: p.height,
+	}
+}
+
 func (p *Panel) SetPosSize(x, y, width, height int16) {
+	p.x, p.y, p.width, p.height = x, y, width, height
 	p.w.SetGeometry(Geometry{x, y, width, height, 0})
 }
 
@@ -44,8 +57,10 @@ func (p *Panel) Insert(b Box) {
 	b.SetParent(p)
 	// TODO: Implement finding of best place to insert
 	p.children.PushBack(b)
-	// Rearange panel and show new box
-	p.tile()
+	if !b.Float() {
+		// Rearange panel and show new box
+		p.tile()
+	}
 	b.Window().Map()
 }
 
@@ -57,35 +72,50 @@ func (p *Panel) Remove(b Box) {
 
 // Update geometry for boxes in panel
 func (p *Panel) tile() {
-	n := int16(p.children.Len())
+	i := p.children.FrontIter(false)
+	var n int16
+	for b := i.Next(); b != nil; b = i.Next() {
+		if !b.Float() {
+			n++
+		}
+	}
 	if n == 0 {
 		return // there is no boxes in panel
 	}
-	pg := p.w.Geometry()
 	if p.typ == Vertical {
 		l.Print("tile V in: ", p)
-		hg := NewSizeGen(pg.H, n, p.ratio)
-		i := p.children.FrontIter(false)
-		y, w := int16(0), pg.W
-		for ; n > 1; n-- {
+		hg := NewSizeGen(p.height, n, p.ratio)
+		i = p.children.FrontIter(false)
+		y, w := int16(0), p.width
+		for n > 1 {
+			b := i.Next()
+			if b.Float() {
+				continue
+			}
 			h := hg.Next()
-			i.Next().SetPosSize(0, y, w, h)
+			b.SetPosSize(0, y, w, h)
 			y += h
+			n--
 		}
 		// Last window obtain all remaining space
-		i.Next().SetPosSize(0, y, w, pg.H-y)
+		i.Next().SetPosSize(0, y, w, p.height-y)
 	} else {
 		l.Print("tile H in:", p)
-		wg := NewSizeGen(pg.W, n, p.ratio)
-		x, h := int16(0), pg.H
-		i := p.children.FrontIter(false)
-		for ; n > 1; n-- {
+		wg := NewSizeGen(p.width, n, p.ratio)
+		x, h := int16(0), p.height
+		i = p.children.FrontIter(false)
+		for n > 1 {
+			b := i.Next()
+			if b.Float() {
+				continue
+			}
 			w := wg.Next()
-			i.Next().SetPosSize(x, 0, w, h)
+			b.SetPosSize(x, 0, w, h)
 			x += w
+			n--
 		}
 		// Last window obtain all remaining space
-		i.Next().SetPosSize(x, 0, pg.W-x, h)
+		i.Next().SetPosSize(x, 0, p.width-x, h)
 	}
 }
 

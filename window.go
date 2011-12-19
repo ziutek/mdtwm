@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"code.google.com/p/x-go-binding/xgb"
 	"fmt"
+	"math"
 	"reflect"
 	"unsafe"
 )
@@ -22,6 +23,11 @@ func NewWindow(parent Window, g Geometry, class uint16,
 		mask, vals,
 	)
 	return Window(id)
+}
+
+func (w *Window) Destroy() {
+	conn.DestroyWindow(w.Id())
+	*w = 0
 }
 
 func (w Window) String() string {
@@ -44,7 +50,7 @@ func (w Window) ChangeSaveSet(mode byte) {
 }
 
 func (w Window) GrabPointer(ownerEvents bool, eventMask uint16,
-    pointerMode, keyboardMode byte, confineTo Window, cursor xgb.Id) byte {
+	pointerMode, keyboardMode byte, confineTo Window, cursor xgb.Id) byte {
 	r, err := conn.GrabPointer(ownerEvents, w.Id(), eventMask, pointerMode,
 		keyboardMode, confineTo.Id(), cursor, xgb.TimeCurrentTime)
 	if err != nil {
@@ -86,12 +92,34 @@ func (w Window) SetInputFocus() {
 }
 
 func (w Window) TranslateCoordinates(srcW Window, srcX, srcY int16) (x, y int16,
-child Window, sameScreen bool) {
+	child Window, sameScreen bool) {
 	r, err := conn.TranslateCoordinates(srcW.Id(), w.Id(), srcX, srcY)
 	if err != nil {
 		l.Fatal("Can't translate coordinates: ", err)
 	}
 	return int16(r.DstX), int16(r.DstY), Window(r.Child), r.SameScreen
+}
+
+func (w Window) SendEvent(propagate bool, eventMask uint32, event xgb.Event) {
+	var buf = make([]byte, 27)
+	switch e := event.(type) {
+	case xgb.ConfigureNotifyEvent:
+		buf[0] = xgb.ConfigureNotify
+		put32(buf[4:], uint32(e.Event))
+		put32(buf[8:], uint32(e.Window))
+		put32(buf[12:], uint32(e.AboveSibling))
+		put16(buf[16:], uint16(e.X))
+		put16(buf[18:], uint16(e.Y))
+		put16(buf[20:], e.Width)
+		put16(buf[22:], e.Height)
+		put16(buf[24:], e.BorderWidth)
+		if e.OverrideRedirect {
+			buf[26] = 1
+		}
+	default:
+		panic("Unsupported event type")
+	}
+	conn.SendEvent(propagate, w.Id(), eventMask, buf)
 }
 
 // Configuration
@@ -238,4 +266,40 @@ func (w Window) Class() (instance, class string) {
 		return
 	}
 	return string(v[:i]), string(v[i+1 : len(v)-1])
+}
+
+// Utils
+func Uint16(x int16) uint16 {
+	if x < 0 {
+		panic("Can't convert negative int16 to uint16")
+	}
+	return uint16(x)
+}
+
+func Pint16(x int16) uint16 {
+	r := Uint16(x)
+	if r == 0 {
+		l.Print("Warn: Pint16(0)")
+		return 1
+	}
+	return r
+}
+
+func Int16(x uint16) int16 {
+	if x > math.MaxInt16 {
+		panic("Can't convert big uint16 to int16")
+	}
+	return int16(x)
+}
+
+func put16(buf []byte, v uint16) {
+	buf[0] = byte(v)
+	buf[1] = byte(v >> 8)
+}
+
+func put32(buf []byte, v uint32) {
+	buf[0] = byte(v)
+	buf[1] = byte(v >> 8)
+	buf[2] = byte(v >> 16)
+	buf[3] = byte(v >> 24)
 }

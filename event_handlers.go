@@ -20,26 +20,22 @@ func enterNotify(e xgb.EnterNotifyEvent) {
 
 func destroyNotify(e xgb.DestroyNotifyEvent) {
 	l.Print("DestroyNotifyEvent: ", Window(e.Event))
-	unmapNotify(xgb.UnmapNotifyEvent{Event: e.Event, Window: e.Window})
+	removeWindow(Window(e.Event))
 }
 
 func unmapNotify(e xgb.UnmapNotifyEvent) {
 	l.Print("xgb.UnmapNotifyEvent: ", Window(e.Event), e)
-	w := Window(e.Event)
-	if b := root.Children().BoxByWindow(w, true); b != nil {
-		b.Parent().Remove(b)
-	}
-}
-
-func configureNotify(e xgb.ConfigureNotifyEvent) {
-	l.Print("ConfigureNotifyEvent: ", Window(e.Window))
+	removeWindow(Window(e.Event))
 }
 
 func configureRequest(e xgb.ConfigureRequestEvent) {
 	l.Print("ConfigureRequestEvent: ", Window(e.Window))
 	w := Window(e.Window)
-	if root.Children().BoxByWindow(w, true) == nil {
-		// Unmanaged window - execute its request
+	b := root.Children().BoxByWindow(w, true)
+	if b == nil || b.Float() {
+		// We accept request from floating windows.
+		// Unmanaged window will be configured by manage() function so
+		// now we can simply execute its request.
 		mask := (xgb.ConfigWindowX | xgb.ConfigWindowY |
 			xgb.ConfigWindowWidth | xgb.ConfigWindowHeight |
 			xgb.ConfigWindowBorderWidth | xgb.ConfigWindowSibling |
@@ -67,9 +63,21 @@ func configureRequest(e xgb.ConfigureRequestEvent) {
 			v = append(v, e.StackMode)
 		}
 		w.Configure(mask, v...)
-	} else {
-		l.Print("ConfigureRequestEvent from managed window")
+		return
 	}
+	// Force box configuration
+	g := b.Geometry()
+	cne := xgb.ConfigureNotifyEvent{
+		Event:        e.Window,
+		Window:       e.Window,
+		AboveSibling: xgb.WindowNone,
+		X:            g.X,
+		Y:            g.Y,
+		Width:        Pint16(g.W),
+		Height:       Pint16(g.H),
+		BorderWidth:  Pint16(g.B),
+	}
+	w.SendEvent(false, xgb.EventMaskStructureNotify, cne)
 }
 
 func keyPress(e xgb.KeyPressEvent) {
@@ -91,22 +99,16 @@ var move struct {
 	x, y int16
 }
 
-var i uint16
-
 func buttonPress(e xgb.ButtonPressEvent) {
 	l.Println("ButtonPressEvent:", Window(e.Event), Window(e.Child))
 	if _, ok := currentBox.(ParentBox); ok {
 		// For now, we don't move panels
 		return
 	}
+	conn.ChangeActivePointerGrab(cfg.MoveCursor, xgb.TimeCurrentTime,
+		xgb.EventMaskButtonPress|xgb.EventMaskButtonRelease)
 	move.b = currentBox
 	move.x, move.y = e.RootX, e.RootY
-	move.b.Parent().Remove(move.b)
-
-	/*l.Print("  pointer number ", i)
-	conn.ChangeActivePointerGrab(stdCursor(i),xgb.TimeCurrentTime,
-		xgb.EventMaskButtonPress|xgb.EventMaskButtonRelease)
-	i += 2*/
 }
 
 func buttonRelease(e xgb.ButtonReleaseEvent) {
@@ -116,7 +118,12 @@ func buttonRelease(e xgb.ButtonReleaseEvent) {
 	}
 	// Border coolor will be set properly by EnterNotify event.
 	move.b.Window().SetBorderColor(cfg.NormalBorderColor)
-	currentPanel().Insert(move.b)
+	// We need to save a current panel before remove a box from its panel,
+	// beacause this box may be a current box
+	cp := currentPanel()
+	move.b.Parent().Remove(move.b)
+	cp.Insert(move.b)
+	l.Print("  ", currentPanel())
 	//changeFocusTo(move.b.Window()) // Always set moved window focused
 	move.b = nil
 }

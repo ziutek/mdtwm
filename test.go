@@ -1,10 +1,10 @@
 package main
 
 import (
+	"code.google.com/p/x-go-binding/xgb"
 	"fmt"
 	"log"
 	"os"
-	"x-go-binding.googlecode.com/hg/xgb"
 )
 
 var (
@@ -32,16 +32,17 @@ func main() {
 		if err != nil {
 			l.Fatal("QueryTree: ", err)
 		}
+		wmName, _ := w.Prop(AtomNetWmName, 128)
 
-		info := struct{
-			id, root, parent xgb.Id
-			ch_num uint16
+		info := struct {
+			id, root, parent  xgb.Id
+			ch_num            uint16
 			name, inst, class string
-			g Geometry
+			g                 Geometry
 		}{
 			id, tr.Root, tr.Parent,
 			tr.ChildrenLen,
-			w.Name(), inst, class,
+			string(wmName.Value), inst, class,
 			w.Geometry(),
 		}
 

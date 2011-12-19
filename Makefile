@@ -1,10 +1,13 @@
 include $(GOROOT)/src/Make.inc
 
 GC = $Og -N
+ALL = mdtwm test
 
-TARG=mdtwm
-GOFILES=\
+all : $(ALL)
+
+mdtwm :	\
 	main.go\
+	globals.go\
 	geometry.go\
 	window.go\
 	box.go\
@@ -18,4 +21,19 @@ GOFILES=\
 	atoms.go\
 	utils.go\
 
-include $(GOROOT)/src/Make.cmd
+	$(GC) -o $@.$O $^
+	$(LD) -o $@ $@.$O
+
+test : \
+	test.go\
+	window.go\
+	geometry.go\
+	atoms.go\
+
+	$(GC) -o $@.$O $^
+	$(LD) -o $@ $@.$O
+
+clean:
+	rm -rf *.[68] $(ALL)
+
+.PHONY : clean
