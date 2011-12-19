@@ -12,3 +12,7 @@ mdtwm uses only right button as follows:
 - single-slow-click: send right click to window (not implemented yet),
 - double-click-move: tile/untile window (not implemented yet),
 - triple-click: close window.
+
+Keybindings (see config.go)
+
+- Mod+Enter: xterm
