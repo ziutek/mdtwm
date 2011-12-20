@@ -28,10 +28,21 @@ func (b *BoxedWindow) Geometry() Geometry {
 	}
 }
 
-func (b *BoxedWindow) SetPosSize(x, y, width, height int16) {
-	b.x, b.y, b.width, b.height = x, y, width, height
+func (b *BoxedWindow) ReqPosSize(x, y, width, height int16) {
 	bb := 2 * cfg.BorderWidth
-	b.w.SetGeometry(Geometry{x, y, width - bb, height - bb, cfg.BorderWidth})
+	b.w.SetGeometry(Geometry{
+		x, y,
+		width - bb, height - bb,
+		cfg.BorderWidth,
+	})
+}
+
+func (b *BoxedWindow) SyncGeometry(g Geometry) {
+	if g.B != cfg.BorderWidth {
+		l.Print("wrong border width: ", g.B)
+	}
+	bb := 2 * g.B
+	b.x, b.y, b.width, b.height = g.X, g.Y, g.W+bb, g.H+bb
 }
 
 func (b *BoxedWindow) SetFocus(f bool) {
@@ -45,6 +56,7 @@ func (b *BoxedWindow) SetFocus(f bool) {
 }
 
 type WmState uint32
+
 const (
 	WmStateWithdrawn = WmState(iota)
 	WmStateNormal

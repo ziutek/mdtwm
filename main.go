@@ -65,9 +65,10 @@ func eventLoop() {
 		if err != nil {
 			if err == io.EOF {
 				conn.Close()
+				l.Print("Connection closed by server")
 				os.Exit(0)
 			}
-			l.Print("WaitForEvent error: ", err)
+			l.Print("WaitForEvent: ", err)
 			continue
 		}
 		handleEvent(event)

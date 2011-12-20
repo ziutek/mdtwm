@@ -67,7 +67,7 @@ func (bl BoxList) Remove(b Box) {
 			return
 		}
 	}
-	panic("Can't remove non existent frame form a list")
+	l.Panic("Can't remove a non existent box form a list")
 }
 
 type BoxListIterator interface {

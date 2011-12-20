@@ -6,19 +6,6 @@ import (
 	"unicode/utf16"
 )
 
-const (
-	/*boxEventMask = xgb.EventMaskButtonPress |
-	xgb.EventMaskButtonRelease |
-	xgb.EventMaskPointerMotion |
-	xgb.EventMaskExposure | // window needs to be redrawn
-	xgb.EventMaskStructureNotify | // Any change in window configuration.
-	xgb.EventMaskSubstructureRedirect | // Redirect reconfiguration of children
-	xgb.EventMaskSubstructureNotify | //Notify about reconfiguration of children
-	xgb.EventMaskEnterWindow |
-	xgb.EventMaskPropertyChange |
-	xgb.EventMaskFocusChange*/
-)
-
 type Box interface {
 	String() string
 
@@ -27,9 +14,14 @@ type Box interface {
 	SetParent(p ParentBox)
 	Children() BoxList
 
-	Geometry() Geometry // Cached geometry
-	PosSize() (x, y, width, height int16) // Cached position and EXTERNAL size
-	SetPosSize(x, y, width, height int16) // Set position and EXTERNAL size
+	// Methods for INTERNAL geometry
+	Geometry() Geometry // Get geometry
+	SyncGeometry(g Geometry) // Sync geometry with information from Xserver
+
+	// Methods for EXTERNEL geometry
+	PosSize() (x, y, width, height int16) // Get geometry
+	ReqPosSize(x, y, width, height int16) // Send geometry request to Xserver
+
 	SetFocus(f bool)
 	Raise()
 

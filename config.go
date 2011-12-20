@@ -50,7 +50,7 @@ func configure() {
 			KeyQ:     {exit, 0},
 		},
 
-		Ignore: List{"Unity-2d-panel", "Unity-2d-launcher"},
+		Ignore: List{},
 		Float:  List{"Mplayer", "Gimp"},
 	}
 	// We use square of radius

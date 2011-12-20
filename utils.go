@@ -41,7 +41,7 @@ func atomList(prop *xgb.GetPropertyReply) IdList {
 		return nil
 	}
 	if uintptr(prop.Format / 8) != reflect.TypeOf(xgb.Id(0)).Size() {
-		panic("Property reply has wrong format for atoms")
+		l.Panic("Property reply has wrong format for atoms: ", prop.Format)
 	}
 	return (*[1 << 24]xgb.Id)(unsafe.Pointer(&prop.Value[0]))[:prop.ValueLen]
 }

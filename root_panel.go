@@ -51,8 +51,12 @@ func (p *RootPanel) Geometry() Geometry {
 	}
 }
 
-func (p *RootPanel) SetPosSize(x, y, width, height int16) {
-	panic("Can't change position of root window")
+func (p *RootPanel) ReqPosSize(x, y, width, height int16) {
+	l.Panic("Can't request a geometry change of root window")
+}
+
+func (p *RootPanel) SyncGeometry(g Geometry) {
+	l.Panic("Can't change saved geometry of root window")
 }
 
 func (p *RootPanel) SetFocus(f bool) {
@@ -63,7 +67,7 @@ func (p *RootPanel) SetFocus(f bool) {
 func (p *RootPanel) Insert(b Box) {
 	b.SetParent(p)
 	p.children.PushBack(b)
-	b.SetPosSize(p.x, p.y, p.width, p.height)
+	b.ReqPosSize(p.x, p.y, p.width, p.height)
 	b.SetName("mdtwm desktop")
 	b.Window().Map()
 }

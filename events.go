@@ -6,18 +6,22 @@ import (
 
 func handleEvent(event xgb.Event) {
 	switch e := event.(type) {
-	// *Request events
+	// Request events
 	case xgb.MapRequestEvent:
 		mapRequest(e)
 	case xgb.ConfigureRequestEvent:
 		configureRequest(e)
-	// *Notify events
+
+	// Notify events
 	case xgb.EnterNotifyEvent:
 		enterNotify(e)
 	case xgb.UnmapNotifyEvent:
 		unmapNotify(e)
 	case xgb.DestroyNotifyEvent:
 		destroyNotify(e)
+	case xgb.ConfigureNotifyEvent:
+		configureNotify(e)
+
 	// Keyboard and mouse events
 	case xgb.KeyPressEvent:
 		keyPress(e)
@@ -28,18 +32,18 @@ func handleEvent(event xgb.Event) {
 	case xgb.MotionNotifyEvent:
 		motionNotify(e)
 	default:
-		l.Printf("*** Unhandled event: %T", e)
+		l.Printf("*** Unhandled event: %T: %+v", e, e)
 	}
 }
 
 func mapRequest(e xgb.MapRequestEvent) {
-	l.Print("MapRequestEvent: ", Window(e.Window))
+	l.Printf("*** %T: %+v", e, e)
 	w := Window(e.Window)
 	manage(w, currentPanel(), false)
 }
 
 func enterNotify(e xgb.EnterNotifyEvent) {
-	l.Print("EnterNotifyEvent: ", Window(e.Event))
+	l.Printf("*** %T: %+v", e, e)
 	if e.Mode != xgb.NotifyModeNormal {
 		return
 	}
@@ -47,17 +51,30 @@ func enterNotify(e xgb.EnterNotifyEvent) {
 }
 
 func destroyNotify(e xgb.DestroyNotifyEvent) {
-	l.Print("DestroyNotifyEvent: ", Window(e.Event))
+	l.Printf("*** %T: %+v", e, e)
 	removeWindow(Window(e.Event), false)
 }
 
 func unmapNotify(e xgb.UnmapNotifyEvent) {
-	l.Print("xgb.UnmapNotifyEvent: ", Window(e.Event), e)
+	l.Printf("*** %T: %+v", e, e)
 	removeWindow(Window(e.Event), false)
 }
 
+func configureNotify(e xgb.ConfigureNotifyEvent) {
+	l.Printf("*** %T: %+v", e, e)
+	b := root.Children().BoxByWindow(Window(e.Event), true)
+	if b == nil {
+		return
+	}
+	b.SyncGeometry(Geometry{
+		e.X, e.Y,
+		Int16(e.Width), Int16(e.Height),
+		Int16(e.BorderWidth),
+	})
+}
+
 func configureRequest(e xgb.ConfigureRequestEvent) {
-	l.Print("ConfigureRequestEvent: ", Window(e.Window))
+	l.Printf("*** %T: %+v", e, e)
 	w := Window(e.Window)
 	b := root.Children().BoxByWindow(w, true)
 	if b == nil || b.Float() {

@@ -9,7 +9,7 @@ type Panel struct {
 	commonBox
 
 	typ   Orientation // panel type (vertical or horizontal)
-	ratio float64     // ratio of width/height betwen two neighboring subwindows
+	ratio float64     // ratio of size of two neighboringsubwindows
 }
 
 // New Panel has parent set to nil and its window
@@ -40,9 +40,17 @@ func (p *Panel) Geometry() Geometry {
 	}
 }
 
-func (p *Panel) SetPosSize(x, y, width, height int16) {
+func (p *Panel) ReqPosSize(x, y, width, height int16) {
 	p.x, p.y, p.width, p.height = x, y, width, height
 	p.w.SetGeometry(Geometry{x, y, width, height, 0})
+}
+
+func (p *Panel) SyncGeometry(g Geometry) {
+	if g.B != 0 {
+		l.Print("non-zero border width: ", g.B)
+	}
+	p.x, p.y, p.width, p.height = g.X, g.Y, g.W, g.H
+	p.tile()
 }
 
 func (p *Panel) SetFocus(f bool) {
@@ -92,7 +100,7 @@ func (p *Panel) tile() {
 		return // there is no boxes in panel
 	}
 	if p.typ == Vertical {
-		l.Print("tile V in: ", p)
+		l.Print("*** Tile V in: ", p)
 		hg := NewSizeGen(p.height, n, p.ratio)
 		i = p.children.FrontIter(false)
 		y, w := int16(0), p.width
@@ -102,14 +110,14 @@ func (p *Panel) tile() {
 				continue
 			}
 			h := hg.Next()
-			b.SetPosSize(0, y, w, h)
+			b.ReqPosSize(0, y, w, h)
 			y += h
 			n--
 		}
 		// Last window obtain all remaining space
-		i.Next().SetPosSize(0, y, w, p.height-y)
+		i.Next().ReqPosSize(0, y, w, p.height-y)
 	} else {
-		l.Print("tile H in:", p)
+		l.Print("*** Tile H in:", p)
 		wg := NewSizeGen(p.width, n, p.ratio)
 		x, h := int16(0), p.height
 		i = p.children.FrontIter(false)
@@ -119,12 +127,12 @@ func (p *Panel) tile() {
 				continue
 			}
 			w := wg.Next()
-			b.SetPosSize(x, 0, w, h)
+			b.ReqPosSize(x, 0, w, h)
 			x += w
 			n--
 		}
 		// Last window obtain all remaining space
-		i.Next().SetPosSize(x, 0, p.width-x, h)
+		i.Next().ReqPosSize(x, 0, p.width-x, h)
 	}
 }
 

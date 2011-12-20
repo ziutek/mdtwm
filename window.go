@@ -116,10 +116,10 @@ func (w Window) Configure(mask uint16, vals ...interface{}) {
 		case reflect.Int8, reflect.Int16, reflect.Int32:
 			data[i] = uint32(r.Int())
 		default:
-			panic(fmt.Sprintf(
-				"vals[%d] type is %s; accepted: int8-32, uint8-32 ",
+			l.Panicf(
+				"vals[%d] type is %s; accepted: int8-32, uint8-32",
 				i, r.Type(),
-			))
+			)
 		}
 
 	}
@@ -195,7 +195,7 @@ func (w Window) Prop(prop xgb.Id, max uint32) (*xgb.GetPropertyReply, error) {
 
 func (w Window) ChangeProp(mode byte, prop, typ xgb.Id, val interface{}) {
 	if val == nil {
-		panic("nil property")
+		l.Panic("nil property")
 	}
 	var (
 		format  int
@@ -224,10 +224,10 @@ func (w Window) ChangeProp(mode byte, prop, typ xgb.Id, val interface{}) {
 		addr := unsafe.Pointer(d.Index(0).UnsafeAddr())
 		content = (*[1<<31 - 1]byte)(addr)[:length]
 	default:
-		panic("Property value should be an integer, a string, a pointer or a slice")
+		l.Panic("Property value isn't integer, string, pointer nor slice")
 	}
 	if format > 255 {
-		panic("format > 255")
+		l.Panicf("format = %d > 255", format)
 	}
 	conn.ChangeProperty(mode, w.Id(), prop, typ, byte(format*8), content)
 }
@@ -250,7 +250,7 @@ func (w Window) Class() (instance, class string) {
 // Utils
 func Uint16(x int16) uint16 {
 	if x < 0 {
-		panic("Can't convert negative int16 to uint16")
+		l.Panic("Can't convert negative int16 to uint16")
 	}
 	return uint16(x)
 }
@@ -258,7 +258,7 @@ func Uint16(x int16) uint16 {
 func Pint16(x int16) uint16 {
 	r := Uint16(x)
 	if r == 0 {
-		l.Print("Warn: Pint16(0)")
+		l.Print("Pint16(0)")
 		return 1
 	}
 	return r
@@ -266,7 +266,7 @@ func Pint16(x int16) uint16 {
 
 func Int16(x uint16) int16 {
 	if x > math.MaxInt16 {
-		panic("Can't convert big uint16 to int16")
+		l.Panicf("Can't convert %d to int16", x)
 	}
 	return int16(x)
 }
