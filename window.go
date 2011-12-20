@@ -102,8 +102,8 @@ func (w Window) TranslateCoordinates(srcW Window, srcX, srcY int16) (x, y int16,
 	return int16(r.DstX), int16(r.DstY), Window(r.Child), r.SameScreen
 }
 
-func (w Window) SendEvent(propagate bool, eventMask uint32, event xgb.Event) {
-	conn.SendEvent(propagate, w.Id(), eventMask, event)
+func (w Window) Send(propagate bool, eventMask uint32, event xgb.Event) {
+	conn.Send(propagate, w.Id(), eventMask, event)
 }
 
 // Configuration

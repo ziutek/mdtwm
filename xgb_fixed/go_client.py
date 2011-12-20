@@ -309,8 +309,6 @@ def go_complex_writer(self, name, void):
 	go('const Opcode%s = %s', func_name, self.opcode)
 	
 	if void:
-		if func_name == 'SendEvent':
-			func_name = 'sendRawEvent'
 		go('func (c *Conn) %s(', func_name)
 		go_complex_writer_arguments(param_fields, "{")
 	else:
@@ -487,15 +485,15 @@ def dumpeventlist():
 	go('	return nil, errors.New("unknown event type")')
 	go('}')
 	#
-	go('func putEvent(event Event, buf []byte) error{')
+	go('func putEvent(event Event, buf []byte) {')
 	go('	switch e := event.(type) {')
 	for event in eventlist:
 		go('    case %sEvent:', event)
                 go('        buf[0] = %s', event)
                 go('        put%sEvent(e, buf)', event)
-	go('	default: return errors.New("unknown event type")')
+	go('	default:')
+	go('    	panic("unknown event type")')
 	go('	}')
-	go('    return nil')
 	go('}')
 
 

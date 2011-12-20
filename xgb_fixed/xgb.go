@@ -486,8 +486,8 @@ func connect(display string) (*Conn, error) {
 	return c, nil
 }
 
-func (c *Conn) SendEvent(propagate bool, dest Id, eventMask uint32, event Event) {
+func (c *Conn) Send(propagate bool, dest Id, eventMask uint32, event Event) {
 	b := make([]byte, 32)
 	putEvent(event, b)
-	c.sendRawEvent(propagate, dest, eventMask, b)
+	c.SendEvent(propagate, dest, eventMask, b)
 }

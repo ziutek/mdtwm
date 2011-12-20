@@ -2,7 +2,6 @@ package main
 
 import (
 	"code.google.com/p/x-go-binding/xgb"
-	"reflect"
 )
 
 func handleEvent(event xgb.Event) {
@@ -29,7 +28,7 @@ func handleEvent(event xgb.Event) {
 	case xgb.MotionNotifyEvent:
 		motionNotify(e)
 	default:
-		l.Print("*** Unhandled event: ", reflect.TypeOf(e))
+		l.Printf("*** Unhandled event: %T", e)
 	}
 }
 
@@ -106,12 +105,11 @@ func configureRequest(e xgb.ConfigureRequestEvent) {
 		Height:       Pint16(g.H),
 		BorderWidth:  Pint16(g.B),
 	}
-	w.SendEvent(false, xgb.EventMaskStructureNotify, cne)
+	w.Send(false, xgb.EventMaskStructureNotify, cne)
 }
 
 func keyPress(e xgb.KeyPressEvent) {
 	l.Print("KeyPressEvent: ", Window(e.Event))
-	// Simply run terminal
 	if e.State == cfg.ModMask {
 		cmd, ok := cfg.Keys[e.Detail]
 		if !ok {
@@ -176,7 +174,7 @@ func (c *Multiclick) Update(t xgb.Timestamp, moved bool) {
 var click Multiclick
 
 func buttonPress(e xgb.ButtonPressEvent) {
-	l.Printf("ButtonPressEvent: %+v", e)
+	l.Print("ButtonPressEvent: ", e.Event)
 	click.Inc(e.Time)
 	if click.First() {
 		// Save first clicked box and coordinates of first click
@@ -189,7 +187,7 @@ func buttonPress(e xgb.ButtonPressEvent) {
 }
 
 func buttonRelease(e xgb.ButtonReleaseEvent) {
-	l.Printf("ButtonReleaseEvent: %+v", e)
+	l.Printf("ButtonReleaseEvent: ", e.Event)
 	click.Update(e.Time, false)
 	// Actions
 	switch click.Num {
@@ -208,9 +206,9 @@ func buttonRelease(e xgb.ButtonReleaseEvent) {
 			e.Child = child.Id()
 			e.Time = xgb.TimeCurrentTime
 			e.State = 0
-			w.SendEvent(false, xgb.EventMaskNoEvent, xgb.ButtonPressEvent(e))
+			w.Send(false, xgb.EventMaskNoEvent, xgb.ButtonPressEvent(e))
 			e.State = xgb.EventMaskButton3Motion
-			w.SendEvent(false, xgb.EventMaskNoEvent, e)
+			w.Send(false, xgb.EventMaskNoEvent, e)
 			return
 		}
 		if currentBox.Window() == w {
@@ -221,7 +219,6 @@ func buttonRelease(e xgb.ButtonReleaseEvent) {
 		// Move a box
 		click.Box.Parent().Remove(click.Box, false)
 		currentPanel().Insert(click.Box)
-		l.Print("  ", currentPanel())
 	case 2: // Two clicks
 	case 3: // Three clicks
 		if !click.Moved {
@@ -235,7 +232,7 @@ func buttonRelease(e xgb.ButtonReleaseEvent) {
 }
 
 func motionNotify(e xgb.MotionNotifyEvent) {
-	l.Print("xgb.MotionNotifyEvent: ", Window(e.Event), Window(e.Child))
+	//l.Print("xgb.MotionNotifyEvent: ", Window(e.Event))
 	dx := int(e.RootX - click.X)
 	dy := int(e.RootY - click.Y)
 	click.Update(e.Time, dx*dx+dy*dy > cfg.MovedClickRadius)

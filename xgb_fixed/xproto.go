@@ -2039,7 +2039,7 @@ const (
 
 const OpcodeSendEvent = 25
 
-func (c *Conn) sendRawEvent(Propagate bool, Destination Id, EventMask uint32, Event []byte) {
+func (c *Conn) SendEvent(Propagate bool, Destination Id, EventMask uint32, Event []byte) {
 	b := make([]byte, 44)
 	put16(b[2:], 11)
 	b[0] = 25
@@ -4712,7 +4712,7 @@ func parseEvent(buf []byte) (Event, error) {
 	}
 	return nil, errors.New("unknown event type")
 }
-func putEvent(event Event, buf []byte) error {
+func putEvent(event Event, buf []byte) {
 	switch e := event.(type) {
 	case KeyPressEvent:
 		buf[0] = KeyPress
@@ -4814,9 +4814,8 @@ func putEvent(event Event, buf []byte) error {
 		buf[0] = MappingNotify
 		putMappingNotifyEvent(e, buf)
 	default:
-		return errors.New("unknown event type")
+		panic("unknown event type")
 	}
-	return nil
 }
 
 var errorNames = map[byte]string{
