@@ -16,10 +16,11 @@ mdtwm :	\
 	panel.go\
 	boxed_window.go \
 	config.go \
-	event_handlers.go\
 	manage.go\
 	atoms.go\
 	utils.go\
+	events.go\
+	input_events.go\
 
 	$(GC) -o $@.$O $^
 	$(LD) -o $@ $@.$O

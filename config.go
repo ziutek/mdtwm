@@ -34,7 +34,7 @@ func configure() {
 		Class:    "Mdtwm",
 
 		NormalBorderColor:  rgbColor(0x8888, 0x8888, 0x8888),
-		FocusedBorderColor: rgbColor(0xeeee, 0x0000, 0x1111),
+		FocusedBorderColor: rgbColor(0x4444, 0x0000, 0xffff),
 		BorderWidth:        1,
 
 		DefaultCursor:    stdCursor(68),
@@ -59,7 +59,7 @@ func configure() {
 	// Layout
 	root = NewRootPanel()
 	// Setup list of desk
-	desk1 := NewPanel(Horizontal, 1.75)
+	desk1 := NewPanel(Horizontal, 1.97)
 	desk2 := NewPanel(Horizontal, 1)
 	root.Insert(desk1)
 	root.Insert(desk2)

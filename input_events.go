@@ -4,110 +4,6 @@ import (
 	"code.google.com/p/x-go-binding/xgb"
 )
 
-func handleEvent(event xgb.Event) {
-	switch e := event.(type) {
-	// *Request events
-	case xgb.MapRequestEvent:
-		mapRequest(e)
-	case xgb.ConfigureRequestEvent:
-		configureRequest(e)
-	// *Notify events
-	case xgb.EnterNotifyEvent:
-		enterNotify(e)
-	case xgb.UnmapNotifyEvent:
-		unmapNotify(e)
-	case xgb.DestroyNotifyEvent:
-		destroyNotify(e)
-	// Keyboard and mouse events
-	case xgb.KeyPressEvent:
-		keyPress(e)
-	case xgb.ButtonPressEvent:
-		buttonPress(e)
-	case xgb.ButtonReleaseEvent:
-		buttonRelease(e)
-	case xgb.MotionNotifyEvent:
-		motionNotify(e)
-	default:
-		l.Printf("*** Unhandled event: %T", e)
-	}
-}
-
-func mapRequest(e xgb.MapRequestEvent) {
-	l.Print("MapRequestEvent: ", Window(e.Window))
-	w := Window(e.Window)
-	manage(w, currentPanel(), false)
-}
-
-func enterNotify(e xgb.EnterNotifyEvent) {
-	l.Print("EnterNotifyEvent: ", Window(e.Event))
-	if e.Mode != xgb.NotifyModeNormal {
-		return
-	}
-	changeFocusTo(Window(e.Event))
-}
-
-func destroyNotify(e xgb.DestroyNotifyEvent) {
-	l.Print("DestroyNotifyEvent: ", Window(e.Event))
-	removeWindow(Window(e.Event), false)
-}
-
-func unmapNotify(e xgb.UnmapNotifyEvent) {
-	l.Print("xgb.UnmapNotifyEvent: ", Window(e.Event), e)
-	removeWindow(Window(e.Event), false)
-}
-
-func configureRequest(e xgb.ConfigureRequestEvent) {
-	l.Print("ConfigureRequestEvent: ", Window(e.Window))
-	w := Window(e.Window)
-	b := root.Children().BoxByWindow(w, true)
-	if b == nil || b.Float() {
-		// We accept request from floating windows.
-		// Unmanaged window will be configured by manage() function so
-		// now we can simply execute its request.
-		mask := (xgb.ConfigWindowX | xgb.ConfigWindowY |
-			xgb.ConfigWindowWidth | xgb.ConfigWindowHeight |
-			xgb.ConfigWindowBorderWidth | xgb.ConfigWindowSibling |
-			xgb.ConfigWindowStackMode) & e.ValueMask
-		v := make([]interface{}, 0, 7)
-		if mask&xgb.ConfigWindowX != 0 {
-			v = append(v, e.X)
-		}
-		if mask&xgb.ConfigWindowY != 0 {
-			v = append(v, e.Y)
-		}
-		if mask&xgb.ConfigWindowWidth != 0 {
-			v = append(v, e.Width)
-		}
-		if mask&xgb.ConfigWindowHeight != 0 {
-			v = append(v, e.Height)
-		}
-		if mask&xgb.ConfigWindowBorderWidth != 0 {
-			v = append(v, e.BorderWidth)
-		}
-		if mask&xgb.ConfigWindowSibling != 0 {
-			v = append(v, e.Sibling)
-		}
-		if mask&xgb.ConfigWindowStackMode != 0 {
-			v = append(v, e.StackMode)
-		}
-		w.Configure(mask, v...)
-		return
-	}
-	// Force box configuration
-	g := b.Geometry()
-	cne := xgb.ConfigureNotifyEvent{
-		Event:        e.Window,
-		Window:       e.Window,
-		AboveSibling: xgb.WindowNone,
-		X:            g.X,
-		Y:            g.Y,
-		Width:        Pint16(g.W),
-		Height:       Pint16(g.H),
-		BorderWidth:  Pint16(g.B),
-	}
-	w.Send(false, xgb.EventMaskStructureNotify, cne)
-}
-
 func keyPress(e xgb.KeyPressEvent) {
 	l.Print("KeyPressEvent: ", Window(e.Event))
 	if e.State == cfg.ModMask {
@@ -121,14 +17,13 @@ func keyPress(e xgb.KeyPressEvent) {
 	}
 }
 
-
 // Distinguishes following actions (they can be used in specified handler):
-// 1. One click and move: Motion, ButtonRelease
-// 2. One long click without move: ButtonRelease
-// 3. Two clicks and move: Motion, ButtonRelease
-// 4. Two clicks without move when second click is long: ButtonRelease
-// 4. Three clicks and move: Motion, ButtonRelease
-// 5. Three clicks without move: ButtonRelease
+// 1. One click and move, in: MotionNotify, ButtonRelease
+// 2. One long click without move, in: ButtonRelease
+// 3. Two clicks and move, in: MotionNotify, ButtonRelease
+// 4. Two clicks without move when second click is long, in: ButtonRelease
+// 4. Three clicks and move, in: MotionNotify, ButtonRelease
+// 5. Three clicks without move, in: ButtonRelease
 type Multiclick struct {
 	Box   Box
 	X, Y  int16
@@ -141,7 +36,7 @@ type Multiclick struct {
 
 func (c *Multiclick) Inc(t xgb.Timestamp) {
 	c.counter++
-	if c.counter == 1 || t-c.last > cfg.MultiClickTime * 2 {
+	if c.counter == 1 || t-c.last > cfg.MultiClickTime*2 {
 		// First click or to long interval betwen clicks
 		c.last = t
 		c.Num = 0
@@ -200,7 +95,7 @@ func buttonRelease(e xgb.ButtonReleaseEvent) {
 			// Send right click to the box
 			var (
 				child Window
-				err error
+				err   error
 			)
 			e.EventX, e.EventY, child, _, err = w.TranslateCoordinates(
 				root.Window(), e.RootX, e.RootY,
