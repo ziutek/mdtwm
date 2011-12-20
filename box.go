@@ -30,7 +30,8 @@ type Box interface {
 	Geometry() Geometry // Cached geometry
 	PosSize() (x, y, width, height int16) // Cached position and EXTERNAL size
 	SetPosSize(x, y, width, height int16) // Set position and EXTERNAL size
-	SetFocus(cur bool)
+	SetFocus(f bool)
+	Raise()
 
 	Float() bool
 	SetFloat(float bool)
@@ -130,6 +131,10 @@ func (b *commonBox) SetName(name string) {
 
 func (b *commonBox) PosSize() (x, y, width, height int16) {
 	return b.x, b.y, b.width, b.height
+}
+
+func (b *commonBox) Raise() {
+	
 }
 
 func (b *commonBox) Class() (instance, class string) {

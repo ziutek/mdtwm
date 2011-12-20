@@ -17,7 +17,7 @@ type Config struct {
 
 	DefaultCursor    xgb.Id
 	MoveCursor       xgb.Id
-	MultiClickTime  xgb.Timestamp
+	MultiClickTime   xgb.Timestamp
 	MovedClickRadius int
 
 	ModMask uint16
@@ -41,12 +41,12 @@ func configure() {
 		DefaultCursor:    stdCursor(68),
 		MoveCursor:       stdCursor(52),
 		MultiClickTime:   300, // maximum interfal for multiclick [ms]
-		MovedClickRadius: 5,  // minimal radius for moved click [pixel]
+		MovedClickRadius: 5,   // minimal radius for moved click [pixel]
 
-		ModMask: xgb.ModMask1,
+		ModMask: xgb.ModMask4,
 		Keys: map[byte]Cmd{
-			KeyEnter:  {spawn, "xterm"},
-			KeyBspace: {spawn, "xkill"},
+			KeyEnter: {spawn, "xterm"},
+			KeyQ:     {exit, 0},
 		},
 
 		Ignore: List{"Unity-2d-panel", "Unity-2d-launcher"},

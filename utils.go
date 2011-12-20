@@ -2,6 +2,8 @@ package main
 
 import (
 	"code.google.com/p/x-go-binding/xgb"
+	"fmt"
+	"os"
 	"os/exec"
 	"reflect"
 	"unsafe"
@@ -74,18 +76,23 @@ func (l List) Contains(e interface{}) bool {
 }
 
 type Cmd struct {
-	Func  func(string) error
-	Param string
+	Func  func(interface{}) error
+	Param interface{}
 }
 
 func (c *Cmd) Run() error {
 	return c.Func(c.Param)
 }
 
-func spawn(cmd string) error {
+func spawn(cmd interface{}) error {
 	// TODO: check what filedescriptors are inherited from WM by cmd when
 	// exec.Command is used
-	return exec.Command(cmd).Start()
+	return exec.Command(fmt.Sprint(cmd)).Start()
+}
+
+func exit(cmd interface{}) error {
+	os.Exit(cmd.(int))
+	return nil
 }
 
 // Keycodes
