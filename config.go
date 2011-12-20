@@ -29,7 +29,6 @@ type Config struct {
 
 func configure() {
 	// Configuration variables
-
 	cfg = &Config{
 		Instance: filepath.Base(os.Args[0]),
 		Class:    "Mdtwm",
@@ -45,7 +44,9 @@ func configure() {
 
 		ModMask: xgb.ModMask4,
 		Keys: map[byte]Cmd{
-			KeyEnter: {spawn, "xterm"},
+			Key1:     {chDesk, 1},
+			Key2:     {chDesk, 2},
+			KeyEnter: {spawn, "gnome-terminal"},
 			KeyQ:     {exit, 0},
 		},
 
@@ -55,15 +56,21 @@ func configure() {
 	// We use square of radius
 	cfg.MovedClickRadius *= cfg.MovedClickRadius
 
-	// Initial layout
-
+	// Layout
 	root = NewRootPanel()
-	// Setup list of desk (for now there is only one desk)
-	currentDesk = NewPanel(Horizontal, 1.75)
-	root.Insert(currentDesk)
-	// Setup two main panels
-	currentDesk.Insert(NewPanel(Vertical, 1))
-	currentDesk.Insert(NewPanel(Vertical, 0.3))
-	// All windows that exists during startup will be placed in currentBox
+	// Setup list of desk
+	desk1 := NewPanel(Horizontal, 1.75)
+	desk2 := NewPanel(Horizontal, 1)
+	root.Insert(desk1)
+	root.Insert(desk2)
+	// Setup two main panels on first desk
+	desk1.Insert(NewPanel(Vertical, 1))
+	desk1.Insert(NewPanel(Vertical, 0.3))
+	// Setup one main panel on second desk
+	desk2.Insert(NewPanel(Horizontal, 1))
+	// Set current desk and current box
+	currentDesk = desk1
+	currentDesk.Raise()
+	// In this box all existing windows will be placed
 	currentBox = currentDesk.Children().Front()
 }

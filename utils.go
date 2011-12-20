@@ -90,8 +90,21 @@ func spawn(cmd interface{}) error {
 	return exec.Command(fmt.Sprint(cmd)).Start()
 }
 
-func exit(cmd interface{}) error {
-	os.Exit(cmd.(int))
+func exit(retval interface{}) error {
+	os.Exit(retval.(int))
+	return nil
+}
+
+func chDesk(deskNum interface{}) error {
+	i := root.Children().FrontIter(false)
+	n := deskNum.(int)
+	for d := i.Next(); d != nil; d = i.Next() {
+		if n--; n == 0 {
+			currentDesk = d.(*Panel)
+			d.Raise()
+			break
+		}
+	}
 	return nil
 }
 

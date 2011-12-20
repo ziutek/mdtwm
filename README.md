@@ -13,6 +13,15 @@ mdtwm uses only right button as follows:
 - double-click-move: tile/untile window (not implemented yet),
 - triple-click: close window.
 
-Keybindings (see config.go)
+Default layout (see config.go)
 
-- Mod+Enter: xterm
+- two desks
+- first desk contains two panels
+- second desk contains one (fullscreen) panel
+
+Default keybindings (see config.go)
+
+- Mod+Enter: new terminal (gnome-terminal)
+- Mod+q: exit
+- Mod+1: first desk
+- Mod+2: second desk

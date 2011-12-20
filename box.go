@@ -134,7 +134,7 @@ func (b *commonBox) PosSize() (x, y, width, height int16) {
 }
 
 func (b *commonBox) Raise() {
-	
+	b.Window().Configure(xgb.ConfigWindowStackMode, uint32(xgb.StackModeAbove))
 }
 
 func (b *commonBox) Class() (instance, class string) {
