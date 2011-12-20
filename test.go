@@ -43,7 +43,12 @@ func main() {
 			id, tr.Root, tr.Parent,
 			tr.ChildrenLen,
 			string(wmName.Value), inst, class,
-			w.Geometry(),
+			Geometry{},
+		}
+		info.g, err = w.Geometry()
+		if err != nil {
+			l.Print(err)
+			return
 		}
 
 		fmt.Printf("%d: %+v\n", i, info)

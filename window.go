@@ -51,22 +51,19 @@ func (w Window) ChangeSaveSet(mode byte) {
 	conn.ChangeSaveSet(mode, w.Id())
 }
 
-func (w Window) GrabPointer(ownerEvents bool, eventMask uint16,
-	pointerMode, keyboardMode byte, confineTo Window, cursor xgb.Id) byte {
+func (w Window) GrabPointer(ownerEvents bool, eventMask uint16, pointerMode,
+		keyboardMode byte, confineTo Window, cursor xgb.Id) (byte, error) {
 	r, err := conn.GrabPointer(ownerEvents, w.Id(), eventMask, pointerMode,
 		keyboardMode, confineTo.Id(), cursor, xgb.TimeCurrentTime)
 	if err != nil {
-		l.Fatal("Can't grab a pointer: ", err)
+		return 0, err
 	}
-	return r.Status
+	return r.Status, nil
 }
 
-func (w Window) QueryPointer() *xgb.QueryPointerReply {
-	r, err := conn.QueryPointer(w.Id())
-	if err != nil {
-		l.Fatal("Can't query a pointer: ", err)
-	}
-	return r
+func (w Window) QueryPointer() (r *xgb.QueryPointerReply, err error) {
+	r, err = conn.QueryPointer(w.Id())
+	return
 }
 
 func (w Window) GrabButton(ownerEvents bool, eventMask uint16,
@@ -94,12 +91,13 @@ func (w Window) SetInputFocus() {
 }
 
 func (w Window) TranslateCoordinates(srcW Window, srcX, srcY int16) (x, y int16,
-	child Window, sameScreen bool) {
-	r, err := conn.TranslateCoordinates(srcW.Id(), w.Id(), srcX, srcY)
+	child Window, sameScreen bool, err error) {
+	var r *xgb.TranslateCoordinatesReply
+	r, err = conn.TranslateCoordinates(srcW.Id(), w.Id(), srcX, srcY)
 	if err != nil {
-		l.Fatal("Can't translate coordinates: ", err)
+		return
 	}
-	return int16(r.DstX), int16(r.DstY), Window(r.Child), r.SameScreen
+	return int16(r.DstX), int16(r.DstY), Window(r.Child), r.SameScreen, nil
 }
 
 func (w Window) Send(propagate bool, eventMask uint32, event xgb.Event) {
@@ -128,16 +126,16 @@ func (w Window) Configure(mask uint16, vals ...interface{}) {
 	conn.ConfigureWindow(w.Id(), mask, data)
 }
 
-func (w Window) Geometry() Geometry {
+func (w Window) Geometry() (Geometry, error) {
 	g, err := conn.GetGeometry(w.Id())
 	if err != nil {
-		l.Fatalf("Can't get geometry of window %s: %s", w, err)
+		return Geometry{}, err
 	}
 	return Geometry{
 		g.X, g.Y,
 		Int16(g.Width), Int16(g.Height),
 		Int16(g.BorderWidth),
-	}
+	}, nil
 }
 
 func (w Window) SetGeometry(g Geometry) {
@@ -164,12 +162,9 @@ func (w Window) SetBorderWidth(width int16) {
 
 // Attributes
 
-func (w Window) Attrs() *xgb.GetWindowAttributesReply {
-	a, err := conn.GetWindowAttributes(w.Id())
-	if err != nil {
-		l.Fatalf("Can't get attributes of window %s: %s", w, err)
-	}
-	return a
+func (w Window) Attrs() (a *xgb.GetWindowAttributesReply, err error) {
+	a, err = conn.GetWindowAttributes(w.Id())
+	return
 }
 
 func (w Window) ChangeAttrs(mask uint32, vals ...uint32) {

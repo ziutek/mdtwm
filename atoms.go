@@ -35,7 +35,7 @@ var (
 func getAtomId(name string) xgb.Id {
 	a, err := conn.InternAtom(false, name)
 	if err != nil {
-		l.Fatal("Can't get atom id: ", err)
+		l.Fatal("Can't get an atom id: ", err)
 	}
 	return a.Atom
 }

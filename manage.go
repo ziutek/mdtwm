@@ -15,7 +15,10 @@ func manage(w Window, panel ParentBox, vievableOnly bool) {
 		l.Printf("  %s - alredy managed", w)
 		return
 	}
-	attr := w.Attrs()
+	attr, err := w.Attrs()
+	if err != nil {
+		l.Print("manage: ", err)
+	}
 	// Don't manage if OverrideRedirect flag is set
 	if attr.OverrideRedirect {
 		l.Print("OverrideRedirect")

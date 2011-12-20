@@ -187,7 +187,7 @@ func buttonPress(e xgb.ButtonPressEvent) {
 }
 
 func buttonRelease(e xgb.ButtonReleaseEvent) {
-	l.Printf("ButtonReleaseEvent: ", e.Event)
+	l.Print("ButtonReleaseEvent: ", e.Event)
 	click.Update(e.Time, false)
 	// Actions
 	switch click.Num {
@@ -198,10 +198,17 @@ func buttonRelease(e xgb.ButtonReleaseEvent) {
 		w := click.Box.Window()
 		if !click.Moved {
 			// Send right click to the box
-			var child Window
-			e.EventX, e.EventY, child, _ = w.TranslateCoordinates(
+			var (
+				child Window
+				err error
+			)
+			e.EventX, e.EventY, child, _, err = w.TranslateCoordinates(
 				root.Window(), e.RootX, e.RootY,
 			)
+			if err != nil {
+				l.Print("buttonRelease: ", err)
+				return
+			}
 			e.Event = w.Id()
 			e.Child = child.Id()
 			e.Time = xgb.TimeCurrentTime

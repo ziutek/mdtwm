@@ -86,9 +86,14 @@ func (b *commonBox) Parent() ParentBox {
 func (b *commonBox) SetParent(p ParentBox) {
 	// Translate current coordinates to new parent coordinates (useful when new
 	// parent is root and window should stay in place.
-	b.x, b.y, _, _ = p.Window().TranslateCoordinates(
+	var err error
+	b.x, b.y, _, _, err = p.Window().TranslateCoordinates(
 		b.parent.Window(), b.x, b.y,
 	)
+	if err != nil {
+		l.Print("SetParent: ", err)
+		return
+	}
 	b.parent = p
 	b.w.SetEventMask(xgb.EventMaskNoEvent) // avoid UnmpNotify
 	b.w.Reparent(p.Window(), b.x, b.y)
