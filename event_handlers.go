@@ -206,12 +206,11 @@ func buttonRelease(e xgb.ButtonReleaseEvent) {
 			)
 			e.Event = w.Id()
 			e.Child = child.Id()
-			e.Child = xgb.WindowNone
 			e.Time = xgb.TimeCurrentTime
-			w.SendEvent(false, xgb.EventMaskButton3Motion,
-				xgb.ButtonPressEvent(e))
-			w.SendEvent(false, xgb.EventMaskButton3Motion, e)
-			l.Print("  slow right click")
+			e.State = 0
+			w.SendEvent(false, xgb.EventMaskNoEvent, xgb.ButtonPressEvent(e))
+			e.State = xgb.EventMaskButton3Motion
+			w.SendEvent(false, xgb.EventMaskNoEvent, e)
 			return
 		}
 		if currentBox.Window() == w {

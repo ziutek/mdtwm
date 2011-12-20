@@ -9,7 +9,7 @@ how to write wm at all.
 mdtwm uses only right button as follows:
 
 - single-click-move: move a window,
-- single-slow-click: send right click to window (not implemented yet),
+- single-slow-click: send right click to window,
 - double-click-move: tile/untile window (not implemented yet),
 - triple-click: close window.
 
