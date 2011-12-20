@@ -36,16 +36,14 @@ func (l IdList) Contains(id xgb.Id) bool {
 	return false
 }
 
-func propReplyAtoms(prop *xgb.GetPropertyReply) IdList {
+func atomList(prop *xgb.GetPropertyReply) IdList {
 	if prop == nil || prop.ValueLen == 0 {
 		return nil
 	}
-	atom_size := uintptr(prop.Format / 8)
-	if atom_size != reflect.TypeOf(xgb.Id(0)).Size() {
+	if uintptr(prop.Format / 8) != reflect.TypeOf(xgb.Id(0)).Size() {
 		panic("Property reply has wrong format for atoms")
 	}
-	num_atoms := prop.ValueLen / uint32(atom_size)
-	return (*[1 << 24]xgb.Id)(unsafe.Pointer(&prop.Value[0]))[:num_atoms]
+	return (*[1 << 24]xgb.Id)(unsafe.Pointer(&prop.Value[0]))[:prop.ValueLen]
 }
 
 func rgbColor(r, g, b uint16) uint32 {

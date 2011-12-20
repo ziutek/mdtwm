@@ -30,10 +30,18 @@ func manage(w Window, panel ParentBox, vievableOnly bool) {
 	}
 	// NewWindowBox(w) changes some property of w so it can't be used before!
 	b := NewBoxedWindow(w)
-	/// Check window type
-	p, err := w.Prop(AtomNetWmWindowType, math.MaxUint32)
+	// Check window type
+	p, err := w.Prop(xgb.AtomWmTransientFor, math.MaxUint32)
 	if err == nil {
-		wm_type := propReplyAtoms(p)
+		tr_for := atomList(p)
+		l.Printf("  tr_for: %+v %v", p, tr_for)
+		if len(tr_for) > 0 && tr_for[0] != xgb.WindowNone {
+			b.SetFloat(true)
+		}
+	}
+	p, err = w.Prop(AtomNetWmWindowType, math.MaxUint32)
+	if err == nil {
+		wm_type := atomList(p)
 		if wm_type.Contains(AtomNetWmWindowTypeDock) {
 			l.Printf("  window %s is of type dock", w)
 		}
@@ -42,14 +50,12 @@ func manage(w Window, panel ParentBox, vievableOnly bool) {
 			wm_type.Contains(AtomNetWmWindowTypeUtility) ||
 			wm_type.Contains(AtomNetWmWindowTypeToolbar) ||
 			wm_type.Contains(AtomNetWmWindowTypeSplash) {
-			l.Printf(" window %s should be treated as float", w)
 			b.SetFloat(true)
 		}
-	} else {
-		l.Printf("  can't get AtomNetWmWindowType from %s: %s", w, err)
 	}
 	// Insert new box in a panel.
-	if b.float {
+	if b.Float() {
+		l.Printf(" window %s should be treated as float", w)
 		currentDesk.Insert(b)
 	} else {
 		panel.Insert(b)
