@@ -13,15 +13,6 @@ func currentPanel() ParentBox {
 	return currentBox.Parent()
 }
 
-func changeFocusTo(w Window) {
-	currentDesk.SetFocus(currentDesk.Window() == w)
-	// Iterate over all boxes in current desk
-	bi := currentDesk.Children().FrontIter(true)
-	for b := bi.Next(); b != nil; b = bi.Next() {
-		b.SetFocus(b.Window() == w)
-	}
-}
-
 type IdList []xgb.Id
 
 func (l IdList) Contains(id xgb.Id) bool {
@@ -43,8 +34,17 @@ func atomList(prop *xgb.GetPropertyReply) IdList {
 	return (*[1 << 24]xgb.Id)(unsafe.Pointer(&prop.Value[0]))[:prop.ValueLen]
 }
 
-func removeWindow(w Window, unmap bool) {
-	if b := root.Children().BoxByWindow(w, true); b != nil {
-		b.Parent().Remove(b, unmap)
+func statusLog() {
+	if cfg.StatusLogger == nil {
+		return
 	}
+	i := root.Children().FrontIter(false)
+	var cur, n int
+	for p := i.Next(); p != nil; p = i.Next() {
+		if p == currentDesk {
+			cur = n
+		}
+		n++
+	}
+	cfg.StatusLogger.Log(Status{cur, n, currentBox.Name()})
 }

@@ -5,12 +5,23 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"time"
 )
 
 var (
 	conn *xgb.Conn
+	root Window
 	l    = log.New(os.Stderr, "test: ", 0)
 )
+
+func createWindow() {
+	w := NewWindow(
+		root, Geometry{0, 0, 100, 30, 0},
+		xgb.WindowClassInputOutput,
+		xgb.CWOverrideRedirect, 1,
+	)
+	w.Map()
+}
 
 func main() {
 	var err error
@@ -20,8 +31,10 @@ func main() {
 		l.Fatal(err)
 	}
 	setupAtoms()
+	root = Window(conn.DefaultScreen().Root)
 
-	root := Window(conn.DefaultScreen().Root)
+	createWindow()
+
 	tr, err := conn.QueryTree(root.Id())
 	for i, id := range append(tr.Children, root.Id()) {
 		w := Window(id)
@@ -53,4 +66,5 @@ func main() {
 
 		fmt.Printf("%d: %+v\n", i, info)
 	}
+	time.Sleep(100e9)
 }

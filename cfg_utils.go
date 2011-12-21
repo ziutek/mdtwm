@@ -3,8 +3,10 @@ package main
 import (
 	"code.google.com/p/x-go-binding/xgb"
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
+	"time"
 )
 
 func rgbColor(r, g, b uint16) uint32 {
@@ -130,4 +132,70 @@ func stdCursor(id uint16) xgb.Id {
 	conn.CreateGlyphCursor(cursor, stdCursorFont, stdCursorFont, id, id+1,
 		0, 0, 0, 0xffff, 0xffff, 0xffff)
 	return cursor
+}
+
+type Status struct {
+	curDesk, desks int
+	title          string
+}
+
+type StatusLogger interface {
+	Log(s Status)
+	Start()
+}
+
+type Dzen2Logger struct {
+	io.Writer
+	FgColor    string
+	BgColor    string
+	TimeFormat string
+	TimePos    int
+
+	ch chan *Status
+}
+
+func (d *Dzen2Logger) invColors() {
+	fmt.Fprintf(d.Writer, "^bg(%s)^fg(%s)", d.FgColor, d.BgColor)
+}
+func (d *Dzen2Logger) nrmColors() {
+	fmt.Fprintf(d.Writer, "^bg(%s)^fg(%s)", d.BgColor, d.FgColor)
+}
+
+func (d *Dzen2Logger) Start() {
+	d.ch = make(chan *Status)
+	go d.thr()
+}
+
+func (d *Dzen2Logger) Log(s Status) {
+	d.ch <- &s
+}
+
+func (d *Dzen2Logger) thr() {
+	var s *Status
+	tick := time.Tick(time.Second)
+	for {
+		select {
+		case <-tick:
+		case s = <-d.ch:
+			s.curDesk++
+		}
+		if s == nil {
+			continue
+		}
+		d.nrmColors()
+		for i := 1; i <= s.desks; i++ {
+			if i == s.curDesk {
+				d.invColors()
+			}
+			fmt.Fprintf(d.Writer, " %d ", i)
+			if i == s.curDesk {
+				d.nrmColors()
+			}
+		}
+		t := time.Now()
+		fmt.Fprintf(
+			d.Writer, "   %s^pa(%d)%s\n",
+			s.title, d.TimePos, t.Format(d.TimeFormat),
+		)
+	}
 }

@@ -16,7 +16,8 @@ func NewRootPanel() *RootPanel {
 	var p RootPanel
 	p.init(
 		Window(screen.Root),
-		xgb.EventMaskSubstructureRedirect|xgb.EventMaskStructureNotify,
+		xgb.EventMaskSubstructureNotify| // For override-redirect windows
+			xgb.EventMaskSubstructureRedirect,
 	)
 	p.width = int16(screen.WidthInPixels)
 	p.height = int16(screen.HeightInPixels)
@@ -72,9 +73,6 @@ func (p *RootPanel) Insert(b Box) {
 	b.Window().Map()
 }
 
-func (p *RootPanel) Remove(b Box, unmap bool) {
-	if unmap {
-		b.Window().Unmap()
-	}
+func (p *RootPanel) Remove(b Box) {
 	p.children.Remove(b)
 }

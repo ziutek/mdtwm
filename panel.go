@@ -75,13 +75,7 @@ func (p *Panel) Insert(b Box) {
 	}
 }
 
-func (p *Panel) Remove(b Box, unmap bool) {
-	if unmap {
-		if w, ok := b.(*BoxedWindow); ok {
-			w.SetWmState(WmStateWithdrawn)
-		}
-		b.Window().Unmap()
-	}
+func (p *Panel) Remove(b Box) {
 	b.SetParent(root)
 	p.children.Remove(b)
 	p.tile()

@@ -119,7 +119,7 @@ func buttonRelease(e xgb.ButtonReleaseEvent) {
 		// Border color will be set properly by EnterNotify event.
 		w.SetBorderColor(cfg.NormalBorderColor)
 		// Move a box
-		click.Box.Parent().Remove(click.Box, false)
+		click.Box.Parent().Remove(click.Box)
 		currentPanel().Insert(click.Box)
 	case 2: // Two clicks
 	case 3: // Three clicks

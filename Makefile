@@ -38,4 +38,8 @@ test : \
 clean:
 	rm -rf *.[68] $(ALL)
 
+install: mdtwm
+	rm $(HOME)/bin/mdtwm
+	cp mdtwm $(HOME)/bin
+
 .PHONY : clean

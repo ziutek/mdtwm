@@ -15,6 +15,8 @@ func handleEvent(event xgb.Event) {
 	// Notify events
 	case xgb.EnterNotifyEvent:
 		enterNotify(e)
+	case xgb.MapNotifyEvent:
+		mapNotify(e)
 	case xgb.UnmapNotifyEvent:
 		unmapNotify(e)
 	case xgb.DestroyNotifyEvent:
@@ -38,8 +40,13 @@ func handleEvent(event xgb.Event) {
 
 func mapRequest(e xgb.MapRequestEvent) {
 	d.Printf("%T: %+v", e, e)
-	w := Window(e.Window)
-	manage(w, currentPanel(), false)
+	manage(Window(e.Window) , currentPanel(), false)
+}
+
+// For windows with override-redirect flag
+func mapNotify(e xgb.MapNotifyEvent) {
+	d.Printf("%T: %+v", e, e)
+	manage(Window(e.Window) , currentPanel(), false)
 }
 
 func enterNotify(e xgb.EnterNotifyEvent) {
@@ -47,17 +54,26 @@ func enterNotify(e xgb.EnterNotifyEvent) {
 	if e.Mode != xgb.NotifyModeNormal {
 		return
 	}
-	changeFocusTo(Window(e.Event))
+	w := Window(e.Event)
+	currentDesk.SetFocus(currentDesk.Window() == w)
+	// Iterate over all boxes in current desk
+	bi := currentDesk.Children().FrontIter(true)
+	for b := bi.Next(); b != nil; b = bi.Next() {
+		b.SetFocus(b.Window() == w)
+	}
+	statusLog()
 }
 
 func destroyNotify(e xgb.DestroyNotifyEvent) {
 	d.Printf("%T: %+v", e, e)
-	removeWindow(Window(e.Event), false)
+	unmanage(Window(e.Window))
 }
 
 func unmapNotify(e xgb.UnmapNotifyEvent) {
 	d.Printf("%T: %+v", e, e)
-	removeWindow(Window(e.Event), false)
+	// We mask UnmapNotify during reparenting, so these events have
+	// e.Event == root. root isn't managed so unamange(root) do nothing.
+	unmanage(Window(e.Event))
 }
 
 func configureNotify(e xgb.ConfigureNotifyEvent) {

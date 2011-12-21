@@ -17,6 +17,7 @@ var (
 	AtomNetWmWindowTypeToolbar,
 	AtomNetWmWindowTypeSplash,
 	AtomNetWmDesktop,
+	AtomNetWmStrut,
 	AtomNetWmStrutPartial,
 	AtomNetClientListStacking,
 	AtomNetCurrentDesktop,
@@ -53,6 +54,7 @@ func setupAtoms() {
 	AtomNetWmWindowTypeToolbar = getAtomId("_NET_WM_WINDOW_TYPE_TOOLBAR")
 	AtomNetWmWindowTypeSplash = getAtomId("_NET_WM_WINDOW_TYPE_SPLASH")
 	AtomNetWmDesktop = getAtomId("_NET_WM_DESKTOP")
+	AtomNetWmStrut = getAtomId("_NET_WM_STRUT")
 	AtomNetWmStrutPartial = getAtomId("_NET_WM_STRUT_PARTIAL")
 	AtomNetClientListStacking = getAtomId("_NET_CLIENT_LIST_STACKING")
 	AtomNetCurrentDesktop = getAtomId("_NET_CURRENT_DESKTOP")
