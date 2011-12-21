@@ -39,7 +39,7 @@ func (b *BoxedWindow) ReqPosSize(x, y, width, height int16) {
 
 func (b *BoxedWindow) SyncGeometry(g Geometry) {
 	if g.B != cfg.BorderWidth {
-		l.Print("wrong border width: ", g.B)
+		l.Print("Wrong border width: ", g.B)
 	}
 	bb := 2 * g.B
 	b.x, b.y, b.width, b.height = g.X, g.Y, g.W+bb, g.H+bb

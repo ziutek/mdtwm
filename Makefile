@@ -15,12 +15,13 @@ mdtwm :	\
 	root_panel.go\
 	panel.go\
 	boxed_window.go \
-	config.go \
 	manage.go\
 	atoms.go\
 	utils.go\
 	events.go\
 	input_events.go\
+	config.go \
+	cfg_utils.go\
 
 	$(GC) -o $@.$O $^
 	$(LD) -o $@ $@.$O

@@ -100,7 +100,7 @@ func (p *Panel) tile() {
 		return // there is no boxes in panel
 	}
 	if p.typ == Vertical {
-		l.Print("*** Tile V in: ", p)
+		d.Print("Tile V in: ", p)
 		hg := NewSizeGen(p.height, n, p.ratio)
 		i = p.children.FrontIter(false)
 		y, w := int16(0), p.width
@@ -117,7 +117,7 @@ func (p *Panel) tile() {
 		// Last window obtain all remaining space
 		i.Next().ReqPosSize(0, y, w, p.height-y)
 	} else {
-		l.Print("*** Tile H in:", p)
+		d.Print("Tile H in:", p)
 		wg := NewSizeGen(p.width, n, p.ratio)
 		x, h := int16(0), p.height
 		i = p.children.FrontIter(false)

@@ -18,5 +18,6 @@ var (
 
 	cfg *Config
 
-	l = log.New(os.Stderr, "mdtwm: ", log.Lshortfile )
+	l = log.New(os.Stderr, "mdtwm: ", log.Lshortfile)
+	d = log.New(os.Stderr, "mdtwm debug: ", log.Lshortfile)
 )

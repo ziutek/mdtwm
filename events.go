@@ -32,18 +32,18 @@ func handleEvent(event xgb.Event) {
 	case xgb.MotionNotifyEvent:
 		motionNotify(e)
 	default:
-		l.Printf("*** Unhandled event: %T: %+v", e, e)
+		d.Printf("Unhandled event: %T: %+v", e, e)
 	}
 }
 
 func mapRequest(e xgb.MapRequestEvent) {
-	l.Printf("*** %T: %+v", e, e)
+	d.Printf("%T: %+v", e, e)
 	w := Window(e.Window)
 	manage(w, currentPanel(), false)
 }
 
 func enterNotify(e xgb.EnterNotifyEvent) {
-	l.Printf("*** %T: %+v", e, e)
+	d.Printf("%T: %+v", e, e)
 	if e.Mode != xgb.NotifyModeNormal {
 		return
 	}
@@ -51,17 +51,17 @@ func enterNotify(e xgb.EnterNotifyEvent) {
 }
 
 func destroyNotify(e xgb.DestroyNotifyEvent) {
-	l.Printf("*** %T: %+v", e, e)
+	d.Printf("%T: %+v", e, e)
 	removeWindow(Window(e.Event), false)
 }
 
 func unmapNotify(e xgb.UnmapNotifyEvent) {
-	l.Printf("*** %T: %+v", e, e)
+	d.Printf("%T: %+v", e, e)
 	removeWindow(Window(e.Event), false)
 }
 
 func configureNotify(e xgb.ConfigureNotifyEvent) {
-	l.Printf("*** %T: %+v", e, e)
+	d.Printf("%T: %+v", e, e)
 	b := root.Children().BoxByWindow(Window(e.Event), true)
 	if b == nil {
 		return
@@ -74,7 +74,7 @@ func configureNotify(e xgb.ConfigureNotifyEvent) {
 }
 
 func configureRequest(e xgb.ConfigureRequestEvent) {
-	l.Printf("*** %T: %+v", e, e)
+	d.Printf("%T: %+v", e, e)
 	w := Window(e.Window)
 	b := root.Children().BoxByWindow(w, true)
 	if b == nil || b.Float() {

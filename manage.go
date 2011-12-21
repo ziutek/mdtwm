@@ -6,13 +6,13 @@ import (
 )
 
 func manage(w Window, panel ParentBox, vievableOnly bool) {
-	l.Printf("*** Manage %s in %s", w, panel)
+	d.Printf("Manage %s in %s", w, panel)
 	_, class := w.Class()
 	if cfg.Ignore.Contains(class) {
 		return
 	}
 	if root.Children().BoxByWindow(w, true) != nil {
-		l.Printf("***   %s - alredy managed", w)
+		d.Printf("  %s - alredy managed", w)
 		return
 	}
 	attr, err := w.Attrs()
@@ -22,11 +22,11 @@ func manage(w Window, panel ParentBox, vievableOnly bool) {
 	}
 	// Don't manage if OverrideRedirect flag is set
 	if attr.OverrideRedirect {
-		l.Print("***   OverrideRedirect")
+		d.Print("  OverrideRedirect")
 		return
 	}
 	if vievableOnly && attr.MapState != xgb.MapStateViewable {
-		l.Print("***   not vievable")
+		d.Print("  not vievable")
 		return
 	}
 	p, err := w.Prop(AtomNetWmWindowType, math.MaxUint32)
@@ -36,7 +36,7 @@ func manage(w Window, panel ParentBox, vievableOnly bool) {
 	}
 	wm_type := atomList(p)
 	if wm_type.Contains(AtomNetWmWindowTypeDock) {
-		l.Printf("***   window %s is of type dock", w)
+		d.Printf("  window %s is of type dock", w)
 		strut, err := w.Prop(AtomNetWmStrutPartial, math.MaxUint32)
 		if err != nil {
 			l.Print("Prop: ", err)
@@ -52,10 +52,10 @@ func manage(w Window, panel ParentBox, vievableOnly bool) {
 			height -= int16(top + bottom)
 			// Change size and position for all desks
 			i := root.Children().FrontIter(false)
-			for d := i.Next(); d != nil; d = i.Next() {
-				l.Printf("***   Change size of %s: %d %d %d %d",
+			for p := i.Next(); p != nil; p = i.Next() {
+				d.Printf("  Change size of %s: %d %d %d %d",
 					d, x, y, width, height)
-				d.ReqPosSize(x, y, width, height)
+				p.ReqPosSize(x, y, width, height)
 			}
 		}
 		return
@@ -83,7 +83,7 @@ func manage(w Window, panel ParentBox, vievableOnly bool) {
 	}
 	// Insert new box in a panel.
 	if b.Float() {
-		l.Printf("***   Window %s will be floating", w)
+		d.Printf("  Window %s will be floating", w)
 		currentDesk.Insert(b)
 	} else {
 		panel.Insert(b)

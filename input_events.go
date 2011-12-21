@@ -5,7 +5,7 @@ import (
 )
 
 func keyPress(e xgb.KeyPressEvent) {
-	l.Printf("*** %T: %+v", e, e)
+	d.Printf("%T: %+v", e, e)
 	if e.State == cfg.ModMask {
 		cmd, ok := cfg.Keys[e.Detail]
 		if !ok {
@@ -69,7 +69,7 @@ func (c *Multiclick) Update(t xgb.Timestamp, moved bool) {
 var click Multiclick
 
 func buttonPress(e xgb.ButtonPressEvent) {
-	l.Printf("*** %T: %+v", e, e)
+	d.Printf("%T: %+v", e, e)
 	click.Inc(e.Time)
 	if click.First() {
 		// Save first clicked box and coordinates of first click
@@ -82,7 +82,7 @@ func buttonPress(e xgb.ButtonPressEvent) {
 }
 
 func buttonRelease(e xgb.ButtonReleaseEvent) {
-	l.Printf("*** %T: %+v", e, e)
+	d.Printf("%T: %+v", e, e)
 	click.Update(e.Time, false)
 	// Actions
 	switch click.Num {
@@ -134,7 +134,7 @@ func buttonRelease(e xgb.ButtonReleaseEvent) {
 }
 
 func motionNotify(e xgb.MotionNotifyEvent) {
-	//l.Printf("*** %T: %+v", e, e)
+	//d.Printf("%T: %+v", e, e)
 	dx := int(e.RootX - click.X)
 	dy := int(e.RootY - click.Y)
 	click.Update(e.Time, dx*dx+dy*dy > cfg.MovedClickRadius)
