@@ -1,0 +1,100 @@
+mdtwm debug: events.go:53: xgb.EnterNotifyEvent: {Detail:3 Time:3183607 Root:115 Event:14680069 Child:0 RootX:199 RootY:293 EventX:198 EventY:276 State:1024 Mode:0 SameScreenFocus:2}
+mdtwm debug: input_events.go:85: xgb.ButtonReleaseEvent: {Detail:3 Time:3184095 Root:115 Event:115 Child:8388611 RootX:131 RootY:322 EventX:131 EventY:322 State:1024 SameScreen:true}
+mdtwm debug: panel.go:97: Tile V in: mdtwm panel (8388614)
+mdtwm debug: events.go:53: xgb.EnterNotifyEvent: {Detail:1 Time:3184095 Root:115 Event:8388611 Child:8388614 RootX:131 RootY:322 EventX:131 EventY:306 State:0 Mode:2 SameScreenFocus:2}
+mdtwm debug: events.go:53: xgb.EnterNotifyEvent: {Detail:1 Time:3184095 Root:115 Event:8388614 Child:14680069 RootX:131 RootY:322 EventX:131 EventY:306 State:0 Mode:2 SameScreenFocus:2}
+mdtwm debug: events.go:53: xgb.EnterNotifyEvent: {Detail:0 Time:3184095 Root:115 Event:14680069 Child:0 RootX:131 RootY:322 EventX:130 EventY:305 State:0 Mode:2 SameScreenFocus:3}
+mdtwm debug: events.go:37: Unhandled event: xgb.ReparentNotifyEvent: {Event:115 Window:16777219 Parent:115 X:200 Y:216 OverrideRedirect:false}
+mdtwm debug: events.go:48: xgb.MapNotifyEvent: {Event:115 Window:16777219 OverrideRedirect:false}
+mdtwm debug: manage.go:11: Manage 16777219 in mdtwm panel (8388614)
+mdtwm debug: manage.go:17:   16777219 - alredy managed
+mdtwm debug: events.go:73: xgb.UnmapNotifyEvent: {Event:115 Window:16777219 FromConfigure:false}
+mdtwm debug: events.go:37: Unhandled event: xgb.ReparentNotifyEvent: {Event:115 Window:16777219 Parent:8388614 X:200 Y:200 OverrideRedirect:false}
+mdtwm debug: events.go:53: xgb.EnterNotifyEvent: {Detail:3 Time:3184839 Root:115 Event:16777219 Child:0 RootX:205 RootY:272 EventX:4 EventY:55 State:0 Mode:0 SameScreenFocus:2}
+mdtwm debug: events.go:53: xgb.EnterNotifyEvent: {Detail:3 Time:3185446 Root:115 Event:14680069 Child:0 RootX:282 RootY:215 EventX:281 EventY:198 State:0 Mode:0 SameScreenFocus:2}
+mdtwm debug: events.go:53: xgb.EnterNotifyEvent: {Detail:3 Time:3187838 Root:115 Event:16777219 Child:0 RootX:415 RootY:220 EventX:214 EventY:3 State:0 Mode:0 SameScreenFocus:2}
+mdtwm debug: events.go:53: xgb.EnterNotifyEvent: {Detail:3 Time:3187934 Root:115 Event:8388615 Child:0 RootX:486 RootY:280 EventX:2 EventY:264 State:0 Mode:0 SameScreenFocus:2}
+mdtwm debug: events.go:53: xgb.EnterNotifyEvent: {Detail:4 Time:3188262 Root:115 Event:8388614 Child:16777219 RootX:481 RootY:343 EventX:481 EventY:327 State:0 Mode:0 SameScreenFocus:2}
+mdtwm debug: events.go:53: xgb.EnterNotifyEvent: {Detail:3 Time:3188262 Root:115 Event:16777219 Child:0 RootX:481 RootY:343 EventX:280 EventY:126 State:0 Mode:0 SameScreenFocus:2}
+mdtwm debug: events.go:53: xgb.EnterNotifyEvent: {Detail:3 Time:3195356 Root:115 Event:8388615 Child:0 RootX:485 RootY:471 EventX:1 EventY:455 State:0 Mode:0 SameScreenFocus:2}
+mdtwm debug: events.go:53: xgb.EnterNotifyEvent: {Detail:4 Time:3195724 Root:115 Event:8388614 Child:16777219 RootX:482 RootY:481 EventX:482 EventY:465 State:0 Mode:0 SameScreenFocus:2}
+mdtwm debug: events.go:53: xgb.EnterNotifyEvent: {Detail:3 Time:3195724 Root:115 Event:16777219 Child:0 RootX:482 RootY:481 EventX:281 EventY:264 State:0 Mode:0 SameScreenFocus:2}
+mdtwm debug: events.go:53: xgb.EnterNotifyEvent: {Detail:3 Time:3196548 Root:115 Event:8388615 Child:0 RootX:484 RootY:492 EventX:0 EventY:476 State:0 Mode:0 SameScreenFocus:2}
+mdtwm debug: events.go:53: xgb.EnterNotifyEvent: {Detail:4 Time:3196908 Root:115 Event:8388614 Child:16777219 RootX:483 RootY:492 EventX:483 EventY:476 State:0 Mode:0 SameScreenFocus:2}
+mdtwm debug: events.go:53: xgb.EnterNotifyEvent: {Detail:3 Time:3196908 Root:115 Event:16777219 Child:0 RootX:483 RootY:492 EventX:282 EventY:275 State:0 Mode:0 SameScreenFocus:2}
+mdtwm debug: events.go:73: xgb.UnmapNotifyEvent: {Event:16777219 Window:16777219 FromConfigure:false}
+x protocol error: BadWindow (major=2 minor=0 cookie=875 id=0x1000003)
+x protocol error: BadWindow (major=7 minor=0 cookie=876 id=0x1000003)
+mdtwm debug: panel.go:97: Tile V in:  (8388614)
+mdtwm debug: events.go:53: xgb.EnterNotifyEvent: {Detail:3 Time:3197696 Root:115 Event:14680069 Child:0 RootX:483 RootY:492 EventX:482 EventY:475 State:0 Mode:0 SameScreenFocus:3}
+x protocol error: BadWindow (major=2 minor=0 cookie=877 id=0x1000003)
+mdtwm debug: events.go:68: xgb.DestroyNotifyEvent: {Event:16777219 Window:16777219}
+mdtwm debug: events.go:37: Unhandled event: xgb.CreateNotifyEvent: {Parent:115 Window:16777228 X:0 Y:0 Width:100 Height:100 BorderWidth:0 OverrideRedirect:true}
+mdtwm debug: events.go:80: xgb.ConfigureNotifyEvent: {Event:115 Window:16777228 AboveSibling:18874371 X:0 Y:0 Width:22 Height:22 BorderWidth:0 OverrideRedirect:true}
+mdtwm debug: events.go:37: Unhandled event: xgb.CreateNotifyEvent: {Parent:115 Window:16777230 X:0 Y:0 Width:100 Height:100 BorderWidth:0 OverrideRedirect:false}
+mdtwm debug: events.go:37: Unhandled event: xgb.CreateNotifyEvent: {Parent:115 Window:16777232 X:0 Y:0 Width:100 Height:100 BorderWidth:0 OverrideRedirect:false}
+mdtwm debug: events.go:93: xgb.ConfigureRequestEvent: {StackMode:0 Parent:115 Window:16777232 Sibling:0 X:0 Y:0 Width:954 Height:1062 BorderWidth:0 ValueMask:12}
+mdtwm debug: events.go:93: xgb.ConfigureRequestEvent: {StackMode:0 Parent:115 Window:16777232 Sibling:0 X:0 Y:0 Width:954 Height:1062 BorderWidth:0 ValueMask:12}
+mdtwm debug: events.go:93: xgb.ConfigureRequestEvent: {StackMode:0 Parent:115 Window:16777232 Sibling:0 X:0 Y:-978 Width:100 Height:100 BorderWidth:0 ValueMask:3}
+mdtwm debug: events.go:93: xgb.ConfigureRequestEvent: {StackMode:0 Parent:115 Window:16777232 Sibling:0 X:0 Y:-978 Width:100 Height:100 BorderWidth:0 ValueMask:3}
+mdtwm debug: events.go:93: xgb.ConfigureRequestEvent: {StackMode:0 Parent:115 Window:16777232 Sibling:0 X:0 Y:0 Width:100 Height:100 BorderWidth:0 ValueMask:64}
+mdtwm debug: events.go:80: xgb.ConfigureNotifyEvent: {Event:115 Window:16777232 AboveSibling:16777230 X:0 Y:0 Width:954 Height:1062 BorderWidth:0 OverrideRedirect:false}
+mdtwm debug: events.go:80: xgb.ConfigureNotifyEvent: {Event:115 Window:16777232 AboveSibling:16777230 X:0 Y:-978 Width:954 Height:1062 BorderWidth:0 OverrideRedirect:false}
+mdtwm debug: events.go:37: Unhandled event: xgb.CreateNotifyEvent: {Parent:115 Window:18874398 X:0 Y:0 Width:200 Height:200 BorderWidth:0 OverrideRedirect:true}
+mdtwm debug: events.go:53: xgb.EnterNotifyEvent: {Detail:3 Time:3198804 Root:115 Event:8388615 Child:0 RootX:498 RootY:204 EventX:14 EventY:188 State:0 Mode:0 SameScreenFocus:2}
+mdtwm debug: events.go:42: xgb.MapRequestEvent: {Parent:115 Window:16777232}
+mdtwm debug: manage.go:11: Manage 16777232 in mdtwm panel (8388615)
+mdtwm debug: panel.go:97: Tile V in: mdtwm panel (8388615)
+mdtwm debug: events.go:93: xgb.ConfigureRequestEvent: {StackMode:0 Parent:115 Window:16777232 Sibling:0 X:0 Y:-978 Width:954 Height:1062 BorderWidth:0 ValueMask:64}
+mdtwm: window.go:253: Can't convert negative int16 to uint16
+panic: Can't convert negative int16 to uint16
+
+goroutine 1 [running]:
+log.(*Logger).Panic(0x18710080, 0x187c3da8, 0x1)
+	/home/michal/Programowanie/go/goroot/src/pkg/log/log.go:199 +0x81
+main.Uint16(0xfff0fffe, 0x10001, 0x1872d29a)
+	/home/michal/Programowanie/go/moje_prog/mdtwm/window.go:253 +0xb7
+main.Pint16(0x1872fffe, 0xfff0fe1c, 0xfffefffe)
+	/home/michal/Programowanie/go/moje_prog/mdtwm/window.go:259 +0x2b
+main.configureRequest(0x0, 0x73)
+	/home/michal/Programowanie/go/moje_prog/mdtwm/events.go:140 +0x368
+main.handleEvent(0x812d060, 0x1872d600)
+	/home/michal/Programowanie/go/moje_prog/mdtwm/events.go:13 +0x321
+main.eventLoop()
+	/home/michal/Programowanie/go/moje_prog/mdtwm/main.go:74 +0x1e1
+main.main()
+	/home/michal/Programowanie/go/moje_prog/mdtwm/main.go:17 +0x35
+
+goroutine 2 [syscall]:
+os/signal.process(0x187015d0, 0x0)
+	/home/michal/Programowanie/go/goroot/src/pkg/os/signal/signal.go:19 +0x22
+created by os/signal.init·1
+	/home/michal/Programowanie/go/goroot/src/pkg/os/signal/signal.go:32 +0x56
+
+goroutine 3 [chan receive]:
+main._func_001()
+	/home/michal/Programowanie/go/moje_prog/mdtwm/main.go:22 +0x3f
+created by main.signals
+	/home/michal/Programowanie/go/moje_prog/mdtwm/main.go:40 +0x23
+
+goroutine 4 [syscall]:
+syscall.Syscall6()
+	/home/michal/Programowanie/go/goroot/src/pkg/syscall/asm_linux_386.s:46 +0x27
+syscall.EpollWait(0x6, 0x18714008, 0xa, 0xa, 0xffffffff, ...)
+	/home/michal/Programowanie/go/goroot/src/pkg/syscall/zsyscall_linux_386.go:252 +0x7d
+net.(*pollster).WaitFD(0x18714000, 0x18701630, 0x0, 0x0, 0x3, ...)
+	/home/michal/Programowanie/go/goroot/src/pkg/net/fd_linux.go:141 +0x11c
+net.(*pollServer).Run(0x18701630, 0x0)
+	/home/michal/Programowanie/go/goroot/src/pkg/net/fd.go:228 +0xdf
+created by net.newPollServer
+	/home/michal/Programowanie/go/goroot/src/pkg/net/newpollserver.go:35 +0x2b7
+
+goroutine 5 [select]:
+main.(*Dzen2Logger).thr(0x18701b70, 0x0)
+	/home/michal/Programowanie/go/moje_prog/mdtwm/cfg_utils.go:177 +0x4b5
+created by main.(*Dzen2Logger).Start
+	/home/michal/Programowanie/go/moje_prog/mdtwm/cfg_utils.go:166 +0x6b
+
+goroutine 6 [syscall]:
+created by addtimer
+	/home/michal/Programowanie/go/goroot/src/pkg/runtime/time.c:66
