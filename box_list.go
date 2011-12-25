@@ -28,6 +28,42 @@ func (bl BoxList) PushBack(b Box) {
 	bl.raw.PushBack(b)
 }
 
+func (bl BoxList) elementByWindow(w Window, full_tree bool) *list.Element {
+	for e := bl.raw.Front(); e != nil; e = e.Next() {
+		b := e.Value.(Box)
+		if b.Window() == w {
+			return e
+		}
+		if full_tree {
+			ce := b.Children().elementByWindow(w, true)
+			if ce != nil {
+				return ce
+			}
+		}
+	}
+	return nil
+}
+
+// Returns false if  ark not in bl
+func (bl BoxList) InsertAfter(b, mark  Box) bool {
+	e := bl.elementByWindow(mark.Window(), false)
+	if e == nil {
+		return false
+	}
+	bl.raw.InsertAfter(b, e)
+	return true
+}
+
+// Returns false if b not in bl
+func (bl BoxList) InsertBefore(b, mark Box) bool {
+	e := bl.elementByWindow(mark.Window(), false)
+	if e == nil {
+		return false
+	}
+	bl.raw.InsertBefore(b, e)
+	return true
+}
+
 func (bl BoxList) Len() int {
 	return bl.raw.Len()
 }
@@ -45,17 +81,8 @@ func (bl BoxList) BackIter(full_tree bool) BoxListIterator {
 }
 
 func (bl BoxList) BoxByWindow(w Window, full_tree bool) Box {
-	for e := bl.raw.Front(); e != nil; e = e.Next() {
-		b := e.Value.(Box)
-		if b.Window() == w {
-			return b
-		}
-		if full_tree {
-			b = b.Children().BoxByWindow(w, true)
-			if b != nil {
-				return b
-			}
-		}
+	if e := bl.elementByWindow(w, full_tree); e != nil {
+		return e.Value.(Box)
 	}
 	return nil
 }

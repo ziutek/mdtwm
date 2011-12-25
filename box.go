@@ -14,13 +14,9 @@ type Box interface {
 	SetParent(p ParentBox)
 	Children() BoxList
 
-	// Methods for INTERNAL geometry
-	Geometry() Geometry // Get geometry
-	SyncGeometry(g Geometry) // Sync geometry with information from Xserver
-
-	// Methods for EXTERNEL geometry
-	PosSize() (x, y, width, height int16) // Get geometry
-	ReqPosSize(x, y, width, height int16) // Send geometry request to Xserver
+	Geometry() Geometry // Get geometry (width and height are internal)
+	PosSize() (x, y, width, height int16) // Get externel geometry
+	SetPosSize(x, y, width, height int16) // Set external geometry
 
 	SetFocus(f bool)
 	Raise()
@@ -39,7 +35,8 @@ type Box interface {
 type ParentBox interface {
 	Box
 
-	Insert(b Box)
+	Append(b Box)
+	InsertNextTo(b, mark Box, x, y int16)
 	Remove(b Box)
 }
 
@@ -78,12 +75,11 @@ func (b *commonBox) Parent() ParentBox {
 func (b *commonBox) SetParent(p ParentBox) {
 	// Translate current coordinates to new parent coordinates (useful when new
 	// parent is root and window should stay in place.
-	var err error
-	b.x, b.y, _, _, err = p.Window().TranslateCoordinates(
+	var ok bool
+	b.x, b.y, _, _, ok = p.Window().TranslateCoordinates(
 		b.parent.Window(), b.x, b.y,
 	)
-	if err != nil {
-		l.Print("SetParent: ", err)
+	if !ok {
 		return
 	}
 	b.parent = p
@@ -108,10 +104,10 @@ func (b *commonBox) SetFloat(float bool) {
 
 func (b *commonBox) Name() string {
 	// We prefer utf8 version
-	if p, err := b.w.Prop(AtomNetWmName, 128); err == nil && len(p.Value) > 0 {
+	if p := b.w.Prop(AtomNetWmName, 128); p != nil && len(p.Value) > 0 {
 		return string(p.Value)
 	}
-	if p, err := b.w.Prop(xgb.AtomWmName, 128); err == nil && len(p.Value) > 0 {
+	if p := b.w.Prop(xgb.AtomWmName, 128); p != nil && len(p.Value) > 0 {
 		return string(p.Value)
 	}
 	return ""

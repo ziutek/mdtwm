@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"code.google.com/p/x-go-binding/xgb"
 	"fmt"
-	"math"
 	"reflect"
 	"unsafe"
 )
@@ -52,18 +51,23 @@ func (w Window) ChangeSaveSet(mode byte) {
 }
 
 func (w Window) GrabPointer(ownerEvents bool, eventMask uint16, pointerMode,
-		keyboardMode byte, confineTo Window, cursor xgb.Id) (byte, error) {
+	keyboardMode byte, confineTo Window, cursor xgb.Id) (byte, bool) {
 	r, err := conn.GrabPointer(ownerEvents, w.Id(), eventMask, pointerMode,
 		keyboardMode, confineTo.Id(), cursor, xgb.TimeCurrentTime)
 	if err != nil {
-		return 0, err
+		logFuncErr(err)
+		return 0, false
 	}
-	return r.Status, nil
+	return r.Status, true
 }
 
-func (w Window) QueryPointer() (r *xgb.QueryPointerReply, err error) {
-	r, err = conn.QueryPointer(w.Id())
-	return
+func (w Window) QueryPointer() *xgb.QueryPointerReply {
+	r, err := conn.QueryPointer(w.Id())
+	if err != nil {
+		logFuncErr(err)
+		return nil
+	}
+	return r
 }
 
 func (w Window) GrabButton(ownerEvents bool, eventMask uint16,
@@ -90,14 +94,14 @@ func (w Window) SetInputFocus() {
 	conn.SetInputFocus(xgb.InputFocusPointerRoot, w.Id(), xgb.TimeCurrentTime)
 }
 
-func (w Window) TranslateCoordinates(srcW Window, srcX, srcY int16) (x, y int16,
-	child Window, sameScreen bool, err error) {
-	var r *xgb.TranslateCoordinatesReply
-	r, err = conn.TranslateCoordinates(srcW.Id(), w.Id(), srcX, srcY)
+func (w Window) TranslateCoordinates(srcW Window, srcX, srcY int16) (x, y int16, child Window, sameScreen, ok bool) {
+	r, err := conn.TranslateCoordinates(srcW.Id(), w.Id(), srcX, srcY)
 	if err != nil {
+		logFuncErr(err)
 		return
 	}
-	return int16(r.DstX), int16(r.DstY), Window(r.Child), r.SameScreen, nil
+	return int16(r.DstX), int16(r.DstY), Window(r.Child),
+		r.SameScreen, true
 }
 
 func (w Window) Send(propagate bool, eventMask uint32, event xgb.Event) {
@@ -126,16 +130,17 @@ func (w Window) Configure(mask uint16, vals ...interface{}) {
 	conn.ConfigureWindow(w.Id(), mask, data)
 }
 
-func (w Window) Geometry() (Geometry, error) {
+func (w Window) Geometry() (Geometry, bool) {
 	g, err := conn.GetGeometry(w.Id())
 	if err != nil {
-		return Geometry{}, err
+		logFuncErr(err)
+		return Geometry{}, false
 	}
 	return Geometry{
 		g.X, g.Y,
 		Int16(g.Width), Int16(g.Height),
 		Int16(g.BorderWidth),
-	}, nil
+	}, true
 }
 
 func (w Window) SetGeometry(g Geometry) {
@@ -162,9 +167,13 @@ func (w Window) SetBorderWidth(width int16) {
 
 // Attributes
 
-func (w Window) Attrs() (a *xgb.GetWindowAttributesReply, err error) {
-	a, err = conn.GetWindowAttributes(w.Id())
-	return
+func (w Window) Attrs() *xgb.GetWindowAttributesReply {
+	a, err := conn.GetWindowAttributes(w.Id())
+	if err != nil {
+		logFuncErr(err)
+		return nil
+	}
+	return a
 }
 
 func (w Window) ChangeAttrs(mask uint32, vals ...uint32) {
@@ -189,8 +198,14 @@ func (w Window) SetEventMask(mask uint32) {
 
 // Properities
 
-func (w Window) Prop(prop xgb.Id, max uint32) (*xgb.GetPropertyReply, error) {
-	return conn.GetProperty(false, w.Id(), prop, xgb.GetPropertyTypeAny, 0, max)
+func (w Window) Prop(prop xgb.Id, max uint32) *xgb.GetPropertyReply {
+	p, err := conn.GetProperty(false, w.Id(), prop, xgb.GetPropertyTypeAny,
+		0, max)
+	if err != nil {
+		logFuncErr(err)
+		return nil
+	}
+	return p
 }
 
 func (w Window) ChangeProp(mode byte, prop, typ xgb.Id, val interface{}) {
@@ -235,8 +250,8 @@ func (w Window) ChangeProp(mode byte, prop, typ xgb.Id, val interface{}) {
 // Class properity is implemented in Window because it is needed to check if
 // WM need to ignore some window
 func (w Window) Class() (instance, class string) {
-	p, err := w.Prop(xgb.AtomWmClass, 128)
-	if err != nil {
+	p := w.Prop(xgb.AtomWmClass, 128)
+	if p == nil {
 		return
 	}
 	v := p.Value
@@ -245,40 +260,4 @@ func (w Window) Class() (instance, class string) {
 		return
 	}
 	return string(v[:i]), string(v[i+1 : len(v)-1])
-}
-
-// Utils
-func Uint16(x int16) uint16 {
-	if x < 0 {
-		l.Panic("Can't convert negative int16 to uint16")
-	}
-	return uint16(x)
-}
-
-func Pint16(x int16) uint16 {
-	r := Uint16(x)
-	if r == 0 {
-		l.Print("Pint16(0)")
-		return 1
-	}
-	return r
-}
-
-func Int16(x uint16) int16 {
-	if x > math.MaxInt16 {
-		l.Panicf("Can't convert %d to int16", x)
-	}
-	return int16(x)
-}
-
-func put16(buf []byte, v uint16) {
-	buf[0] = byte(v)
-	buf[1] = byte(v >> 8)
-}
-
-func put32(buf []byte, v uint32) {
-	buf[0] = byte(v)
-	buf[1] = byte(v >> 8)
-	buf[2] = byte(v >> 16)
-	buf[3] = byte(v >> 24)
 }

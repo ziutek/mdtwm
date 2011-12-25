@@ -52,7 +52,7 @@ func (p *RootPanel) Geometry() Geometry {
 	}
 }
 
-func (p *RootPanel) ReqPosSize(x, y, width, height int16) {
+func (p *RootPanel) SetPosSize(x, y, width, height int16) {
 	l.Panic("Can't request a geometry change of root window")
 }
 
@@ -65,12 +65,17 @@ func (p *RootPanel) SetFocus(f bool) {
 }
 
 // Inserts a box into panel 
-func (p *RootPanel) Insert(b Box) {
+func (p *RootPanel) Append(b Box) {
 	b.SetParent(p)
 	p.children.PushBack(b)
-	b.ReqPosSize(p.x, p.y, p.width, p.height)
+	b.SetPosSize(p.x, p.y, p.width, p.height)
 	b.SetName("mdtwm desktop")
 	b.Window().Map()
+}
+
+func (p *RootPanel) InsertNextTo(b, mark Box, x, y int16) {
+	// TODO: Proper implementation needed.
+	panic("Unimplemented.")
 }
 
 func (p *RootPanel) Remove(b Box) {

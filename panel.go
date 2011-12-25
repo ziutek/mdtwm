@@ -40,9 +40,10 @@ func (p *Panel) Geometry() Geometry {
 	}
 }
 
-func (p *Panel) ReqPosSize(x, y, width, height int16) {
+func (p *Panel) SetPosSize(x, y, width, height int16) {
 	p.x, p.y, p.width, p.height = x, y, width, height
 	p.w.SetGeometry(Geometry{x, y, width, height, 0})
+	p.tile()
 }
 
 func (p *Panel) SyncGeometry(g Geometry) {
@@ -60,11 +61,36 @@ func (p *Panel) SetFocus(f bool) {
 	}
 }
 
-// Inserts a box into panel 
-func (p *Panel) Insert(b Box) {
-	b.SetParent(p)
-	// TODO: Implement finding of best place to insert
+// Inserts b next to mark. Can use x, y (coordinates in mark) for decision.
+func (p *Panel) InsertNextTo(b, mark Box, x, y int16) {
+	var ok bool
+	mg := mark.Geometry()
+	if p.typ == Vertical && y < mg.H/2 || p.typ == Horizontal && x < mg.W/2 {
+		ok = p.children.InsertBefore(b, mark)
+	} else {
+		ok = p.children.InsertAfter(b, mark)
+	}
+	if !ok {
+		p.children.PushBack(b)
+	}
+	p.insertCommon(b)
+}
+
+func (p *Panel) InsertBefore(b, mark Box) {
+	if !p.children.InsertBefore(b, mark) {
+		p.children.PushBack(b)
+	}
+	p.insertCommon(b)
+}
+
+func (p *Panel) Append(b Box) {
 	p.children.PushBack(b)
+	p.insertCommon(b)
+}
+
+// Inserts a box into panel 
+func (p *Panel) insertCommon(b Box) {
+	b.SetParent(p)
 	if !b.Float() {
 		// Rearange panel and show new box
 		p.tile()
@@ -104,12 +130,12 @@ func (p *Panel) tile() {
 				continue
 			}
 			h := hg.Next()
-			b.ReqPosSize(0, y, w, h)
+			b.SetPosSize(0, y, w, h)
 			y += h
 			n--
 		}
 		// Last window obtain all remaining space
-		i.Next().ReqPosSize(0, y, w, p.height-y)
+		i.Next().SetPosSize(0, y, w, p.height-y)
 	} else {
 		d.Print("Tile H in:", p)
 		wg := NewSizeGen(p.width, n, p.ratio)
@@ -121,12 +147,12 @@ func (p *Panel) tile() {
 				continue
 			}
 			w := wg.Next()
-			b.ReqPosSize(x, 0, w, h)
+			b.SetPosSize(x, 0, w, h)
 			x += w
 			n--
 		}
 		// Last window obtain all remaining space
-		i.Next().ReqPosSize(x, 0, p.width-x, h)
+		i.Next().SetPosSize(x, 0, p.width-x, h)
 	}
 }
 

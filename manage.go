@@ -17,9 +17,8 @@ func manage(w Window, panel ParentBox, vievableOnly bool) {
 		d.Printf("  %s - alredy managed", w)
 		return
 	}
-	attr, err := w.Attrs()
-	if err != nil {
-		l.Print("Attrs: ", err)
+	attr := w.Attrs()
+	if attr == nil {
 		return
 	}
 	// During startup manage obtains each existing window with vievableOnly=true
@@ -37,9 +36,8 @@ func manage(w Window, panel ParentBox, vievableOnly bool) {
 		return
 	}
 	// Check window type
-	p, err := w.Prop(AtomNetWmWindowType, math.MaxUint32)
-	if err != nil {
-		l.Print("Prop: ", err)
+	p := w.Prop(AtomNetWmWindowType, math.MaxUint32)
+	if p == nil {
 		return
 	}
 	wm_type := atomList(p)
@@ -55,9 +53,8 @@ func manage(w Window, panel ParentBox, vievableOnly bool) {
 		wm_type.Contains(AtomNetWmWindowTypeSplash) {
 		b.SetFloat(true)
 	}
-	p, err = w.Prop(xgb.AtomWmTransientFor, math.MaxUint32)
-	if err != nil {
-		l.Print("Prop: ", err)
+	p = w.Prop(xgb.AtomWmTransientFor, math.MaxUint32)
+	if p == nil {
 		return
 	}
 	tr_for := atomList(p)
@@ -70,9 +67,9 @@ func manage(w Window, panel ParentBox, vievableOnly bool) {
 	// Insert new box in a panel.
 	if b.Float() {
 		d.Printf("  Window %s will be floating", w)
-		currentDesk.Insert(b)
+		currentDesk.Append(b)
 	} else {
-		panel.Insert(b)
+		panel.Append(b)
 	}
 }
 
@@ -92,15 +89,13 @@ type Struts map[Window]strutGeometry
 func (s Struts) Update(w Window, add bool) bool {
 	x, y, width, height := currentDesk.PosSize()
 	if add {
-		strut, err := w.Prop(AtomNetWmStrutPartial, math.MaxUint32)
-		if err != nil {
-			l.Print("Prop: ", err)
+		strut := w.Prop(AtomNetWmStrutPartial, math.MaxUint32)
+		if strut == nil {
 			return false
 		}
 		if strut.ValueLen != 12 {
-			strut, err = w.Prop(AtomNetWmStrut, math.MaxUint32)
-			if err != nil {
-				l.Print("Prop: ", err)
+			strut = w.Prop(AtomNetWmStrut, math.MaxUint32)
+			if strut == nil {
 				return false
 			}
 		}
@@ -130,7 +125,7 @@ func (s Struts) Update(w Window, add bool) bool {
 	// Change size and position for all desks
 	i := root.Children().FrontIter(false)
 	for p := i.Next(); p != nil; p = i.Next() {
-		p.ReqPosSize(x, y, width, height)
+		p.SetPosSize(x, y, width, height)
 	}
 	return true
 }

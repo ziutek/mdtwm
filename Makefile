@@ -17,6 +17,7 @@ mdtwm :	\
 	boxed_window.go \
 	manage.go\
 	atoms.go\
+	common.go\
 	utils.go\
 	events.go\
 	input_events.go\
@@ -31,6 +32,7 @@ test : \
 	window.go\
 	geometry.go\
 	atoms.go\
+	utils.go\
 
 	$(GC) -o $@.$O $^
 	$(LD) -o $@ $@.$O

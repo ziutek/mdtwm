@@ -28,7 +28,8 @@ func (b *BoxedWindow) Geometry() Geometry {
 	}
 }
 
-func (b *BoxedWindow) ReqPosSize(x, y, width, height int16) {
+func (b *BoxedWindow) SetPosSize(x, y, width, height int16) {
+	b.x, b.y, b.width, b.height = x, y, width, height
 	bb := 2 * cfg.BorderWidth
 	b.w.SetGeometry(Geometry{
 		x, y,

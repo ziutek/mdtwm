@@ -21,8 +21,6 @@ func handleEvent(event xgb.Event) {
 		unmapNotify(e)
 	case xgb.DestroyNotifyEvent:
 		destroyNotify(e)
-	case xgb.ConfigureNotifyEvent:
-		configureNotify(e)
 
 	// Keyboard and mouse events
 	case xgb.KeyPressEvent:
@@ -40,13 +38,13 @@ func handleEvent(event xgb.Event) {
 
 func mapRequest(e xgb.MapRequestEvent) {
 	d.Printf("%T: %+v", e, e)
-	manage(Window(e.Window) , currentPanel(), false)
+	manage(Window(e.Window), currentPanel(), false)
 }
 
 // For windows with override-redirect flag
 func mapNotify(e xgb.MapNotifyEvent) {
 	d.Printf("%T: %+v", e, e)
-	manage(Window(e.Window) , currentPanel(), false)
+	manage(Window(e.Window), currentPanel(), false)
 }
 
 func enterNotify(e xgb.EnterNotifyEvent) {
@@ -76,32 +74,19 @@ func unmapNotify(e xgb.UnmapNotifyEvent) {
 	unmanage(Window(e.Event))
 }
 
-func configureNotify(e xgb.ConfigureNotifyEvent) {
-	d.Printf("%T: %+v", e, e)
-	b := root.Children().BoxByWindow(Window(e.Event), true)
-	if b == nil {
-		return
-	}
-	b.SyncGeometry(Geometry{
-		e.X, e.Y,
-		Int16(e.Width), Int16(e.Height),
-		Int16(e.BorderWidth),
-	})
-}
-
 func configureRequest(e xgb.ConfigureRequestEvent) {
 	d.Printf("%T: %+v", e, e)
 	w := Window(e.Window)
 	b := root.Children().BoxByWindow(w, true)
+	mask := (xgb.ConfigWindowX | xgb.ConfigWindowY |
+		xgb.ConfigWindowWidth | xgb.ConfigWindowHeight |
+		xgb.ConfigWindowBorderWidth | xgb.ConfigWindowSibling |
+		xgb.ConfigWindowStackMode) & e.ValueMask
+	v := make([]interface{}, 0, 7)
 	if b == nil || b.Float() {
 		// We accept request from floating windows.
-		// Unmanaged window will be configured by manage() function so
-		// now we can simply execute its request.
-		mask := (xgb.ConfigWindowX | xgb.ConfigWindowY |
-			xgb.ConfigWindowWidth | xgb.ConfigWindowHeight |
-			xgb.ConfigWindowBorderWidth | xgb.ConfigWindowSibling |
-			xgb.ConfigWindowStackMode) & e.ValueMask
-		v := make([]interface{}, 0, 7)
+		// Unmanaged window will be configured by manage() function after
+		// MapNotify event so now we can simply execute its request.
 		if mask&xgb.ConfigWindowX != 0 {
 			v = append(v, e.X)
 		}
@@ -126,7 +111,7 @@ func configureRequest(e xgb.ConfigureRequestEvent) {
 		w.Configure(mask, v...)
 		return
 	}
-	// Force box configuration
+	// Force window configuration
 	g := b.Geometry()
 	cne := xgb.ConfigureNotifyEvent{
 		Event:        e.Window,

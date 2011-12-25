@@ -45,7 +45,7 @@ func main() {
 		if err != nil {
 			l.Fatal("QueryTree: ", err)
 		}
-		wmName, _ := w.Prop(AtomNetWmName, 128)
+		wmName := w.Prop(AtomNetWmName, 128)
 
 		info := struct {
 			id, root, parent  xgb.Id
@@ -58,9 +58,9 @@ func main() {
 			string(wmName.Value), inst, class,
 			Geometry{},
 		}
-		info.g, err = w.Geometry()
-		if err != nil {
-			l.Print(err)
+		var ok bool
+		info.g, ok = w.Geometry()
+		if !ok {
 			return
 		}
 

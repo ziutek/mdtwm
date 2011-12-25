@@ -95,13 +95,12 @@ func buttonRelease(e xgb.ButtonReleaseEvent) {
 			// Send right click to the box
 			var (
 				child Window
-				err   error
+				ok bool
 			)
-			e.EventX, e.EventY, child, _, err = w.TranslateCoordinates(
+			e.EventX, e.EventY, child, _, ok = w.TranslateCoordinates(
 				root.Window(), e.RootX, e.RootY,
 			)
-			if err != nil {
-				l.Print("TranslateCoordinates: ", err)
+			if !ok {
 				return
 			}
 			e.Event = w.Id()
@@ -113,14 +112,21 @@ func buttonRelease(e xgb.ButtonReleaseEvent) {
 			w.Send(false, xgb.EventMaskNoEvent, e)
 			return
 		}
-		if currentBox.Window() == w {
-			return // Box wasn't moved
+		if currentBox == nil || currentBox.Window() == w {
+			return // Box moved outside of desk or it wasn't moved
 		}
 		// Border color will be set properly by EnterNotify event.
 		w.SetBorderColor(cfg.NormalBorderColor)
 		// Move a box
 		click.Box.Parent().Remove(click.Box)
-		currentPanel().Insert(click.Box)
+		x, y, _, _, ok := currentBox.Window().TranslateCoordinates(
+			root.Window(), e.RootX, e.RootY,
+		)
+		if !ok {
+			currentPanel().Append(click.Box)
+			return
+		}
+		currentPanel().InsertNextTo(click.Box, currentBox, x, y)
 	case 2: // Two clicks
 	case 3: // Three clicks
 		if !click.Moved {

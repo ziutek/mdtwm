@@ -43,8 +43,8 @@ func configure() {
 			FgColor:	"#ddddcc",
 			BgColor:	"#555588",
 			TimeFormat: "Mon, Jan _2 15:04:05",
-			TimePos:    1286,
-			//TimePos:    1212,
+			//TimePos:    1286,
+			TimePos:    1212,
 		},
 
 		DefaultCursor:    stdCursor(68),
@@ -72,18 +72,18 @@ func configure() {
 	// Layout
 	root = NewRootPanel()
 	// Setup list of desk
-	desk1 := NewPanel(Horizontal, 1.97)
+	desk1 := NewPanel(Horizontal, 1.82) // 1.97
 	desk2 := NewPanel(Horizontal, 1)
 	desk3 := NewPanel(Horizontal, 1)
-	root.Insert(desk1)
-	root.Insert(desk2)
-	root.Insert(desk3)
+	root.Append(desk1)
+	root.Append(desk2)
+	root.Append(desk3)
 	// Setup two main panels on first desk
-	desk1.Insert(NewPanel(Vertical, 1))
-	desk1.Insert(NewPanel(Vertical, 0.3))
+	desk1.Append(NewPanel(Vertical, 1))
+	desk1.Append(NewPanel(Vertical, 0.3))
 	// Setup one main panel on second and thrid desk
-	desk2.Insert(NewPanel(Horizontal, 1))
-	desk3.Insert(NewPanel(Vertical, 1))
+	desk2.Append(NewPanel(Horizontal, 1))
+	desk3.Append(NewPanel(Vertical, 1))
 	// Set current desk and current box
 	currentDesk = desk1
 	currentDesk.Raise()
