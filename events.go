@@ -55,7 +55,7 @@ func enterNotify(e xgb.EnterNotifyEvent) {
 	w := Window(e.Event)
 	currentDesk.SetFocus(currentDesk.Window() == w)
 	// Iterate over all boxes in current desk
-	bi := currentDesk.Children().FrontIter(true)
+	bi := currentDesk.Children().FrontIter()
 	for b := bi.Next(); b != nil; b = bi.Next() {
 		b.SetFocus(b.Window() == w)
 	}

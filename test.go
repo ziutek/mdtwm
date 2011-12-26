@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"time"
 )
 
 var (
@@ -66,5 +65,4 @@ func main() {
 
 		fmt.Printf("%d: %+v\n", i, info)
 	}
-	time.Sleep(100e9)
 }

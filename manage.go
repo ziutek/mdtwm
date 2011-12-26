@@ -123,8 +123,7 @@ func (s Struts) Update(w Window, add bool) bool {
 		delete(s, w)
 	}
 	// Change size and position for all desks
-	i := root.Children().FrontIter(false)
-	for p := i.Next(); p != nil; p = i.Next() {
+	for p := root.Children().Front(); p != nil; p = p.Next() {
 		p.SetPosSize(x, y, width, height)
 	}
 	return true

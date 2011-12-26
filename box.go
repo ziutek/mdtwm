@@ -12,9 +12,18 @@ type Box interface {
 	Window() Window
 	Parent() ParentBox
 	SetParent(p ParentBox)
-	Children() BoxList
+	Children() *BoxList
+
+	// Methods for implement an element of BoxList
+	Next() Box
+	SetNext(next Box)
+	Prev() Box
+	SetPrev(prev Box)
+	List() *BoxList
+	SetList(l *BoxList)
 
 	Geometry() Geometry // Get geometry (width and height are internal)
+
 	PosSize() (x, y, width, height int16) // Get externel geometry
 	SetPosSize(x, y, width, height int16) // Set external geometry
 
@@ -43,10 +52,13 @@ type ParentBox interface {
 type commonBox struct {
 	w        Window    // window stored in this box
 	parent   ParentBox // parent panel
-	children BoxList   // child boxes contains childs of this box
-	eventMask uint32
+	children *BoxList  // child boxes contains childs of this box
 
-	float bool
+	prev, next Box
+	list       *BoxList
+
+	eventMask uint32
+	float     bool
 
 	// Box configuration
 	x, y, width, height int16
@@ -88,8 +100,32 @@ func (b *commonBox) SetParent(p ParentBox) {
 	b.w.SetEventMask(b.eventMask)
 }
 
-func (b *commonBox) Children() BoxList {
+func (b *commonBox) Children() *BoxList {
 	return b.children
+}
+
+func (b *commonBox) Prev() Box {
+	return b.prev
+}
+
+func (b *commonBox) SetPrev(prev Box) {
+	b.prev = prev
+}
+
+func (b *commonBox) Next() Box {
+	return b.next
+}
+
+func (b *commonBox) SetNext(next Box) {
+	b.next = next
+}
+
+func (b *commonBox) List() *BoxList {
+	return b.list
+}
+
+func (b *commonBox) SetList(l *BoxList) {
+	b.list = l
 }
 
 func (b *commonBox) Float() bool {

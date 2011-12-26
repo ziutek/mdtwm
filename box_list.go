@@ -1,109 +1,136 @@
 package main
 
-import (
-	"container/list"
-)
-
 type BoxList struct {
-	raw *list.List
+	front, back Box
+	length      int
 }
 
-func NewBoxList() BoxList {
-	return BoxList{list.New()}
+func NewBoxList() *BoxList {
+	return new(BoxList)
 }
 
-func (bl BoxList) Front() Box {
-	return bl.raw.Front().Value.(Box)
+func (bl *BoxList) Front() Box {
+	return bl.front
 }
 
-func (bl BoxList) Back() Box {
-	return bl.raw.Back().Value.(Box)
+func (bl *BoxList) Back() Box {
+	return bl.back
 }
 
-func (bl BoxList) PushFront(b Box) {
-	bl.raw.PushFront(b)
+func (bl *BoxList) Len() int {
+	return bl.length
 }
 
-func (bl BoxList) PushBack(b Box) {
-	bl.raw.PushBack(b)
+func (bl *BoxList) PushFront(b Box) {
+	if bl.front == nil {
+		bl.front, bl.back = b, b
+		b.SetPrev(nil)
+		b.SetNext(nil)
+		bl.length = 1
+		return
+	}
+	bl.InsertBefore(b, bl.front)
 }
 
-func (bl BoxList) elementByWindow(w Window, full_tree bool) *list.Element {
-	for e := bl.raw.Front(); e != nil; e = e.Next() {
-		b := e.Value.(Box)
+func (bl *BoxList) PushBack(b Box) {
+	if bl.back == nil {
+		bl.front, bl.back = b, b
+		b.SetPrev(nil)
+		b.SetNext(nil)
+		bl.length = 1
+		return
+	}
+	bl.InsertAfter(b, bl.front)
+}
+
+// Returns false if b not in bl
+func (bl *BoxList) InsertBefore(b, mark Box) bool {
+	if mark.List() != bl {
+		return false
+	}
+	if mark.Prev() == nil {
+		bl.front = b
+	} else {
+		mark.Prev().SetNext(b)
+	}
+	b.SetPrev(mark.Prev())
+	mark.SetPrev(b)
+	b.SetNext(mark)
+	bl.length++
+	return true
+}
+
+// Returns false if mark not in bl
+func (bl *BoxList) InsertAfter(b, mark Box) bool {
+	if mark.List() != bl {
+		return false
+	}
+	if mark.Next() == nil {
+		bl.back = b
+	} else {
+		mark.Next().SetPrev(b)
+	}
+	b.SetNext(mark.Next())
+	mark.SetNext(b)
+	b.SetPrev(mark)
+	bl.length++
+	return true
+}
+
+func (bl *BoxList) BoxByWindow(w Window, full_tree bool) Box {
+	for b := bl.Front(); b != nil; b = b.Next() {
 		if b.Window() == w {
-			return e
+			return b
 		}
 		if full_tree {
-			ce := b.Children().elementByWindow(w, true)
-			if ce != nil {
-				return ce
+			c := b.Children().BoxByWindow(w, true)
+			if c != nil {
+				return c
 			}
 		}
 	}
 	return nil
 }
 
-// Returns false if  ark not in bl
-func (bl BoxList) InsertAfter(b, mark  Box) bool {
-	e := bl.elementByWindow(mark.Window(), false)
-	if e == nil {
-		return false
+func (bl *BoxList) Remove(b Box) {
+	if b.List() != bl {
+		l.Panic("Can't remove a non existent box form a list")
 	}
-	bl.raw.InsertAfter(b, e)
-	return true
-}
-
-// Returns false if b not in bl
-func (bl BoxList) InsertBefore(b, mark Box) bool {
-	e := bl.elementByWindow(mark.Window(), false)
-	if e == nil {
-		return false
+	if b.Prev() == nil {
+		bl.front = b.Next()
+	} else {
+		b.Prev().SetNext(b.Next())
 	}
-	bl.raw.InsertBefore(b, e)
-	return true
+	if b.Next() == nil {
+		bl.back = b.Prev()
+	} else {
+		b.Next().SetPrev(b.Prev())
+	}
+	b.SetPrev(nil)
+	b.SetNext(nil)
+	b.SetList(nil)
+	bl.length--
 }
 
-func (bl BoxList) Len() int {
-	return bl.raw.Len()
-}
-
-func (bl BoxList) FrontIter(full_tree bool) BoxListIterator {
+func (bl *BoxList) FrontIter() BoxListIterator {
 	return &frontBoxListIterator{
-		boxListIterator{bl.raw.Front(), full_tree, nil},
+		boxListIterator{bl.Front(), nil},
 	}
 }
 
-func (bl BoxList) BackIter(full_tree bool) BoxListIterator {
+func (bl *BoxList) BackIter() BoxListIterator {
 	return &backBoxListIterator{
-		boxListIterator{bl.raw.Back(), full_tree, nil},
+		boxListIterator{bl.Back(), nil},
 	}
 }
 
-func (bl BoxList) BoxByWindow(w Window, full_tree bool) Box {
-	if e := bl.elementByWindow(w, full_tree); e != nil {
-		return e.Value.(Box)
-	}
-	return nil
-}
-
-func (bl BoxList) Remove(b Box) {
-	for e := bl.raw.Front(); e != nil; e = e.Next() {
-		if e.Value.(Box) == b {
-			bl.raw.Remove(e)
-			return
-		}
-	}
-	l.Panic("Can't remove a non existent box form a list")
-}
-
+// Iterates ovet full tree
 type BoxListIterator interface {
 	Next() Box
 }
 
 type boxListIterator struct {
-	current   *list.Element
-	full_tree bool
+	current   Box
 	child     BoxListIterator
 }
 
@@ -123,11 +150,9 @@ func (i *frontBoxListIterator) Next() (b Box) {
 	if i.current == nil {
 		return // There is no more data at all
 	}
-	b = i.current.Value.(Box)
+	b = i.current
 	i.current = i.current.Next()
-	if i.full_tree {
-		i.child = b.Children().FrontIter(i.full_tree)
-	}
+	i.child = b.Children().FrontIter()
 	return
 }
 
@@ -147,10 +172,8 @@ func (i *backBoxListIterator) Next() (b Box) {
 	if i.current == nil {
 		return // There is no more data at all
 	}
-	b = i.current.Value.(Box)
+	b = i.current
 	i.current = i.current.Prev()
-	if i.full_tree {
-		i.child = b.Children().BackIter(i.full_tree)
-	}
+	i.child = b.Children().BackIter()
 	return
 }

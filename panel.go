@@ -109,9 +109,11 @@ func (p *Panel) Remove(b Box) {
 
 // Update geometry for boxes in panel
 func (p *Panel) tile() {
-	i := p.children.FrontIter(false)
-	var n int16
-	for b := i.Next(); b != nil; b = i.Next() {
+	var (
+		n int16
+		b Box
+	)
+	for b = p.children.Front(); b != nil; b = b.Next() {
 		if !b.Float() {
 			n++
 		}
@@ -122,37 +124,31 @@ func (p *Panel) tile() {
 	if p.typ == Vertical {
 		d.Print("Tile V in: ", p)
 		hg := NewSizeGen(p.height, n, p.ratio)
-		i = p.children.FrontIter(false)
 		y, w := int16(0), p.width
-		for n > 1 {
-			b := i.Next()
+		for b = p.children.Front(); n > 1; b, n = b.Next(), n - 1 {
 			if b.Float() {
 				continue
 			}
 			h := hg.Next()
 			b.SetPosSize(0, y, w, h)
 			y += h
-			n--
 		}
 		// Last window obtain all remaining space
-		i.Next().SetPosSize(0, y, w, p.height-y)
+		b.SetPosSize(0, y, w, p.height-y)
 	} else {
 		d.Print("Tile H in:", p)
 		wg := NewSizeGen(p.width, n, p.ratio)
 		x, h := int16(0), p.height
-		i = p.children.FrontIter(false)
-		for n > 1 {
-			b := i.Next()
+		for b = p.children.Front(); n > 1; b, n = b.Next(), n - 1 {
 			if b.Float() {
 				continue
 			}
 			w := wg.Next()
 			b.SetPosSize(x, 0, w, h)
 			x += w
-			n--
 		}
 		// Last window obtain all remaining space
-		i.Next().SetPosSize(x, 0, p.width-x, h)
+		b.SetPosSize(x, 0, p.width-x, h)
 	}
 }
 

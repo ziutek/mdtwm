@@ -57,9 +57,8 @@ func exit(retval interface{}) error {
 }
 
 func chDesk(deskNum interface{}) error {
-	i := root.Children().FrontIter(false)
 	n := deskNum.(int)
-	for d := i.Next(); d != nil; d = i.Next() {
+	for d := root.Children().Front(); d != nil; d = d.Next() {
 		if n--; n == 0 {
 			currentDesk = d.(*Panel)
 			d.Raise()

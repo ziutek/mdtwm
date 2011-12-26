@@ -38,9 +38,8 @@ func statusLog() {
 	if cfg.StatusLogger == nil {
 		return
 	}
-	i := root.Children().FrontIter(false)
 	var cur, n int
-	for p := i.Next(); p != nil; p = i.Next() {
+	for p := root.Children().Front(); p != nil; p = p.Next() {
 		if p == currentDesk {
 			cur = n
 		}
