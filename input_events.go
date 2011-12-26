@@ -95,7 +95,7 @@ func buttonRelease(e xgb.ButtonReleaseEvent) {
 			// Send right click to the box
 			var (
 				child Window
-				ok bool
+				ok    bool
 			)
 			e.EventX, e.EventY, child, _, ok = w.TranslateCoordinates(
 				root.Window(), e.RootX, e.RootY,
@@ -152,6 +152,16 @@ func motionNotify(e xgb.MotionNotifyEvent) {
 		}
 		conn.ChangeActivePointerGrab(cfg.MoveCursor, xgb.TimeCurrentTime,
 			rightButtonEventMask)
+		// Use left and right borders for change desktop
+		switch e.RootX {
+		// TODO: need to implement native BoxList to have Next and Prev in Box
+		case 0: // Left border
+			conn.WarpPointer(xgb.WindowNone, xgb.WindowNone, 0, 0, 0, 0,
+				root.width-2, 0)
+		case root.width - 1: // Right border
+			conn.WarpPointer(xgb.WindowNone, xgb.WindowNone, 0, 0, 0, 0,
+				2-root.width, 0)
+		}
 	case 2: // Two clicks and move
 	case 3: // Three clicks
 	}
