@@ -58,6 +58,7 @@ func (bl *BoxList) InsertBefore(b, mark Box) bool {
 	b.SetPrev(mark.Prev())
 	mark.SetPrev(b)
 	b.SetNext(mark)
+	b.SetList(bl)
 	bl.length++
 	return true
 }
@@ -75,6 +76,7 @@ func (bl *BoxList) InsertAfter(b, mark Box) bool {
 	b.SetNext(mark.Next())
 	mark.SetNext(b)
 	b.SetPrev(mark)
+	b.SetList(bl)
 	bl.length++
 	return true
 }

@@ -42,8 +42,9 @@ func statusLog() {
 	for p := root.Children().Front(); p != nil; p = p.Next() {
 		if p == currentDesk {
 			cur = n
+			break
 		}
 		n++
 	}
-	cfg.StatusLogger.Log(Status{cur, n, currentBox.Name()})
+	cfg.StatusLogger.Log(Status{cur, root.Children().Len(), currentBox.Name()})
 }
