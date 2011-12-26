@@ -26,6 +26,7 @@ func (bl *BoxList) PushFront(b Box) {
 		bl.front, bl.back = b, b
 		b.SetPrev(nil)
 		b.SetNext(nil)
+		b.SetList(bl)
 		bl.length = 1
 		return
 	}
@@ -37,6 +38,7 @@ func (bl *BoxList) PushBack(b Box) {
 		bl.front, bl.back = b, b
 		b.SetPrev(nil)
 		b.SetNext(nil)
+		b.SetList(bl)
 		bl.length = 1
 		return
 	}
