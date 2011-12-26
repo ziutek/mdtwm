@@ -52,7 +52,10 @@ func enterNotify(e xgb.EnterNotifyEvent) {
 	if e.Mode != xgb.NotifyModeNormal {
 		return
 	}
-	w := Window(e.Event)
+	setFocus(Window(e.Event))
+}
+
+func setFocus(w Window) {
 	currentDesk.SetFocus(currentDesk.Window() == w)
 	// Iterate over all boxes in current desk
 	bi := currentDesk.Children().FrontIter()

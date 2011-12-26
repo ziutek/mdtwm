@@ -113,10 +113,8 @@ func buttonRelease(e xgb.ButtonReleaseEvent) {
 			return
 		}
 		if currentBox == nil || currentBox.Window() == w {
-			return // Box moved outside of desk or it wasn't moved
+			return // Box moved outside of desk or wasn't moved
 		}
-		// Border color will be set properly by EnterNotify event.
-		w.SetBorderColor(cfg.NormalBorderColor)
 		// Move a box
 		click.Box.Parent().Remove(click.Box)
 		x, y, _, _, ok := currentBox.Window().TranslateCoordinates(
@@ -127,6 +125,8 @@ func buttonRelease(e xgb.ButtonReleaseEvent) {
 			return
 		}
 		currentPanel().InsertNextTo(click.Box, currentBox, x, y)
+		// Set focus to moved box TODO: to rethink
+		setFocus(click.Box.Window())
 	case 2: // Two clicks
 	case 3: // Three clicks
 		if !click.Moved {
@@ -154,11 +154,22 @@ func motionNotify(e xgb.MotionNotifyEvent) {
 			rightButtonEventMask)
 		// Use left and right borders for change desktop
 		switch e.RootX {
-		// TODO: need to implement native BoxList to have Next and Prev in Box
 		case 0: // Left border
+			newDesk := currentDesk.Prev()
+			if newDesk == nil {
+				newDesk = root.Children().Back()
+			}
+			currentDesk = newDesk.(*Panel)
+			currentDesk.Raise()
 			conn.WarpPointer(xgb.WindowNone, xgb.WindowNone, 0, 0, 0, 0,
 				root.width-2, 0)
 		case root.width - 1: // Right border
+			newDesk := currentDesk.Next()
+			if newDesk == nil {
+				newDesk = root.Children().Front()
+			}
+			currentDesk = newDesk.(*Panel)
+			currentDesk.Raise()
 			conn.WarpPointer(xgb.WindowNone, xgb.WindowNone, 0, 0, 0, 0,
 				2-root.width, 0)
 		}
