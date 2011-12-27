@@ -49,7 +49,7 @@ func configure() {
 
 		DefaultCursor:    stdCursor(68),
 		MoveCursor:       stdCursor(52),
-		MultiClickTime:   300, // maximum interfal for multiclick [ms]
+		MultiClickTime:   300, // maximum interval for multiclick [ms]
 		MovedClickRadius: 5,   // minimal radius for moved click [pixel]
 
 		ModMask: xgb.ModMask4,
@@ -71,14 +71,14 @@ func configure() {
 
 	// Layout
 	root = NewRootPanel()
-	// Setup list of desk
-	desk1 := NewPanel(Horizontal, 1.97) // 1.82
+	// Setup all desks
+	desk1 := NewPanel(Horizontal, 1.82) // 1.97
 	desk2 := NewPanel(Horizontal, 1)
 	desk3 := NewPanel(Horizontal, 1)
 	root.Append(desk1)
 	root.Append(desk2)
 	root.Append(desk3)
-	// Setup two main panels on first desk
+	// Setup two main vertical panels on first desk
 	desk1.Append(NewPanel(Vertical, 1))
 	desk1.Append(NewPanel(Vertical, 0.3))
 	// Setup one main panel on second and thrid desk
