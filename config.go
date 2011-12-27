@@ -40,11 +40,11 @@ func configure() {
 
 		StatusLogger: &Dzen2Logger{
 			Writer:     os.Stdout,
-			FgColor:	"#ddddcc",
-			BgColor:	"#555588",
+			FgColor:    "#ddddcc",
+			BgColor:    "#555588",
 			TimeFormat: "Mon, Jan _2 15:04:05",
 			//TimePos:    1286,
-			TimePos:    1212,
+			TimePos: 1212,
 		},
 
 		DefaultCursor:    stdCursor(68),

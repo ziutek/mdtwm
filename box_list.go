@@ -42,7 +42,7 @@ func (bl *BoxList) PushBack(b Box) {
 		bl.length = 1
 		return
 	}
-	bl.InsertAfter(b, bl.front)
+	bl.InsertAfter(b, bl.back)
 }
 
 // Returns false if b not in bl
