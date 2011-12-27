@@ -156,25 +156,27 @@ func motionNotify(e xgb.MotionNotifyEvent) {
 		_, _, rootWidth, _ := root.PosSize()
 		switch e.RootX {
 		case 0: // Left border
-			newDesk := currentDesk.Prev()
-			if newDesk == nil {
-				newDesk = root.Children().Back()
-			}
-			currentDesk = newDesk.(*Panel)
-			currentDesk.Raise()
+			// WarpPointer must be first, if not we obtain to many Motion events
 			conn.WarpPointer(xgb.WindowNone, root.Window().Id(), 0, 0, 0, 0,
-				root.width-2, e.RootY)
+				rootWidth-2, e.RootY)
 			skipBorderEvents()
-		case rootWidth - 1: // Right border
-			newDesk := currentDesk.Next()
-			if newDesk == nil {
-				newDesk = root.Children().Front()
+			prevDesk := currentDesk.Prev()
+			if prevDesk == nil {
+				prevDesk = root.Children().Back()
 			}
-			currentDesk = newDesk.(*Panel)
+			currentDesk = prevDesk.(*Panel)
 			currentDesk.Raise()
+		case rootWidth - 1: // Right border
+			// WarpPointer must be first, if not we obtain to many Motion events
 			conn.WarpPointer(xgb.WindowNone, root.Window().Id(), 0, 0, 0, 0,
 				1, e.RootY)
 			skipBorderEvents()
+			nextDesk := currentDesk.Next()
+			if nextDesk == nil {
+				nextDesk = root.Children().Front()
+			}
+			currentDesk = nextDesk.(*Panel)
+			currentDesk.Raise()
 		}
 	case 2: // Two clicks and move
 	case 3: // Three clicks
