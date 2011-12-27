@@ -72,7 +72,7 @@ func configure() {
 	// Layout
 	root = NewRootPanel()
 	// Setup list of desk
-	desk1 := NewPanel(Horizontal, 1.82) // 1.97
+	desk1 := NewPanel(Horizontal, 1.97) // 1.82
 	desk2 := NewPanel(Horizontal, 1)
 	desk3 := NewPanel(Horizontal, 1)
 	root.Append(desk1)
