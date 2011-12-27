@@ -33,3 +33,11 @@ cfg.StatusLogger is set to Dzen2Logger (as in default config.go) you can use
 mdtwm together with dzen2 as follows:
 
     mdtwm 2>~/mdtwm.log |dzen2 -e '' -ta l -fg '#ddddcc' -bg '#555588'
+
+Instalation process:
+
+    git clone https://github.com/ziutek/mdtwm.git
+    cd mdtwm/xgb_patched
+    make install
+    cd ..
+    make
