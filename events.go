@@ -32,6 +32,8 @@ func handleEvent(event xgb.Event, err error) {
 		unmapNotify(e)
 	case xgb.DestroyNotifyEvent:
 		destroyNotify(e)
+	case xgb.ReparentNotifyEvent:
+		reparentNotify(e)
 
 	// Keyboard and mouse events
 	case xgb.KeyPressEvent:
@@ -65,6 +67,13 @@ func enterNotify(e xgb.EnterNotifyEvent) {
 	}
 	setFocus(Window(e.Event))
 }
+
+func reparentNotify(e xgb.ReparentNotifyEvent) {
+	d.Printf("%T: %+v", e, e)
+	// If we move window beetwen boxes there is not EnterNotify for this window
+	setFocus(Window(e.Window))
+}
+
 
 func setFocus(w Window) {
 	currentDesk.SetFocus(currentDesk.Window() == w)

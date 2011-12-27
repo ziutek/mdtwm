@@ -125,8 +125,6 @@ func buttonRelease(e xgb.ButtonReleaseEvent) {
 			return
 		}
 		currentPanel().InsertNextTo(click.Box, currentBox, x, y)
-		// Set focus to moved box TODO: to rethink
-		setFocus(click.Box.Window())
 	case 2: // Two clicks
 	case 3: // Three clicks
 		if !click.Moved {
@@ -159,24 +157,24 @@ func motionNotify(e xgb.MotionNotifyEvent) {
 			// WarpPointer must be first, if not we obtain to many Motion events
 			conn.WarpPointer(xgb.WindowNone, root.Window().Id(), 0, 0, 0, 0,
 				rootWidth-2, e.RootY)
-			skipBorderEvents()
 			prevDesk := currentDesk.Prev()
 			if prevDesk == nil {
 				prevDesk = root.Children().Back()
 			}
 			currentDesk = prevDesk.(*Panel)
 			currentDesk.Raise()
+			skipBorderEvents()
 		case rootWidth - 1: // Right border
 			// WarpPointer must be first, if not we obtain to many Motion events
 			conn.WarpPointer(xgb.WindowNone, root.Window().Id(), 0, 0, 0, 0,
 				1, e.RootY)
-			skipBorderEvents()
 			nextDesk := currentDesk.Next()
 			if nextDesk == nil {
 				nextDesk = root.Children().Front()
 			}
 			currentDesk = nextDesk.(*Panel)
 			currentDesk.Raise()
+			skipBorderEvents()
 		}
 	case 2: // Two clicks and move
 	case 3: // Three clicks
