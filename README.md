@@ -18,7 +18,8 @@ Default layout (see config.go)
 
 - two desks
 - first desk contains two panels
-- second desk contains one (fullscreen) panel
+- second desk contains one vertical panel
+- third desk contains one vertical panel
 
 Default keybindings (see config.go)
 
