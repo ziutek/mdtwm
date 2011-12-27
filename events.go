@@ -2,9 +2,20 @@ package main
 
 import (
 	"code.google.com/p/x-go-binding/xgb"
+	"io"
+	"os"
 )
 
-func handleEvent(event xgb.Event) {
+func handleEvent(event xgb.Event, err error) {
+	if err != nil {
+			if err == io.EOF {
+				conn.Close()
+				l.Print("Connection closed by server")
+				os.Exit(0)
+			}
+			logFuncErr(err)
+			return
+	}
 	switch e := event.(type) {
 	// Request events
 	case xgb.MapRequestEvent:

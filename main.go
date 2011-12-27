@@ -2,7 +2,6 @@ package main
 
 import (
 	"code.google.com/p/x-go-binding/xgb"
-	"io"
 	"os"
 	"os/signal"
 	"syscall"
@@ -61,16 +60,6 @@ func manageExistingWindows() {
 
 func eventLoop() {
 	for {
-		event, err := conn.WaitForEvent()
-		if err != nil {
-			if err == io.EOF {
-				conn.Close()
-				l.Print("Connection closed by server")
-				os.Exit(0)
-			}
-			l.Print("WaitForEvent: ", err)
-			continue
-		}
-		handleEvent(event)
+		handleEvent(conn.WaitForEvent())
 	}
 }

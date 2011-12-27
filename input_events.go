@@ -153,6 +153,7 @@ func motionNotify(e xgb.MotionNotifyEvent) {
 		conn.ChangeActivePointerGrab(cfg.MoveCursor, xgb.TimeCurrentTime,
 			rightButtonEventMask)
 		// Use left and right borders for change desktop
+		_, _, rootWidth, _ := root.PosSize()
 		switch e.RootX {
 		case 0: // Left border
 			newDesk := currentDesk.Prev()
@@ -161,17 +162,19 @@ func motionNotify(e xgb.MotionNotifyEvent) {
 			}
 			currentDesk = newDesk.(*Panel)
 			currentDesk.Raise()
-			conn.WarpPointer(xgb.WindowNone, xgb.WindowNone, 0, 0, 0, 0,
-				root.width-2, 0)
-		case root.width - 1: // Right border
+			conn.WarpPointer(xgb.WindowNone, root.Window().Id(), 0, 0, 0, 0,
+				root.width-2, e.RootY)
+			skipBorderEvents()
+		case rootWidth - 1: // Right border
 			newDesk := currentDesk.Next()
 			if newDesk == nil {
 				newDesk = root.Children().Front()
 			}
 			currentDesk = newDesk.(*Panel)
 			currentDesk.Raise()
-			conn.WarpPointer(xgb.WindowNone, xgb.WindowNone, 0, 0, 0, 0,
-				2-root.width, 0)
+			conn.WarpPointer(xgb.WindowNone, root.Window().Id(), 0, 0, 0, 0,
+				1, e.RootY)
+			skipBorderEvents()
 		}
 	case 2: // Two clicks and move
 	case 3: // Three clicks
@@ -181,4 +184,28 @@ func motionNotify(e xgb.MotionNotifyEvent) {
 	move.b.SetPosSize(x+dx, y+dy, w, h)
 	move.x += dx
 	move.y += dy*/
+}
+
+func skipBorderEvents() {
+	_, _, maxX, maxY := root.PosSize()
+	maxX--
+	maxY--
+	var (
+		event xgb.Event
+		err   error
+	)
+	for {
+		event, err = conn.WaitForEvent()
+		if err != nil {
+			break
+		}
+		e, ok := event.(xgb.MotionNotifyEvent)
+		if !ok {
+			break
+		}
+		if e.RootX != 0 && e.RootX != maxX && e.RootY != 0 && e.RootY != maxY {
+			break
+		}
+	}
+	handleEvent(event, err)
 }
