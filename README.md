@@ -9,7 +9,7 @@ everyday work (it replaced xmodad).
 
 mdtwm uses only right button as follows:
 
-- single-click-move: move a window,
+- single-click-move: move a window (you can move between desktops),
 - single-slow-click: send right click to window,
 - double-click-move: tile/untile window (not implemented yet),
 - triple-click: close window.
