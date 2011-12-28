@@ -2,8 +2,7 @@ I like tiling window management and I like full mouse control to. So this is my 
 
 I have never written any wm before, so this code isn't probably a good example how to write wm at all but maybe some example how to write wm in Go.
 
-This program isn't mature window manager yet, but I started using it for
-everyday work (it replaced xmodad).
+This program isn't mature window manager yet, but I started using it for everyday work (it replaced xmodad).
 
 mdtwm uses only right mouse button as follows:
 
@@ -30,6 +29,11 @@ Default keybindings (see config.go)
 mdtwm doesn't contain its own status bar yet, but there is support for dzen2. If cfg.StatusLogger is set to Dzen2Logger (as in default config.go) you can use mdtwm together with dzen2 as follows:
 
     mdtwm 2>~/mdtwm.log |dzen2 -e '' -ta l -fg '#ddddcc' -bg '#555588'
+
+Known issues:
+
+- Floating windows can't be moved.
+- See *issues* directory.
 
 Build instruction:
 
