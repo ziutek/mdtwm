@@ -42,4 +42,4 @@ Build instruction:
 
 Screenshot:
 
-![Screenshot image](screenshot.jpg)
+![Screenshot image](mdtwm/screenshot.jpg)
