@@ -39,3 +39,7 @@ Build instruction:
     cd ..
     # edit config.go
     make
+
+Screenshot:
+
+![Screenshot image](screenshot.jpg)
