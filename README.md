@@ -42,4 +42,4 @@ Build instruction:
 
 Screenshot:
 
-![Screenshot image](mdtwm/screenshot.jpg)
+![Screenshot image](/ziutek/mdtwm/raw/master/screenshot.jpg)
