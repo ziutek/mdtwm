@@ -43,7 +43,8 @@ func configure() {
 			FgColor:    "#ddddcc",
 			BgColor:    "#555588",
 			TimeFormat: "Mon, Jan _2 15:04:05",
-			TimePos:    1286, // 1212
+			TimePos:    1212,
+			//TimePos:    1286
 		},
 
 		DefaultCursor:    stdCursor(68),
@@ -71,15 +72,18 @@ func configure() {
 	// Layout
 	root = NewRootPanel()
 	// Setup all desks
-	desk1 := NewPanel(Horizontal, 1.97) // 1.82
+	desk1 := NewPanel(Horizontal, 1.82)
+	//desk1 := NewPanel(Horizontal, 1.97)
 	desk2 := NewPanel(Horizontal, 1)
 	desk3 := NewPanel(Horizontal, 1)
 	root.Append(desk1)
 	root.Append(desk2)
 	root.Append(desk3)
 	// Setup two main vertical panels on first desk
-	left := NewPanel(Vertical, 1.02);
-	right := NewPanel(Vertical, 0.29)
+	left := NewPanel(Vertical, 1.03)
+	right := NewPanel(Vertical, 0.3)
+	//left := NewPanel(Vertical, 1.02)
+	//right := NewPanel(Vertical, 0.29)
 	desk1.Append(left)
 	desk1.Append(right)
 	// Divide right panel into two horizontal panels
