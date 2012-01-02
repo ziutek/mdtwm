@@ -10,26 +10,25 @@ type Config struct {
 	Instance string
 	Class    string
 
-	BackgroundColor    uint32
 	NormalBorderColor  uint32
 	FocusedBorderColor uint32
 	BorderWidth        int16
-	StatusLogger       StatusLogger
+	StatusLogger       StatusLogger `json:"-"`
 
-	DefaultCursor    xgb.Id
-	MoveCursor       xgb.Id
+	DefaultCursor    xgb.Id        `json:"-"`
+	MoveCursor       xgb.Id        `json:"-"`
 	MultiClickTime   xgb.Timestamp
 	MovedClickRadius int
 
 	ModMask uint16
-	Keys    map[byte]Cmd
+	Keys    map[byte]Cmd `json:"-"`
 
 	Ignore List
 	Float  List
 }
 
 func configure() {
-	// Configuration variables
+	// Default configuration
 	cfg = &Config{
 		Instance: filepath.Base(os.Args[0]),
 		Class:    "Mdtwm",
@@ -43,8 +42,7 @@ func configure() {
 			FgColor:    "#ddddcc",
 			BgColor:    "#555588",
 			TimeFormat: "Mon, Jan _2 15:04:05",
-			TimePos:    1212,
-			//TimePos:    1286
+			TimePos:    -154, // Negatife value means pixels from right border
 		},
 
 		DefaultCursor:    stdCursor(68),
@@ -62,12 +60,10 @@ func configure() {
 		},
 
 		Ignore: List{},
-		Float:  List{"Mplayer", "Gimp"},
+		Float:  List{},
 	}
-	cfg.MovedClickRadius *= cfg.MovedClickRadius // We need square of radius
-	if cfg.StatusLogger != nil {
-		cfg.StatusLogger.Start()
-	}
+	// Read configuration from file
+	cfg.Load(filepath.Join(os.Getenv("HOME"), ".mdtwm"))
 
 	// Layout
 	root = NewRootPanel()
@@ -97,4 +93,10 @@ func configure() {
 	currentDesk.Raise()
 	// In this box all existing windows will be placed
 	currentBox = currentDesk.Children().Front()
+
+	// Some operation on configuration 
+	cfg.MovedClickRadius *= cfg.MovedClickRadius // We need square of radius
+	if cfg.StatusLogger != nil {
+		cfg.StatusLogger.Start()
+	}
 }

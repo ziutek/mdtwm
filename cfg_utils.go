@@ -2,6 +2,7 @@ package main
 
 import (
 	"code.google.com/p/x-go-binding/xgb"
+	"encoding/json"
 	"fmt"
 	"io"
 	"os"
@@ -148,7 +149,7 @@ type Dzen2Logger struct {
 	FgColor    string
 	BgColor    string
 	TimeFormat string
-	TimePos    int
+	TimePos    int16
 
 	ch chan *Status
 }
@@ -161,6 +162,10 @@ func (d *Dzen2Logger) nrmColors() {
 }
 
 func (d *Dzen2Logger) Start() {
+	if d.TimePos < 0 {
+		_, _, width, _ := root.PosSize()
+		d.TimePos += width
+	}
 	d.ch = make(chan *Status)
 	go d.thr()
 }
@@ -197,4 +202,29 @@ func (d *Dzen2Logger) thr() {
 			s.title, d.TimePos, t.Format(d.TimeFormat),
 		)
 	}
+}
+
+func (c *Config) Load(fname string) {
+	f, err := os.Open(fname)
+	if err != nil {
+		if e, ok := err.(*os.PathError); !ok || e.Err != os.ENOENT {
+			l.Fatalf("Can't open a configuration file: %s", err)
+		}
+		// Configuration file doesn't exists: create default
+		if f, err = os.Create(fname); err != nil {
+			l.Fatal("Can't create a configuration file: ", err)
+		}
+		buf, err := json.MarshalIndent(c, "", "\t")
+		if err != nil {
+			l.Fatal("Can't encode a configuration: ", err)
+		}
+		if _, err = f.Write(buf); err != nil {
+			l.Fatal("Can't write a configuration file: ", err)
+		}
+	} else {
+		if err = json.NewDecoder(f).Decode(c); err != nil {
+			l.Fatal("Can't decode a configuration file: ", err)
+		}
+	}
+
 }
