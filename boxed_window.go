@@ -2,6 +2,7 @@ package main
 
 import (
 	"code.google.com/p/x-go-binding/xgb"
+	"math"
 )
 
 // Box for APP window
@@ -67,4 +68,21 @@ const (
 func (b *BoxedWindow) SetWmState(state WmState) {
 	data := []uint32{uint32(state), uint32(xgb.WindowNone)}
 	b.w.ChangeProp(xgb.PropModeReplace, AtomWmState, AtomWmState, data)
+}
+
+func (b *BoxedWindow) Protocols() IdList {
+	p := b.Window().Prop(AtomWmProtocols, math.MaxUint32)
+	return atomList(p)
+}
+
+func (b *BoxedWindow) SendMessage(typ xgb.Id, w Window) {
+	m := xgb.ClientMessageEvent{
+		Format: 32,
+		Window: w.Id(),
+		Type:   AtomWmProtocols,
+	}
+	m.Data.Data32[0] = uint32(typ)
+	m.Data.Data32[1] = uint32(xgb.TimeCurrentTime)
+
+	b.w.Send(false, xgb.EventMaskNoEvent, m)
 }

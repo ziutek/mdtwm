@@ -127,12 +127,16 @@ func buttonRelease(e xgb.ButtonReleaseEvent) {
 		currentPanel().InsertNextTo(click.Box, currentBox, x, y)
 	case 2: // Two clicks
 	case 3: // Three clicks
-		if !click.Moved {
-			if _, ok := click.Box.(ParentBox); ok {
-				return // For now we don't destroy panels
+		if click.Moved {
+			return
+		}
+		switch b := click.Box.(type) {
+		case *BoxedWindow:
+			if b.Protocols().Contains(AtomWmDeleteWindow) {
+				b.SendMessage(AtomWmDeleteWindow, b.Window())
+			} else {
+				b.Window().Destroy()
 			}
-			// TODO: Use A_WM_DELETE_WINDOW if box supports it
-			click.Box.Window().Destroy()
 		}
 	}
 }
