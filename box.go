@@ -27,7 +27,7 @@ type Box interface {
 	PosSize() (x, y, width, height int16) // Get externel geometry
 	SetPosSize(x, y, width, height int16) // Set external geometry
 
-	SetFocus(f bool)
+	SetFocus(f bool, t xgb.Timestamp)
 	Raise()
 
 	Float() bool

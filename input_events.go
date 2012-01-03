@@ -112,8 +112,10 @@ func buttonRelease(e xgb.ButtonReleaseEvent) {
 			w.Send(false, xgb.EventMaskNoEvent, e)
 			return
 		}
-		if currentBox == nil || currentBox.Window() == w {
-			return // Box moved outside of desk or wasn't moved
+		if click.Box.Float() || currentBox == nil || currentBox.Window() == w {
+			// There isn't any action for floating box or if box have been
+			// moved outside of desk or havent moved
+			return
 		}
 		// Move a box
 		click.Box.Parent().Remove(click.Box)
@@ -154,6 +156,15 @@ func motionNotify(e xgb.MotionNotifyEvent) {
 		}
 		conn.ChangeActivePointerGrab(cfg.MoveCursor, xgb.TimeCurrentTime,
 			rightButtonEventMask)
+		if click.Box.Float() {
+			// Move floating box
+			dx, dy := e.RootX-click.X, e.RootY-click.Y
+			x, y, w, h := click.Box.PosSize()
+			d.Printf("width=%d height=%d", w, h)
+			click.Box.SetPosSize(x+dx, y+dy, w, h)
+			click.X += dx
+			click.Y += dy
+		}
 		// Use left and right borders for change desktop
 		_, _, rootWidth, _ := root.PosSize()
 		switch e.RootX {
@@ -183,12 +194,11 @@ func motionNotify(e xgb.MotionNotifyEvent) {
 	case 2: // Two clicks and move
 	case 3: // Three clicks
 	}
-	/*dx, dy := e.RootX-move.x, e.RootY-move.y
-	x, y, w, h := move.b.PosSize()
-	move.b.SetPosSize(x+dx, y+dy, w, h)
-	move.x += dx
-	move.y += dy*/
 }
+
+/*func isRootOrDesk(b Box) bool {
+	return b.Parent() == nil || b.Parent().Window() == root.Window()
+}*/
 
 func skipBorderEvents() {
 	_, _, maxX, maxY := root.PosSize()

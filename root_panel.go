@@ -56,11 +56,7 @@ func (p *RootPanel) SetPosSize(x, y, width, height int16) {
 	l.Panic("Can't request a geometry change of root window")
 }
 
-func (p *RootPanel) SyncGeometry(g Geometry) {
-	l.Panic("Can't change saved geometry of root window")
-}
-
-func (p *RootPanel) SetFocus(f bool) {
+func (p *RootPanel) SetFocus(f bool, t xgb.Timestamp) {
 	return
 }
 

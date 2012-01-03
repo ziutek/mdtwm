@@ -64,6 +64,7 @@ func manage(w Window, panel ParentBox, vievableOnly bool) {
 	if cfg.Float.Contains(class) {
 		b.SetFloat(true)
 	}
+	// TODO: set hints from AtomWmNormalHints
 	// Insert new box in a panel.
 	if b.Float() {
 		d.Printf("  Window %s will be floating", w)

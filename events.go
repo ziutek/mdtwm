@@ -65,22 +65,21 @@ func enterNotify(e xgb.EnterNotifyEvent) {
 	if e.Mode != xgb.NotifyModeNormal {
 		return
 	}
-	setFocus(Window(e.Event))
+	setFocus(Window(e.Event), e.Time)
 }
 
 func reparentNotify(e xgb.ReparentNotifyEvent) {
 	d.Printf("%T: %+v", e, e)
 	// If we move window beetwen boxes there is not EnterNotify for this window
-	setFocus(Window(e.Window))
+	setFocus(Window(e.Window), xgb.TimeCurrentTime)
 }
 
-
-func setFocus(w Window) {
-	currentDesk.SetFocus(currentDesk.Window() == w)
+func setFocus(w Window, t xgb.Timestamp) {
+	currentDesk.SetFocus(currentDesk.Window() == w, t)
 	// Iterate over all boxes in current desk
 	bi := currentDesk.Children().FrontIter()
 	for b := bi.Next(); b != nil; b = bi.Next() {
-		b.SetFocus(b.Window() == w)
+		b.SetFocus(b.Window() == w, t)
 	}
 	statusLog()
 }

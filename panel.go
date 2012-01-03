@@ -46,18 +46,10 @@ func (p *Panel) SetPosSize(x, y, width, height int16) {
 	p.tile()
 }
 
-func (p *Panel) SyncGeometry(g Geometry) {
-	if g.B != 0 {
-		l.Print("non-zero border width: ", g.B)
-	}
-	p.x, p.y, p.width, p.height = g.X, g.Y, g.W, g.H
-	p.tile()
-}
-
-func (p *Panel) SetFocus(f bool) {
+func (p *Panel) SetFocus(f bool, t xgb.Timestamp) {
 	if f {
 		currentBox = p
-		p.w.SetInputFocus()
+		p.w.SetInputFocus(t)
 	}
 }
 
@@ -91,7 +83,10 @@ func (p *Panel) Append(b Box) {
 // Inserts a box into panel 
 func (p *Panel) insertCommon(b Box) {
 	b.SetParent(p)
-	if !b.Float() {
+	if b.Float() {
+		// TODO: Use hints for window placement
+		b.SetPosSize(100, 100, 200, 200) // Test
+	} else {
 		// Rearange panel and show new box
 		p.tile()
 	}

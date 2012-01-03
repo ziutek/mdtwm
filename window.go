@@ -90,8 +90,8 @@ func (w Window) UngrabKey(key byte, modifiers uint16) {
 	conn.UngrabKey(key, w.Id(), modifiers)
 }
 
-func (w Window) SetInputFocus() {
-	conn.SetInputFocus(xgb.InputFocusPointerRoot, w.Id(), xgb.TimeCurrentTime)
+func (w Window) SetInputFocus(t xgb.Timestamp) {
+	conn.SetInputFocus(xgb.InputFocusPointerRoot, w.Id(), t)
 }
 
 func (w Window) TranslateCoordinates(srcW Window, srcX, srcY int16) (x, y int16, child Window, sameScreen, ok bool) {
