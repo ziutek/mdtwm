@@ -83,10 +83,7 @@ func (p *Panel) Append(b Box) {
 // Inserts a box into panel 
 func (p *Panel) insertCommon(b Box) {
 	b.SetParent(p)
-	if b.Float() {
-		// TODO: Use hints for window placement
-		b.SetPosSize(100, 100, 200, 200) // Test
-	} else {
+	if !b.Float() {
 		// Rearange panel and show new box
 		p.tile()
 	}

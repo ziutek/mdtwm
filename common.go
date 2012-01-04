@@ -34,6 +34,17 @@ func atomList(prop *xgb.GetPropertyReply) IdList {
 	return (*[1 << 24]xgb.Id)(unsafe.Pointer(&prop.Value[0]))[:prop.ValueLen]
 }
 
+func prop32(prop *xgb.GetPropertyReply) []uint32 {
+	if prop == nil || prop.ValueLen == 0 {
+		return nil
+	}
+	if prop.Format != 32 {
+		l.Panic("Property reply contains %d-bit values (need 32-bit).",
+			prop.Format)
+	}
+	return (*[1 << 24]uint32)(unsafe.Pointer(&prop.Value[0]))[:prop.ValueLen]
+}
+
 func statusLog() {
 	if cfg.StatusLogger == nil {
 		return

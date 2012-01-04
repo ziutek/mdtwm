@@ -156,22 +156,14 @@ func motionNotify(e xgb.MotionNotifyEvent) {
 		}
 		conn.ChangeActivePointerGrab(cfg.MoveCursor, xgb.TimeCurrentTime,
 			rightButtonEventMask)
-		if click.Box.Float() {
-			// Move floating box
-			dx, dy := e.RootX-click.X, e.RootY-click.Y
-			x, y, w, h := click.Box.PosSize()
-			d.Printf("width=%d height=%d", w, h)
-			click.Box.SetPosSize(x+dx, y+dy, w, h)
-			click.X += dx
-			click.Y += dy
-		}
 		// Use left and right borders for change desktop
 		_, _, rootWidth, _ := root.PosSize()
 		switch e.RootX {
 		case 0: // Left border
 			// WarpPointer must be first, if not we obtain to many Motion events
+			e.RootX = rootWidth - 2
 			conn.WarpPointer(xgb.WindowNone, root.Window().Id(), 0, 0, 0, 0,
-				rootWidth-2, e.RootY)
+				e.RootX, e.RootY)
 			prevDesk := currentDesk.Prev()
 			if prevDesk == nil {
 				prevDesk = root.Children().Back()
@@ -181,8 +173,9 @@ func motionNotify(e xgb.MotionNotifyEvent) {
 			skipBorderEvents()
 		case rootWidth - 1: // Right border
 			// WarpPointer must be first, if not we obtain to many Motion events
+			e.RootX = 1
 			conn.WarpPointer(xgb.WindowNone, root.Window().Id(), 0, 0, 0, 0,
-				1, e.RootY)
+				e.RootX, e.RootY)
 			nextDesk := currentDesk.Next()
 			if nextDesk == nil {
 				nextDesk = root.Children().Front()
@@ -190,6 +183,19 @@ func motionNotify(e xgb.MotionNotifyEvent) {
 			currentDesk = nextDesk.(*Panel)
 			currentDesk.Raise()
 			skipBorderEvents()
+		}
+		if click.Box.Float() {
+			// Move floating box
+			x, y, w, h := click.Box.PosSize()
+			dx, dy := e.RootX-click.X, e.RootY-click.Y
+			click.Box.SetPosSize(x+dx, y+dy, w, h)
+			click.X += dx
+			click.Y += dy
+			if click.Box.Parent().Window() != currentDesk.Window() {
+				// Floating window moved to new desk
+				click.Box.Parent().Remove(click.Box)
+				currentDesk.Append(click.Box)
+			}
 		}
 	case 2: // Two clicks and move
 	case 3: // Three clicks

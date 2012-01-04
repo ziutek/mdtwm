@@ -22,7 +22,7 @@ type Box interface {
 	List() *BoxList
 	SetList(l *BoxList)
 
-	Geometry() Geometry // Get geometry (width and height are internal)
+	Geometry() Geometry // Get internal geometry
 
 	PosSize() (x, y, width, height int16) // Get externel geometry
 	SetPosSize(x, y, width, height int16) // Set external geometry
@@ -32,6 +32,8 @@ type Box interface {
 
 	Float() bool
 	SetFloat(float bool)
+	Hints() Hints
+	SetHints(h Hints)
 
 	// Properties
 	Name() string
@@ -49,6 +51,12 @@ type ParentBox interface {
 	Remove(b Box)
 }
 
+type Hints struct {
+	W, H, MinW, MinH, MaxW, MaxH, IncW, IncH, BaseW, BaseH int16
+	MinAspect, MaxAspect [2]int16
+	Gravity byte
+}
+
 type commonBox struct {
 	w        Window    // window stored in this box
 	parent   ParentBox // parent panel
@@ -59,6 +67,7 @@ type commonBox struct {
 
 	eventMask uint32
 	float     bool
+	hints     Hints
 
 	// Box configuration
 	x, y, width, height int16
@@ -134,6 +143,14 @@ func (b *commonBox) Float() bool {
 
 func (b *commonBox) SetFloat(float bool) {
 	b.float = float
+}
+
+func (b *commonBox) Hints() Hints {
+	return b.hints
+}
+
+func (b *commonBox) SetHints(h Hints) {
+	b.hints = h
 }
 
 // Properties

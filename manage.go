@@ -7,7 +7,7 @@ import (
 
 var struts = make(Struts)
 
-func manage(w Window, panel ParentBox, vievableOnly bool) {
+func manage(w Window, panel ParentBox, startup bool) {
 	d.Printf("Manage %s in %s", w, panel)
 	_, class := w.Class()
 	if cfg.Ignore.Contains(class) {
@@ -21,8 +21,8 @@ func manage(w Window, panel ParentBox, vievableOnly bool) {
 	if attr == nil {
 		return
 	}
-	// During startup manage obtains each existing window with vievableOnly=true
-	if vievableOnly && attr.MapState != xgb.MapStateViewable {
+	// During startup we obtain each existing window (not vievable too)
+	if startup && attr.MapState != xgb.MapStateViewable {
 		d.Print("  not vievable")
 		return
 	}
@@ -36,11 +36,7 @@ func manage(w Window, panel ParentBox, vievableOnly bool) {
 		return
 	}
 	// Check window type
-	p := w.Prop(AtomNetWmWindowType, math.MaxUint32)
-	if p == nil {
-		return
-	}
-	wm_type := atomList(p)
+	wm_type := atomList(w.Prop(AtomNetWmWindowType, math.MaxUint32))
 	if wm_type.Contains(AtomNetWmWindowTypeDock) {
 		d.Printf("  window %s is of type dock", w)
 		return // For now we don't manage dock windows
@@ -53,21 +49,15 @@ func manage(w Window, panel ParentBox, vievableOnly bool) {
 		wm_type.Contains(AtomNetWmWindowTypeSplash) {
 		b.SetFloat(true)
 	}
-	p = w.Prop(xgb.AtomWmTransientFor, math.MaxUint32)
-	if p == nil {
-		return
-	}
-	tr_for := atomList(p)
+	tr_for := atomList(w.Prop(xgb.AtomWmTransientFor, math.MaxUint32))
 	if len(tr_for) > 0 && tr_for[0] != xgb.WindowNone {
 		b.SetFloat(true)
 	}
 	if cfg.Float.Contains(class) {
 		b.SetFloat(true)
 	}
-	// TODO: set hints from AtomWmNormalHints
 	// Insert new box in a panel.
 	if b.Float() {
-		d.Printf("  Window %s will be floating", w)
 		currentDesk.Append(b)
 	} else {
 		panel.Append(b)
@@ -80,6 +70,7 @@ func unmanage(w Window) {
 	}
 	struts.Update(w, false)
 }
+
 
 type strutGeometry struct {
 	left, right, top, bottom int16
