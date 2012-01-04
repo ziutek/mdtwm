@@ -26,9 +26,9 @@ func namedColor(name string) uint32 {
 	return c.Pixel
 }
 
-type List []interface{}
+type TextList []string
 
-func (l List) Contains(e interface{}) bool {
+func (l TextList) Contains(e string) bool {
 	for _, v := range l {
 		if v == e {
 			return true

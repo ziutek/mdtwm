@@ -15,23 +15,23 @@ type Config struct {
 	BorderWidth        int16
 	StatusLogger       StatusLogger `json:"-"`
 
-	DefaultCursor    xgb.Id        `json:"-"`
-	MoveCursor       xgb.Id        `json:"-"`
+	DefaultCursor    xgb.Id `json:"-"`
+	MoveCursor       xgb.Id `json:"-"`
 	MultiClickTime   xgb.Timestamp
 	MovedClickRadius int
 
 	ModMask uint16
 	Keys    map[byte]Cmd `json:"-"`
 
-	Ignore List
-	Float  List
+	Ignore TextList
+	Float  TextList
 }
 
 func configure() {
 	// Default configuration
 	cfg = &Config{
 		Instance: filepath.Base(os.Args[0]),
-		Class:    "Mdtwm",
+		Class:    "MDtwm",
 
 		NormalBorderColor:  rgbColor(0x8888, 0x8888, 0x8888),
 		FocusedBorderColor: rgbColor(0x4444, 0x0000, 0xffff),
@@ -59,8 +59,8 @@ func configure() {
 			KeyQ:     {exit, 0},
 		},
 
-		Ignore: List{},
-		Float:  List{},
+		Ignore: TextList{},
+		Float:  TextList{"MPlayer"},
 	}
 	// Read configuration from file
 	cfg.Load(filepath.Join(os.Getenv("HOME"), ".mdtwm"))
