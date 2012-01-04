@@ -1,4 +1,4 @@
-I like tiling window management and I like full mouse control to. So this is my attempt to write some mouse-driven tiling wm in Go.
+I like tiling window management, but all tiling window managers known to me force to use keyboard for dozen of things. So this is my attempt to write some mouse-driven tiling wm in Go.
 
 I have never written any wm before, so this code isn't probably a good example how to write wm at all but maybe some example how to write wm in Go.
 
@@ -32,7 +32,7 @@ mdtwm doesn't contain its own status bar yet, but there is support for dzen2. If
 
 Known issues:
 
-- Floating windows can't be moved.
+- You can't change current desktops without use of keyboard.
 - See *issues* directory.
 
 Build instruction:
