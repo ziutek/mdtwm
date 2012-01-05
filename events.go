@@ -75,11 +75,23 @@ func reparentNotify(e xgb.ReparentNotifyEvent) {
 }
 
 func setFocus(w Window, t xgb.Timestamp) {
-	currentDesk.SetFocus(currentDesk.Window() == w, t)
+	f := (currentDesk.Window() == w)
+	currentDesk.SetFocus(f, t)
+	if f {
+		currentBox = currentDesk
+	}
 	// Iterate over all boxes in current desk
 	bi := currentDesk.Children().FrontIter()
 	for b := bi.Next(); b != nil; b = bi.Next() {
-		b.SetFocus(b.Window() == w, t)
+		f = (b.Window() == w)
+		b.SetFocus(f, t)
+		if f {
+			currentBox = b
+		}
+	}
+	if currentBox != nil {
+		root.Window().ChangeProp(xgb.PropModeReplace, AtomNetActiveWindow,
+			xgb.AtomWindow, currentBox.Window())
 	}
 	statusLog()
 }

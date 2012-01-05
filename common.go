@@ -28,7 +28,7 @@ func atomList(prop *xgb.GetPropertyReply) IdList {
 	if prop == nil || prop.ValueLen == 0 {
 		return nil
 	}
-	if uintptr(prop.Format / 8) != reflect.TypeOf(xgb.Id(0)).Size() {
+	if uintptr(prop.Format/8) != reflect.TypeOf(xgb.Id(0)).Size() {
 		l.Panic("Property reply has wrong format for atoms: ", prop.Format)
 	}
 	return (*[1 << 24]xgb.Id)(unsafe.Pointer(&prop.Value[0]))[:prop.ValueLen]
@@ -49,13 +49,49 @@ func statusLog() {
 	if cfg.StatusLogger == nil {
 		return
 	}
-	var cur, n int
-	for p := root.Children().Front(); p != nil; p = p.Next() {
-		if p == currentDesk {
-			cur = n
+	var title string
+	if currentBox != nil {
+		title = currentBox.Name()
+	}
+	n := currentDeskNum + 1
+	cfg.StatusLogger.Log(Status{n, root.Children().Len(), title})
+}
+
+func setCurrentDesk(deskNum int) {
+	currentDeskNum = deskNum
+	for d := root.Children().Front(); d != nil; d = d.Next() {
+		if deskNum == 0 {
+			currentDesk = d.(*Panel)
 			break
 		}
-		n++
+		deskNum--
 	}
-	cfg.StatusLogger.Log(Status{cur, root.Children().Len(), currentBox.Name()})
+	updateCurrentDesk()
+}
+
+func setNextDesk() {
+	nextDesk := currentDesk.Next()
+	currentDeskNum++
+	if nextDesk == nil {
+		nextDesk = root.Children().Front()
+		currentDeskNum = 0
+	}
+	currentDesk = nextDesk.(*Panel)
+	updateCurrentDesk()
+}
+
+func setPrevDesk() {
+	prevDesk := currentDesk.Prev()
+	if prevDesk == nil {
+		prevDesk = root.Children().Back()
+		currentDeskNum = root.Children().Len() - 1
+	}
+	currentDesk = prevDesk.(*Panel)
+	updateCurrentDesk()
+}
+
+func updateCurrentDesk() {
+	currentDesk.Raise()
+	root.Window().ChangeProp(xgb.PropModeReplace, AtomNetCurrentDesktop,
+		xgb.AtomCardinal, uint32(currentDeskNum))
 }

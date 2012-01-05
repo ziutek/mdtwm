@@ -58,7 +58,6 @@ func (b *BoxedWindow) SetPosSize(x, y, width, height int16) {
 
 func (b *BoxedWindow) SetFocus(f bool, t xgb.Timestamp) {
 	if f {
-		currentBox = b
 		b.w.SetInputFocus(t)
 		b.w.SetBorderColor(cfg.FocusedBorderColor)
 	} else {
@@ -77,6 +76,11 @@ const (
 func (b *BoxedWindow) SetWmState(state WmState) {
 	data := []uint32{uint32(state), uint32(xgb.WindowNone)}
 	b.w.ChangeProp(xgb.PropModeReplace, AtomWmState, AtomWmState, data)
+}
+
+func (b *BoxedWindow) UpdateNetWmDesktop() {
+	b.w.ChangeProp(xgb.PropModeReplace, AtomNetWmDesktop, xgb.AtomWindow,
+		currentDesk.Window())
 }
 
 func (b *BoxedWindow) Protocols() IdList {

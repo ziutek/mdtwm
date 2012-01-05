@@ -26,7 +26,6 @@ func NewRootPanel() *RootPanel {
 	p.w.ChangeAttrs(xgb.CWCursor, uint32(cfg.DefaultCursor))
 	p.SetClass(cfg.Instance, cfg.Class)
 	p.SetName("mdtwm root")
-	p.w.ChangeProp(xgb.PropModeReplace, xgb.AtomCursor, xgb.AtomWindow, p.w)
 	// Create infrastructure for check of existence of active WM
 	p.checkWindow = NewWindow(p.Window(), Geometry{0, 0, 1, 1, 0},
 		xgb.WindowClassInputOutput, 0)
@@ -37,8 +36,20 @@ func NewRootPanel() *RootPanel {
 	p.w.ChangeProp(xgb.PropModeReplace, AtomNetSupportingWmCheck,
 		xgb.AtomWindow, p.checkWindow)
 	// Supported WM properties
-	p.w.ChangeProp(xgb.PropModeReplace, AtomNetSupported, xgb.AtomAtom,
-		[]xgb.Id{AtomNetWmStateModal, AtomNetWmStateHidden})
+	p.w.ChangeProp(
+		xgb.PropModeReplace, AtomNetSupported, xgb.AtomAtom,
+		[]xgb.Id{
+			AtomNetSupportingWmCheck,
+			AtomNetWmName,
+			AtomNetWmDesktop,
+			AtomNetNumberOfDesktops,
+			AtomNetCurrentDesktop,
+			AtomNetWmStateModal,
+			AtomNetWmStateHidden,
+			AtomNetActiveWindow,
+			AtomNetWmStrut,
+		},
+	)
 	p.w.DeleteProp(AtomNetVirtualRoots) // clear for future append
 	// Grab right mouse buttons for WM actions
 	p.w.GrabButton(

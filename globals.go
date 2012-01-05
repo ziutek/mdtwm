@@ -16,6 +16,8 @@ var (
 	currentDesk *Panel
 	currentBox  Box
 
+	currentDeskNum int
+
 	cfg *Config
 
 	l = log.New(os.Stderr, "mdtwm: ", log.Lshortfile)

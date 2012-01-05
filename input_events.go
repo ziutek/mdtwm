@@ -164,24 +164,14 @@ func motionNotify(e xgb.MotionNotifyEvent) {
 			e.RootX = rootWidth - 2
 			conn.WarpPointer(xgb.WindowNone, root.Window().Id(), 0, 0, 0, 0,
 				e.RootX, e.RootY)
-			prevDesk := currentDesk.Prev()
-			if prevDesk == nil {
-				prevDesk = root.Children().Back()
-			}
-			currentDesk = prevDesk.(*Panel)
-			currentDesk.Raise()
+			setPrevDesk()
 			skipBorderEvents()
 		case rootWidth - 1: // Right border
 			// WarpPointer must be first, if not we obtain to many Motion events
 			e.RootX = 1
 			conn.WarpPointer(xgb.WindowNone, root.Window().Id(), 0, 0, 0, 0,
 				e.RootX, e.RootY)
-			nextDesk := currentDesk.Next()
-			if nextDesk == nil {
-				nextDesk = root.Children().Front()
-			}
-			currentDesk = nextDesk.(*Panel)
-			currentDesk.Raise()
+			setNextDesk()
 			skipBorderEvents()
 		}
 		if click.Box.Float() {

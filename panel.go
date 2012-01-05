@@ -48,7 +48,6 @@ func (p *Panel) SetPosSize(x, y, width, height int16) {
 
 func (p *Panel) SetFocus(f bool, t xgb.Timestamp) {
 	if f {
-		currentBox = p
 		p.w.SetInputFocus(t)
 	}
 }
@@ -90,6 +89,7 @@ func (p *Panel) insertCommon(b Box) {
 	b.Window().Map()
 	if w, ok := b.(*BoxedWindow); ok {
 		w.SetWmState(WmStateNormal)
+		w.UpdateNetWmDesktop()
 	}
 }
 
