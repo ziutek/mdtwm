@@ -12,9 +12,9 @@ GOFILES=\
 
 include $(GOROOT)/src/Make.pkg
 
-xproto: proto/src/xproto.xml
-	python go_client.py -p proto/ proto/src/xproto.xml
-	gofmt -w xproto.go
+#xproto: proto/src/xproto.xml
+#	python go_client.py -p proto/ proto/src/xproto.xml
+#	gofmt -w xproto.go
 
 proto/src/xproto.xml:
 	git clone git://anongit.freedesktop.org/git/xcb/proto

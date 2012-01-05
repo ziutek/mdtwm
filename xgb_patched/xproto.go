@@ -1867,7 +1867,8 @@ const OpcodeChangeProperty = 18
 func (c *Conn) ChangeProperty(Mode byte, Window Id, Property Id, Type Id, Format byte, Data []byte) {
 	b := c.scratch[0:24]
 	n := 24
-	n += pad(((len(Data) * int(Format)) / 8) * 1)
+	//n += pad(((len(Data) * int(Format)) / 8) * 1)
+	n += pad(len(Data))
 	put16(b[2:], uint16(n/4))
 	b[0] = 18
 	b[1] = Mode
@@ -1875,9 +1876,11 @@ func (c *Conn) ChangeProperty(Mode byte, Window Id, Property Id, Type Id, Format
 	put32(b[8:], uint32(Property))
 	put32(b[12:], uint32(Type))
 	b[16] = Format
-	put32(b[20:], uint32(len(Data)))
+	//put32(b[20:], uint32(len(Data)))
+	put32(b[20:], uint32(len(Data) * 8 / int(Format)))
 	c.sendRequest(b)
-	c.sendBytes(Data[0:((len(Data) * int(Format)) / 8)])
+	//c.sendBytes(Data[0:((len(Data) * int(Format)) / 8)])
+	c.sendBytes(Data)
 }
 
 const OpcodeDeleteProperty = 19
