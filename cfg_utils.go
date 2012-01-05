@@ -174,7 +174,7 @@ func (d *Dzen2Logger) thr() {
 		select {
 		case <-tick:
 		case s = <-d.ch:
-			s.curDesk++
+			s.curDesk++ // Printed desk names starts from 1
 		}
 		if s == nil {
 			continue

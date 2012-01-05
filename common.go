@@ -53,8 +53,7 @@ func statusLog() {
 	if currentBox != nil {
 		title = currentBox.Name()
 	}
-	n := currentDeskNum + 1
-	cfg.StatusLogger.Log(Status{n, root.Children().Len(), title})
+	cfg.StatusLogger.Log(Status{currentDeskNum, root.Children().Len(), title})
 }
 
 func setCurrentDesk(deskNum int) {
