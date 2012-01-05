@@ -216,35 +216,40 @@ func (w Window) ChangeProp(mode byte, prop, typ xgb.Id, val interface{}) {
 		format  int
 		content []byte
 	)
-	d := reflect.ValueOf(val)
-	switch d.Kind() {
+	v := reflect.ValueOf(val)
+	switch v.Kind() {
 	case reflect.String:
 		format = 1
-		content = []byte(d.String())
+		content = []byte(v.String())
 	case reflect.Int8, reflect.Uint8, reflect.Int16, reflect.Uint16,
 		reflect.Int32, reflect.Uint32, reflect.Int64, reflect.Uint64,
 		reflect.Int, reflect.Uint:
-		p := reflect.New(d.Type())
-		p.Elem().Set(d)
-		d = p // now d is a pointer to an integer
+		p := reflect.New(v.Type())
+		p.Elem().Set(v)
+		v = p // now d is a pointer to an integer
 		fallthrough
 	case reflect.Ptr:
-		format = int(d.Type().Elem().Size())
+		format = int(v.Type().Elem().Size())
 		length := format
-		addr := unsafe.Pointer(d.Elem().UnsafeAddr())
+		addr := unsafe.Pointer(v.Elem().UnsafeAddr())
 		content = (*[1<<31 - 1]byte)(addr)[:length]
 	case reflect.Slice:
-		format = int(d.Type().Elem().Size())
-		length := format * d.Len()
-		addr := unsafe.Pointer(d.Index(0).UnsafeAddr())
+		format = int(v.Type().Elem().Size())
+		length := format * v.Len()
+		addr := unsafe.Pointer(v.Index(0).UnsafeAddr())
 		content = (*[1<<31 - 1]byte)(addr)[:length]
 	default:
 		l.Panic("Property value isn't integer, string, pointer nor slice")
 	}
+	format *= 8
 	if format > 255 {
 		l.Panicf("format = %d > 255", format)
 	}
-	conn.ChangeProperty(mode, w.Id(), prop, typ, byte(format*8), content)
+	conn.ChangeProperty(mode, w.Id(), prop, typ, byte(format), content)
+}
+
+func (w Window) DeleteProp(prop xgb.Id) {
+	conn.DeleteProperty(w.Id(), prop)
 }
 
 // Class properity is implemented in Window because it is needed to check if

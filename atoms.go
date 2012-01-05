@@ -5,11 +5,16 @@ import (
 )
 
 var (
-	AtomNetSupported,
-	AtomNetSupportingWmCheck,
+	AtomUtf8String,
+
+	AtomWmProtocols,
+	AtomWmDeleteWindow,
+	AtomWmState,
+	AtomWmClientLeader,
+	AtomWmTakeFocus,
+	AtomWmWindowRole xgb.Id
+
 	AtomNetWmName,
-	AtomNetWmStateFullscreen,
-	AtomNetWmState,
 	AtomNetWmWindowType,
 	AtomNetWmWindowTypeDock,
 	AtomNetWmWindowTypeDialog,
@@ -19,18 +24,22 @@ var (
 	AtomNetWmDesktop,
 	AtomNetWmStrut,
 	AtomNetWmStrutPartial,
-	AtomNetClientListStacking,
-	AtomNetCurrentDesktop,
-	AtomNetActiveWindow,
-	AtomNetWorkarea,
+	AtomNetWmState,
+	AtomNetWmStateModal,
+	AtomNetWmStateHidden,
+	AtomNetWmStateFullscreen,
+
+	AtomNetSupported,
+	AtomNetSupportingWmCheck,
+
 	AtomNetStartupId,
-	AtomWmProtocols,
-	AtomWmDeleteWindow,
-	AtomUtf8String,
-	AtomWmState,
-	AtomWmClientLeader,
-	AtomWmTakeFocus,
-	AtomWmWindowRole xgb.Id
+	AtomNetClientListStacking,
+	AtomNetActiveWindow,
+
+	AtomNetWorkarea,
+	AtomNetNumberOfDesktops,
+	AtomNetVirtualRoots,
+	AtomNetCurrentDesktop xgb.Id
 )
 
 func getAtomId(name string) xgb.Id {
@@ -42,11 +51,16 @@ func getAtomId(name string) xgb.Id {
 }
 
 func setupAtoms() {
-	AtomNetSupported = getAtomId("_NET_SUPPORTED")
-	AtomNetSupportingWmCheck = getAtomId("_NET_SUPPORTING_WM_CHECK")
+	AtomUtf8String = getAtomId("UTF8_STRING")
+
+	AtomWmProtocols = getAtomId("WM_PROTOCOLS")
+	AtomWmDeleteWindow = getAtomId("WM_DELETE_WINDOW")
+	AtomWmState = getAtomId("WM_STATE")
+	AtomWmClientLeader = getAtomId("WM_CLIENT_LEADER")
+	AtomWmTakeFocus = getAtomId("WM_TAKE_FOCUS")
+	AtomWmWindowRole = getAtomId("WM_WINDOW_ROLE")
+
 	AtomNetWmName = getAtomId("_NET_WM_NAME")
-	AtomNetWmStateFullscreen = getAtomId("_NET_WM_STATE_FULLSCREEN")
-	AtomNetWmState = getAtomId("_NET_WM_STATE")
 	AtomNetWmWindowType = getAtomId("_NET_WM_WINDOW_TYPE")
 	AtomNetWmWindowTypeDock = getAtomId("_NET_WM_WINDOW_TYPE_DOCK")
 	AtomNetWmWindowTypeDialog = getAtomId("_NET_WM_WINDOW_TYPE_DIALOG")
@@ -56,16 +70,20 @@ func setupAtoms() {
 	AtomNetWmDesktop = getAtomId("_NET_WM_DESKTOP")
 	AtomNetWmStrut = getAtomId("_NET_WM_STRUT")
 	AtomNetWmStrutPartial = getAtomId("_NET_WM_STRUT_PARTIAL")
-	AtomNetClientListStacking = getAtomId("_NET_CLIENT_LIST_STACKING")
-	AtomNetCurrentDesktop = getAtomId("_NET_CURRENT_DESKTOP")
-	AtomNetActiveWindow = getAtomId("_NET_ACTIVE_WINDOW")
-	AtomNetWorkarea = getAtomId("_NET_WORKAREA")
+	AtomNetWmState = getAtomId("_NET_WM_STATE")
+	AtomNetWmStateModal = getAtomId("_NET_WM_STATE_MODAL")
+	AtomNetWmStateHidden = getAtomId("_NET_WM_STATE_HIDDEN")
+	AtomNetWmStateFullscreen = getAtomId("_NET_WM_STATE_FULLSCREEN")
+
+	AtomNetSupported = getAtomId("_NET_SUPPORTED")
+	AtomNetSupportingWmCheck = getAtomId("_NET_SUPPORTING_WM_CHECK")
+
 	AtomNetStartupId = getAtomId("_NET_STARTUP_ID")
-	AtomWmProtocols = getAtomId("WM_PROTOCOLS")
-	AtomWmDeleteWindow = getAtomId("WM_DELETE_WINDOW")
-	AtomUtf8String = getAtomId("UTF8_STRING")
-	AtomWmState = getAtomId("WM_STATE")
-	AtomWmClientLeader = getAtomId("WM_CLIENT_LEADER")
-	AtomWmTakeFocus = getAtomId("WM_TAKE_FOCUS")
-	AtomWmWindowRole = getAtomId("WM_WINDOW_ROLE")
+	AtomNetClientListStacking = getAtomId("_NET_CLIENT_LIST_STACKING")
+	AtomNetActiveWindow = getAtomId("_NET_ACTIVE_WINDOW")
+
+	AtomNetWorkarea = getAtomId("_NET_WORKAREA")
+	AtomNetNumberOfDesktops = getAtomId("_NET_NUMBER_OF_DESKTOPS")
+	AtomNetVirtualRoots = getAtomId("_NET_VIRTUAL_ROOTS")
+	AtomNetCurrentDesktop = getAtomId("_NET_CURRENT_DESKTOP")
 }

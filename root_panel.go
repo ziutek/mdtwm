@@ -10,6 +10,8 @@ const rightButtonEventMask = xgb.EventMaskButtonPress |
 // Box for root window
 type RootPanel struct {
 	commonBox
+
+	checkWindow Window
 }
 
 func NewRootPanel() *RootPanel {
@@ -25,11 +27,19 @@ func NewRootPanel() *RootPanel {
 	p.SetClass(cfg.Instance, cfg.Class)
 	p.SetName("mdtwm root")
 	p.w.ChangeProp(xgb.PropModeReplace, xgb.AtomCursor, xgb.AtomWindow, p.w)
-	// Supported WM properities
-	/*root.ChangeProp(xgb.PropModeReplace, AtomNetSupported,
-	xgb.AtomAtom,	...)*/
+	// Create infrastructure for check of existence of active WM
+	p.checkWindow = NewWindow(p.Window(), Geometry{0, 0, 1, 1, 0},
+		xgb.WindowClassInputOutput, 0)
+	p.checkWindow.ChangeProp(xgb.PropModeReplace, AtomNetWmName,
+		AtomUtf8String, p.Name())
+	p.checkWindow.ChangeProp(xgb.PropModeReplace, AtomNetSupportingWmCheck,
+		xgb.AtomWindow, p.checkWindow)
 	p.w.ChangeProp(xgb.PropModeReplace, AtomNetSupportingWmCheck,
-		xgb.AtomWindow, p.w)
+		xgb.AtomWindow, p.checkWindow)
+	// Supported WM properties
+	p.w.ChangeProp(xgb.PropModeReplace, AtomNetSupported, xgb.AtomAtom,
+		[]xgb.Id{AtomNetWmStateModal, AtomNetWmStateHidden})
+	p.w.DeleteProp(AtomNetVirtualRoots) // clear for future append
 	// Grab right mouse buttons for WM actions
 	p.w.GrabButton(
 		true, // Needed for EnterNotify events during grab
@@ -67,6 +77,11 @@ func (p *RootPanel) Append(b Box) {
 	b.SetPosSize(p.x, p.y, p.width, p.height)
 	b.SetName("mdtwm desktop")
 	b.Window().Map()
+	// Update desktops properties
+	p.w.ChangeProp(xgb.PropModeReplace, AtomNetNumberOfDesktops,
+		xgb.AtomCardinal, uint32(p.children.Len()))
+	p.w.ChangeProp(xgb.PropModeAppend, AtomNetVirtualRoots, xgb.AtomWindow,
+		b.Window())
 }
 
 func (p *RootPanel) InsertNextTo(b, mark Box, x, y int16) {

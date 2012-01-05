@@ -35,22 +35,31 @@ func manage(w Window, panel ParentBox, startup bool) {
 		d.Print("  OverrideRedirect")
 		return
 	}
-	// Check window type
-	wm_type := atomList(w.Prop(AtomNetWmWindowType, math.MaxUint32))
-	if wm_type.Contains(AtomNetWmWindowTypeDock) {
+	wmState := atomList(w.Prop(AtomNetWmState, math.MaxUint32))
+	if wmState.Contains(AtomNetWmStateHidden) {
+		// TODO: Need better handling of hidden window
+		d.Print("  Hidden")
+		return
+	}
+	wmType := atomList(w.Prop(AtomNetWmWindowType, math.MaxUint32))
+	if wmType.Contains(AtomNetWmWindowTypeDock) {
 		d.Printf("  window %s is of type dock", w)
 		return // For now we don't manage dock windows
 	}
 	// NewWindowBox(w) changes some property of w so it can't be used before!
 	b := NewBoxedWindow(w)
-	if wm_type.Contains(AtomNetWmWindowTypeDialog) ||
-		wm_type.Contains(AtomNetWmWindowTypeUtility) ||
-		wm_type.Contains(AtomNetWmWindowTypeToolbar) ||
-		wm_type.Contains(AtomNetWmWindowTypeSplash) {
+	if wmType.Contains(AtomNetWmWindowTypeDialog) ||
+		wmType.Contains(AtomNetWmWindowTypeUtility) ||
+		wmType.Contains(AtomNetWmWindowTypeToolbar) ||
+		wmType.Contains(AtomNetWmWindowTypeSplash) {
 		b.SetFloat(true)
 	}
 	tr_for := atomList(w.Prop(xgb.AtomWmTransientFor, math.MaxUint32))
 	if len(tr_for) > 0 && tr_for[0] != xgb.WindowNone {
+		b.SetFloat(true)
+	}
+	if wmState.Contains(AtomNetWmStateModal) {
+		// TODO: Need better handling of modal windows
 		b.SetFloat(true)
 	}
 	if cfg.Float.Contains(class) {
