@@ -150,7 +150,11 @@ func motionNotify(e xgb.MotionNotifyEvent) {
 	click.Update(e.Time, dx*dx+dy*dy > cfg.MovedClickRadius)
 	// Actions
 	switch click.Num {
-	case 1: // One click and move
+	case 2: // Two clicks and move: tile/untile box
+		click.Num = 1
+		click.Box.SetFloat(!click.Box.Float())
+		fallthrough
+	case 1: // One click and move: move box
 		if _, ok := click.Box.(ParentBox); ok {
 			return // For now, we don't move panels
 		}
@@ -187,7 +191,6 @@ func motionNotify(e xgb.MotionNotifyEvent) {
 				currentDesk.Append(click.Box)
 			}
 		}
-	case 2: // Two clicks and move
 	case 3: // Three clicks
 	}
 }

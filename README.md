@@ -8,7 +8,7 @@ mdtwm uses only right mouse button as follows:
 
 - single-click-move: move a window (you can move between desktops),
 - single-slow-click: send right click to window,
-- double-click-move: tile/untile window (not implemented yet),
+- double-click-move: tile/untile window,
 - triple-click: close window.
 
 Default layout (see config.go)
