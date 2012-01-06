@@ -34,7 +34,8 @@ func configure() {
 		Class:    "MDtwm",
 
 		NormalBorderColor:  rgbColor(0x8888, 0x8888, 0x8888),
-		FocusedBorderColor: rgbColor(0x4444, 0x0000, 0xffff),
+		//FocusedBorderColor: rgbColor(0x4444, 0x0000, 0xffff),
+		FocusedBorderColor: rgbColor(0xffff, 0x9999, 0x0000),
 		BorderWidth:        1,
 
 		StatusLogger: &Dzen2Logger{
@@ -68,9 +69,8 @@ func configure() {
 	// Layout
 	root = NewRootPanel()
 	// Setup all desks
-	//desk1 := NewPanel(Horizontal, 1.82)
 	desk0 := NewPanel(Horizontal, 1.97)
-	desk1 := NewPanel(Horizontal, 1)
+	desk1 := NewPanel(Horizontal, 1.97)
 	desk2 := NewPanel(Horizontal, 1)
 	root.Append(desk0)
 	root.Append(desk1)
@@ -78,16 +78,16 @@ func configure() {
 	// Setup two main vertical panels on first desk
 	left := NewPanel(Vertical, 1.03)
 	right := NewPanel(Vertical, 0.3)
-	//left := NewPanel(Vertical, 1.02)
-	//right := NewPanel(Vertical, 0.29)
 	desk0.Append(left)
 	desk0.Append(right)
 	// Divide right panel into two horizontal panels
 	right.Append(NewPanel(Horizontal, 1))
 	right.Append(NewPanel(Horizontal, 1))
-	// Setup one main panel on second and thrid desk
-	desk1.Append(NewPanel(Horizontal, 1))
-	desk2.Append(NewPanel(Vertical, 1))
+	// Setup two panels on second desk
+	desk1.Append(NewPanel(Vertical, 1.03))
+	desk1.Append(NewPanel(Vertical, 0.3))
+	// Setup one horizontal panel on thrid desk
+	desk2.Append(NewPanel(Horizontal, 1))
 	// Set current desk and current box
 	setCurrentDesk(0)
 	// In this box all existing windows will be placed
