@@ -63,7 +63,7 @@ func configure() {
 		Float:  TextList{"MPlayer"},
 	}
 	// Read configuration from file
-	cfg.Load(filepath.Join(os.Getenv("HOME"), ".mdtwm"))
+	//cfg.Load(filepath.Join(os.Getenv("HOME"), ".mdtwm"))
 
 	// Layout
 	root = NewRootPanel()

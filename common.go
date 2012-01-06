@@ -81,6 +81,7 @@ func setNextDesk() {
 
 func setPrevDesk() {
 	prevDesk := currentDesk.Prev()
+	currentDeskNum--
 	if prevDesk == nil {
 		prevDesk = root.Children().Back()
 		currentDeskNum = root.Children().Len() - 1
