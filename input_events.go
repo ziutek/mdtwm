@@ -18,7 +18,7 @@ func keyPress(e xgb.KeyPressEvent) {
 }
 
 
-// TODO: Following code isn't good (it need be reimplemented!)
+// TODO: Following code isn't good (it need to be reimplemented!)
 
 const (
 	resizeLeft = 1 << iota
@@ -191,16 +191,17 @@ func motionNotify(e xgb.MotionNotifyEvent) {
 		if click.Resize != 0 {
 			if click.Box.Float() {
 				x, y, w, h := click.Box.PosSize()
-				if click.Resize & resizeLeft != 0 && w - dx > 0 {
+				bb := cfg.ResizeBorderWidth * 2
+				if click.Resize & resizeLeft != 0 && w - dx > bb {
 						x += dx
 						w -= dx
-				} else if click.Resize & resizeRight != 0 && w + dx > 0 {
+				} else if click.Resize & resizeRight != 0 && w + dx > bb {
 						w += dx
 				}
-				if click.Resize & resizeTop != 0 && h - dy > 0 {
+				if click.Resize & resizeTop != 0 && h - dy > bb {
 						y += dy
 						h -= dy
-				} else if click.Resize & resizeBottom != 0 && h + dy > 0 {
+				} else if click.Resize & resizeBottom != 0 && h + dy > bb {
 					h += dy
 				}
 				click.Box.SetPosSize(x, y, w, h)
