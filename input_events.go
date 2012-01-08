@@ -17,6 +17,16 @@ func keyPress(e xgb.KeyPressEvent) {
 	}
 }
 
+
+// TODO: Following code isn't good (it need be reimplemented!)
+
+const (
+	resizeLeft = 1 << iota
+	resizeRight
+	resizeTop
+	resizeBottom
+)
+
 // Distinguishes following actions (they can be used in specified handler):
 // 1. One click and move, in: MotionNotify, ButtonRelease
 // 2. One long click without move, in: ButtonRelease
@@ -25,10 +35,12 @@ func keyPress(e xgb.KeyPressEvent) {
 // 4. Three clicks and move, in: MotionNotify, ButtonRelease
 // 5. Three clicks without move, in: ButtonRelease
 type Multiclick struct {
-	Box   Box
-	X, Y  int16
-	Num   int  // number of clicks
-	Moved bool // Indicates that cursor has moved during click
+	Box                Box
+	X, Y, RootX, RootY int16
+	Num                int  // number of clicks
+	Moved              bool // indicates that cursor has moved during click
+	Resize             byte
+	Child              Window
 
 	last    xgb.Timestamp // time of last click
 	counter int           // Multiclick counter
@@ -74,8 +86,32 @@ func buttonPress(e xgb.ButtonPressEvent) {
 	if click.First() {
 		// Save first clicked box and coordinates of first click
 		click.Box = currentBox
-		click.X, click.Y = e.RootX, e.RootY
-		// We can't do any action on first ButtonPressEvent
+		click.RootX, click.RootY = e.RootX, e.RootY
+		click.Resize = 0
+		if click.Box.Float() {
+			click.Box.Raise()
+		}
+		// Check for click in resize border
+		w := click.Box.Window()
+		var ok bool
+		click.X, click.Y, click.Child, _, ok = w.TranslateCoordinates(
+			root.Window(), e.RootX, e.RootY,
+		)
+		if !ok {
+			return
+		}
+		g := click.Box.Geometry()
+		rbw := cfg.ResizeBorderWidth - cfg.BorderWidth
+		if click.X < rbw {
+			click.Resize |= resizeLeft
+		} else if click.X >= g.W-rbw {
+			click.Resize |= resizeRight
+		}
+		if click.Y < rbw {
+			click.Resize |= resizeTop
+		} else if click.Y >= g.H-rbw {
+			click.Resize |= resizeBottom
+		}
 		return
 	}
 	click.Update(e.Time, false)
@@ -92,19 +128,10 @@ func buttonRelease(e xgb.ButtonReleaseEvent) {
 		}
 		w := click.Box.Window()
 		if !click.Moved {
-			// Send right click to the box
-			var (
-				child Window
-				ok    bool
-			)
-			e.EventX, e.EventY, child, _, ok = w.TranslateCoordinates(
-				root.Window(), e.RootX, e.RootY,
-			)
-			if !ok {
-				return
-			}
 			e.Event = w.Id()
-			e.Child = child.Id()
+			e.EventX = click.X
+			e.EventY = click.Y
+			e.Child = click.Child.Id()
 			e.Time = xgb.TimeCurrentTime
 			e.State = 0
 			w.Send(false, xgb.EventMaskNoEvent, xgb.ButtonPressEvent(e))
@@ -145,21 +172,45 @@ func buttonRelease(e xgb.ButtonReleaseEvent) {
 
 func motionNotify(e xgb.MotionNotifyEvent) {
 	//d.Printf("%T: %+v", e, e)
-	dx := int(e.RootX - click.X)
-	dy := int(e.RootY - click.Y)
+	dx := e.RootX - click.RootX
+	dy := e.RootY - click.RootY
 	click.Update(e.Time, dx*dx+dy*dy > cfg.MovedClickRadius)
 	// Actions
 	switch click.Num {
 	case 2: // Two clicks and move: tile/untile box
 		click.Num = 1
+		click.Resize = 0
 		click.Box.SetFloat(!click.Box.Float())
 		fallthrough
-	case 1: // One click and move: move box
+	case 1: // One click and move: move/resize box
 		if _, ok := click.Box.(ParentBox); ok {
 			return // For now, we don't move panels
 		}
 		conn.ChangeActivePointerGrab(cfg.MoveCursor, xgb.TimeCurrentTime,
 			rightButtonEventMask)
+		if click.Resize != 0 {
+			if click.Box.Float() {
+				x, y, w, h := click.Box.PosSize()
+				if click.Resize & resizeLeft != 0 && w - dx > 0 {
+						x += dx
+						w -= dx
+				} else if click.Resize & resizeRight != 0 && w + dx > 0 {
+						w += dx
+				}
+				if click.Resize & resizeTop != 0 && h - dy > 0 {
+						y += dy
+						h -= dy
+				} else if click.Resize & resizeBottom != 0 && h + dy > 0 {
+					h += dy
+				}
+				click.Box.SetPosSize(x, y, w, h)
+				click.RootX += dx
+				click.RootY += dy
+			} else {
+				// TODO: implement resize of tiled window
+			}
+			return
+		}
 		// Use left and right borders for change desktop
 		_, _, rootWidth, _ := root.PosSize()
 		switch e.RootX {
@@ -181,10 +232,10 @@ func motionNotify(e xgb.MotionNotifyEvent) {
 		if click.Box.Float() {
 			// Move floating box
 			x, y, w, h := click.Box.PosSize()
-			dx, dy := e.RootX-click.X, e.RootY-click.Y
+			dx, dy := e.RootX-click.RootX, e.RootY-click.RootY
 			click.Box.SetPosSize(x+dx, y+dy, w, h)
-			click.X += dx
-			click.Y += dy
+			click.RootX += dx
+			click.RootY += dy
 			if click.Box.Parent().Window() != currentDesk.Window() {
 				// Floating window moved to new desk
 				click.Box.Parent().Remove(click.Box)

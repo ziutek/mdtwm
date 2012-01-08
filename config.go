@@ -15,10 +15,11 @@ type Config struct {
 	BorderWidth        int16
 	StatusLogger       StatusLogger `json:"-"`
 
-	DefaultCursor    xgb.Id `json:"-"`
-	MoveCursor       xgb.Id `json:"-"`
-	MultiClickTime   xgb.Timestamp
-	MovedClickRadius int
+	DefaultCursor     xgb.Id `json:"-"`
+	MoveCursor        xgb.Id `json:"-"`
+	MultiClickTime    xgb.Timestamp
+	MovedClickRadius  int16
+	ResizeBorderWidth int16
 
 	ModMask uint16
 	Keys    map[byte]Cmd `json:"-"`
@@ -33,7 +34,7 @@ func configure() {
 		Instance: filepath.Base(os.Args[0]),
 		Class:    "MDtwm",
 
-		NormalBorderColor:  rgbColor(0x8888, 0x8888, 0x8888),
+		NormalBorderColor: rgbColor(0x8888, 0x8888, 0x8888),
 		//FocusedBorderColor: rgbColor(0x4444, 0x0000, 0xffff),
 		FocusedBorderColor: rgbColor(0xffff, 0x9999, 0x0000),
 		BorderWidth:        1,
@@ -50,6 +51,7 @@ func configure() {
 		MoveCursor:       stdCursor(52),
 		MultiClickTime:   300, // maximum interval for multiclick [ms]
 		MovedClickRadius: 5,   // minimal radius for moved click [pixel]
+		ResizeBorderWidth: 6,  // width of imaginary border used for resize [pixel]
 
 		ModMask: xgb.ModMask4,
 		Keys: map[byte]Cmd{
