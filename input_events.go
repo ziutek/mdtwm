@@ -9,7 +9,8 @@ func keyPress(e xgb.KeyPressEvent) {
 	if e.State == cfg.ModMask {
 		cmd, ok := cfg.Keys[e.Detail]
 		if !ok {
-			l.Panic("Unhandled key: ", e.Detail)
+			l.Print("Unhandled key: ", e.Detail)
+			return
 		}
 		if err := cmd.Run(); err != nil {
 			l.Printf("cmd(%s): %s", cmd.Param, err)
