@@ -7,7 +7,7 @@ import (
 func keyPress(e xgb.KeyPressEvent) {
 	d.Printf("%T: %+v", e, e)
 	if e.State == cfg.ModMask {
-		cmd, ok := cfg.Keys[e.Detail]
+		cmd, ok := cfg.Keys[keyCodeToSym[e.Detail]]
 		if !ok {
 			l.Print("Unhandled key: ", e.Detail)
 			return

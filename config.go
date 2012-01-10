@@ -13,16 +13,16 @@ type Config struct {
 	NormalBorderColor  uint32
 	FocusedBorderColor uint32
 	BorderWidth        int16
-	StatusLogger       StatusLogger `json:"-"`
+	StatusLogger       StatusLogger
 
-	DefaultCursor     xgb.Id `json:"-"`
-	MoveCursor        xgb.Id `json:"-"`
+	DefaultCursor     xgb.Id
+	MoveCursor        xgb.Id
 	MultiClickTime    xgb.Timestamp
 	MovedClickRadius  int16
 	ResizeBorderWidth int16
 
 	ModMask uint16
-	Keys    map[byte]Cmd `json:"-"`
+	Keys    map[xgb.Keysym]Cmd
 
 	Ignore TextList
 	Float  TextList
@@ -47,19 +47,20 @@ func configure() {
 			TimePos:    -154, // Negatife value means pixels from right border
 		},
 
-		DefaultCursor:    stdCursor(68),
-		MoveCursor:       stdCursor(52),
-		MultiClickTime:   300, // maximum interval for multiclick [ms]
-		MovedClickRadius: 5,   // minimal radius for moved click [pixel]
-		ResizeBorderWidth: 6,  // width of imaginary border used for resize [pixel]
+		DefaultCursor:     stdCursor(68),
+		MoveCursor:        stdCursor(52),
+		MultiClickTime:    300, // maximum interval for multiclick [ms]
+		MovedClickRadius:  5,   // minimal radius for moved click [pixel]
+		ResizeBorderWidth: 6,   // width of imaginary resize border [pixel]
 
 		ModMask: xgb.ModMask4,
-		Keys: map[byte]Cmd{
-			Key1:     {chDesk, 0},
-			Key2:     {chDesk, 1},
-			Key3:     {chDesk, 2},
-			KeyEnter: {spawn, "gnome-terminal"},
-			KeyQ:     {exit, 0},
+		Keys: map[xgb.Keysym]Cmd{
+			Key1:      {chDesk, 0},
+			Key2:      {chDesk, 1},
+			Key3:      {chDesk, 2},
+			KeyReturn: {spawn, "gnome-terminal"},
+			KeyQ:      {exit, 0},
+			KeyF12:    {spawn, "sudo pm-hibernate"},
 		},
 
 		Ignore: TextList{},

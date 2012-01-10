@@ -7,6 +7,7 @@ import (
 	"io"
 	"os"
 	"os/exec"
+	"strings"
 	"time"
 )
 
@@ -49,7 +50,8 @@ func (c *Cmd) Run() error {
 func spawn(cmd interface{}) error {
 	// TODO: check what filedescriptors are inherited from WM by cmd when
 	// exec.Command is used
-	return exec.Command(fmt.Sprint(cmd)).Start()
+	args := strings.Split(cmd.(string), " ")
+	return exec.Command(args[0], args[1:]...).Start()
 }
 
 func exit(retval interface{}) error {
@@ -64,54 +66,65 @@ func chDesk(deskNum interface{}) error {
 
 // Keycodes
 const (
-	KeyA = 38
-	KeyB = 56
-	KeyC = 54
-	KeyD = 40
-	KeyE = 26
-	KeyF = 41
-	KeyG = 42
-	KeyH = 43
-	KeyI = 31
-	KeyJ = 44
-	KeyK = 45
-	KeyL = 46
-	KeyM = 58
-	KeyN = 57
-	KeyO = 32
-	KeyP = 33
-	KeyQ = 24
-	KeyR = 27
-	KeyS = 39
-	KeyT = 28
-	KeyU = 30
-	KeyV = 55
-	KeyW = 25
-	KeyX = 53
-	KeyY = 29
-	KeyZ = 52
+	KeyA = 0x0061
+	KeyB = 0x0062
+	KeyC = 0x0063
+	KeyD = 0x0064
+	KeyE = 0x0065
+	KeyF = 0x0066
+	KeyG = 0x0067
+	KeyH = 0x0068
+	KeyI = 0x0069
+	KeyJ = 0x006a
+	KeyK = 0x006b
+	KeyL = 0x006c
+	KeyM = 0x006d
+	KeyN = 0x006e
+	KeyO = 0x006f
+	KeyP = 0x0070
+	KeyQ = 0x0071
+	KeyR = 0x0072
+	KeyS = 0x0073
+	KeyT = 0x0074
+	KeyU = 0x0075
+	KeyV = 0x0076
+	KeyW = 0x0077
+	KeyX = 0x0078
+	KeyY = 0x0079
+	KeyZ = 0x007a
 
-	Key1 = 10
-	Key2 = 11
-	Key3 = 12
-	Key4 = 13
-	Key5 = 14
-	Key6 = 15
-	Key7 = 16
-	Key8 = 17
-	Key9 = 18
-	Key0 = 19
+	Key0 = 0x0030
+	Key1 = 0x0031
+	Key2 = 0x0032
+	Key3 = 0x0033
+	Key4 = 0x0034
+	Key5 = 0x0035
+	Key6 = 0x0036
+	Key7 = 0x0037
+	Key8 = 0x0038
+	Key9 = 0x0039
 
-	KeyComma  = 59
-	KeyDot    = 60
-	KeySpace  = 65
-	KeyEnter  = 36
-	KeyBspace = 22
+	KeyBackSpace  = 0xff08
+	KeyTab        = 0xff09
+	KeyReturn     = 0xff0d
+	KeyPause      = 0xff13
+	KeyScrollLock = 0xff14
+	KeySysReq     = 0xff15
+	KeyEscape     = 0xff1b
+	KeyDelete     = 0xffff
 
-	KeyUp    = 111
-	KeyLeft  = 113
-	KeyRight = 114
-	KeyDown  = 116
+	KeyF1  = 0xffbe
+	KeyF2  = 0xffbf
+	KeyF3  = 0xffc0
+	KeyF4  = 0xffc1
+	KeyF5  = 0xffc2
+	KeyF6  = 0xffc3
+	KeyF7  = 0xffc4
+	KeyF8  = 0xffc5
+	KeyF9  = 0xffc6
+	KeyF10 = 0xffc7
+	KeyF11 = 0xffc8
+	KeyF12 = 0xffc9
 )
 
 var stdCursorFont xgb.Id

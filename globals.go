@@ -9,6 +9,8 @@ import (
 var (
 	conn   *xgb.Conn
 	screen *xgb.ScreenInfo
+	keyCodeToSym []xgb.Keysym
+	keySymToCode map[xgb.Keysym]byte
 
 	// Desk in mdtwm means workspace. Desk contains panels. Panel contains
 	// panels or windows.

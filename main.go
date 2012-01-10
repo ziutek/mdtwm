@@ -46,6 +46,23 @@ func connect() {
 		l.Fatal("Can't connect to display: ", err)
 	}
 	screen = conn.DefaultScreen()
+	r, err := conn.GetKeyboardMapping(
+		conn.Setup.MinKeycode,
+		conn.Setup.MaxKeycode-conn.Setup.MinKeycode+1,
+	)
+	if err != nil {
+		l.Fatal("Can't get keybboard mapping: ", err)
+	}
+	// Setup keycode <-> keysym mapping
+	minKeycode := conn.Setup.MinKeycode
+	codeNum := int(r.Length) / int(r.KeysymsPerKeycode)
+	keyCodeToSym = make([]xgb.Keysym, int(minKeycode)+codeNum)
+	keySymToCode = make(map[xgb.Keysym]byte)
+	for i := 0; i < codeNum; i++ {
+		s := r.Keysyms[i*int(r.KeysymsPerKeycode)]
+		keyCodeToSym[byte(i)+minKeycode] = s
+		keySymToCode[s] = byte(i) + minKeycode
+	}
 }
 
 func manageExistingWindows() {
