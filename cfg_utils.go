@@ -104,6 +104,17 @@ const (
 	Key8 = 0x0038
 	Key9 = 0x0039
 
+	KeyMinus        = 0x002d
+	KeyEqual        = 0x003d
+	KeySemicolon    = 0x003b
+	KeyComma        = 0x002c
+	KeyPeriod       = 0x002e
+	KeySlash        = 0x002f
+	KeyBackslash    = 0x005c
+	KeyBracketRight = 0x005d
+	KeyBracketLeft  = 0x005b
+
+	KeySpace      = 0x0020
 	KeyBackSpace  = 0xff08
 	KeyTab        = 0xff09
 	KeyReturn     = 0xff0d
@@ -111,7 +122,17 @@ const (
 	KeyScrollLock = 0xff14
 	KeySysReq     = 0xff15
 	KeyEscape     = 0xff1b
+	KeyInsert     = 0xff63 // ?
 	KeyDelete     = 0xffff
+
+	KeyHome     = 0xff50
+	KeyPageDown = 0xff56
+	KeyPageUp   = 0xff55
+	KeyEnd      = 0xff57
+	KeyLeft     = 0xff51
+	KeyUp       = 0xff52
+	KeyRight    = 0xff53
+	KeyDown     = 0xff54
 
 	KeyF1  = 0xffbe
 	KeyF2  = 0xffbf
