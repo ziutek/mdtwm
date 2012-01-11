@@ -58,9 +58,13 @@ func configure() {
 			Key1:      {chDesk, 0},
 			Key2:      {chDesk, 1},
 			Key3:      {chDesk, 2},
+			KeyLeft:   {prevDesk, nil},
+			KeyRight:  {nextDesk, nil},
 			KeyReturn: {spawn, "gnome-terminal"},
 			KeyQ:      {exit, 0},
+			KeyF11:    {spawn, "sudo pm-suspend"},
 			KeyF12:    {spawn, "sudo pm-hibernate"},
+			KeyB:      {spawn, "gnome-www-browser"},
 		},
 
 		Ignore: TextList{},

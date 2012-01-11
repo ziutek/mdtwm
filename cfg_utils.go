@@ -64,6 +64,16 @@ func chDesk(deskNum interface{}) error {
 	return nil
 }
 
+func nextDesk(interface{}) error {
+	setNextDesk()
+	return nil
+}
+
+func prevDesk(interface{}) error {
+	setPrevDesk()
+	return nil
+}
+
 // Keycodes
 const (
 	KeyA = 0x0061
@@ -110,6 +120,7 @@ const (
 	KeyComma        = 0x002c
 	KeyPeriod       = 0x002e
 	KeySlash        = 0x002f
+	KeyApostrophe   = 0x0027
 	KeyBackslash    = 0x005c
 	KeyBracketRight = 0x005d
 	KeyBracketLeft  = 0x005b
