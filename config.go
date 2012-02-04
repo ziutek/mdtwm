@@ -60,11 +60,12 @@ func configure() {
 			Key3:      {chDesk, 2},
 			KeyLeft:   {prevDesk, nil},
 			KeyRight:  {nextDesk, nil},
-			KeyReturn: {spawn, "gnome-terminal"},
-			KeyQ:      {exit, 0},
+			KeyReturn: {spawn, "x-terminal-emulator"},
+			KeyEscape: {exit, 0},
+			KeyW:      {spawn, "x-www-browser"},
+			KeyE:      {spawn, "gnome-text-editor"},
 			KeyF11:    {spawn, "sudo pm-suspend"},
 			KeyF12:    {spawn, "sudo pm-hibernate"},
-			KeyB:      {spawn, "gnome-www-browser"},
 		},
 
 		Ignore: TextList{},
@@ -100,9 +101,10 @@ func configure() {
 	// In this box all existing windows will be placed
 	currentBox = currentDesk.Children().Front()
 
-	// Some operation on configuration 
+	// Some operation on configuration
 	cfg.MovedClickRadius *= cfg.MovedClickRadius // We need square of radius
 	if cfg.StatusLogger != nil {
 		cfg.StatusLogger.Start()
 	}
 }
+
