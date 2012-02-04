@@ -26,25 +26,28 @@ func manage(w Window, panel ParentBox, startup bool) {
 		d.Print("  not vievable")
 		return
 	}
-	// Check strut property
-	if struts.Update(w, true) {
-		return // For now we don't manage windows with strut property
-	}
-	// Don't manage if OverrideRedirect flag is set
-	if attr.OverrideRedirect {
-		d.Print("  OverrideRedirect")
-		return
-	}
 	wmState := atomList(w.Prop(AtomNetWmState, math.MaxUint32))
 	if wmState.Contains(AtomNetWmStateHidden) {
 		// TODO: Need better handling of hidden window
 		d.Print("  Hidden")
 		return
 	}
+	// Check strut property
+	if struts.Update(w, true) {
+		d.Printf("  window %s - strut", w)
+		w.Map()
+		return // For now we don't manage windows with strut property
+	}
 	wmType := atomList(w.Prop(AtomNetWmWindowType, math.MaxUint32))
 	if wmType.Contains(AtomNetWmWindowTypeDock) {
 		d.Printf("  window %s is of type dock", w)
+		w.Map()
 		return // For now we don't manage dock windows
+	}
+	// Don't manage if OverrideRedirect flag is set
+	if attr.OverrideRedirect {
+		d.Print("  OverrideRedirect")
+		return
 	}
 	// NewWindowBox(w) changes some property of w so it can't be used before!
 	b := NewBoxedWindow(w)
