@@ -1,4 +1,4 @@
-package main
+package mdtwm
 
 import (
 	"math"

@@ -1,28 +1,25 @@
-package main
+package mdtwm
 
 import (
-	"code.google.com/p/x-go-binding/xgb"
+	"github.com/ziutek/mdtwm/xgb_patched"
 	"fmt"
-	"log"
 	"os"
 )
 
 var (
-	conn *xgb.Conn
-	root Window
-	l    = log.New(os.Stderr, "test: ", 0)
+	testRoot Window
 )
 
 func createWindow() {
 	w := NewWindow(
-		root, Geometry{0, 0, 100, 30, 0},
+		testRoot, Geometry{0, 0, 100, 30, 0},
 		xgb.WindowClassInputOutput,
 		xgb.CWOverrideRedirect, 1,
 	)
 	w.Map()
 }
 
-func main() {
+func Test() {
 	var err error
 	display := os.Getenv("DISPLAY")
 	conn, err = xgb.Dial(display)
@@ -30,12 +27,12 @@ func main() {
 		l.Fatal(err)
 	}
 	setupAtoms()
-	root = Window(conn.DefaultScreen().Root)
+	testRoot = Window(conn.DefaultScreen().Root)
 
 	createWindow()
 
-	tr, err := conn.QueryTree(root.Id())
-	for i, id := range append(tr.Children, root.Id()) {
+	tr, err := conn.QueryTree(testRoot.Id())
+	for i, id := range append(tr.Children, testRoot.Id()) {
 		w := Window(id)
 
 		inst, class := w.Class()

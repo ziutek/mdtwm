@@ -1,4 +1,4 @@
-package main
+package mdtwm
 
 type BoxList struct {
 	front, back Box

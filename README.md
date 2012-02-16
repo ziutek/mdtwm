@@ -37,13 +37,17 @@ Known issues:
 
 Build instruction:
 
-    git clone https://github.com/ziutek/mdtwm.git
-    cd mdtwm/xgb_patched
-    make install
-    cd ..
-    # edit config.go
-    make
+    go install github.com/ziutek/mdtwm/cmd/mdtwm
 
+    The executable will be installed in $GOPATH/bin/mdtwm
+
+Configuration:
+    Edit the file $GOPATH/src/pkg/github.com/ziutek/mdtwm/config.go
+    (if you do not have $GOPATH configured, try $GOROOT).
+
+    then run:
+    go install github.com/ziutek/mdtwm/cmd/mdtwm
+    
 Screenshot:
 
 ![Screenshot image](/ziutek/mdtwm/raw/master/screenshot.jpg)
