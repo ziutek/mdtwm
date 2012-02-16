@@ -1,38 +1,35 @@
-package main
+// Support functions for the 'mdtwm' tool.
+
+package mdtwm
 
 import (
-	"code.google.com/p/x-go-binding/xgb"
+	"github.com/ziutek/mdtwm/xgb_patched"
 	"os"
 	"os/signal"
 	"syscall"
 )
 
-func main() {
-	signals()
-	connect()
-	setupAtoms()
-	configure()
-	manageExistingWindows()
-	eventLoop()
-}
-
 func signals() {
 	go func() {
-		for sig := range signal.Incoming {
-			if s, ok := sig.(os.UnixSignal); ok {
-				switch s {
-				case syscall.SIGTERM, syscall.SIGINT:
-					os.Exit(0)
-				case syscall.SIGWINCH:
-					continue
-				case syscall.SIGCHLD:
-					var status syscall.WaitStatus
-					_, err := syscall.Wait4(-1, &status, 0, nil)
-					if err != nil {
-						l.Print("syscal.Wait4: ", err)
-					}
-					continue
+		c := make(chan os.Signal)
+		signal.Notify(c, []os.Signal{
+			syscall.SIGTERM,
+			syscall.SIGINT,
+			syscall.SIGWINCH,
+			syscall.SIGCHLD}...)
+		for sig := range c {
+			switch sig {
+			case syscall.SIGTERM, syscall.SIGINT:
+				os.Exit(0)
+			case syscall.SIGWINCH:
+				continue
+			case syscall.SIGCHLD:
+				var status syscall.WaitStatus
+				_, err := syscall.Wait4(-1, &status, 0, nil)
+				if err != nil {
+					l.Print("syscal.Wait4: ", err)
 				}
+				continue
 			}
 			l.Printf("Signal '%s' received and ignored", sig)
 		}
@@ -79,4 +76,13 @@ func eventLoop() {
 	for {
 		handleEvent(conn.WaitForEvent())
 	}
+}
+
+func Run() {
+	signals()
+	connect()
+	setupAtoms()
+	configure()
+	manageExistingWindows()
+	eventLoop()
 }
