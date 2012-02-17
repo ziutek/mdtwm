@@ -2,7 +2,7 @@ package main
 
 import (
 	"bytes"
-	"code.google.com/p/x-go-binding/xgb"
+	"github.com/ziutek/mdtwm/xgb_patched"
 	"fmt"
 	"reflect"
 	"unsafe"

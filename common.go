@@ -1,7 +1,7 @@
 package main
 
 import (
-	"code.google.com/p/x-go-binding/xgb"
+	"github.com/ziutek/mdtwm/xgb_patched"
 	"reflect"
 	"unsafe"
 )
