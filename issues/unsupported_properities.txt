@@ -1,0 +1,5 @@
+_NET_CLIENT_LIST
+_NET_CLIENT_LIST_STACKING
+_NET_DESKTOP_NAMES // optional
+_NET_WM_STRUT_PARTIAL // partially supported but not announced
+

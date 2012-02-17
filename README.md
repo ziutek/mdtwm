@@ -37,12 +37,7 @@ Known issues:
 
 Build instruction:
 
-    git clone https://github.com/ziutek/mdtwm.git
-    cd mdtwm/xgb_patched
-    make install
-    cd ..
-    # edit config.go
-    make
+    go get github.com/ziutek/mdtwm
 
 Screenshot:
 

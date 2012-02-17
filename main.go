@@ -3,7 +3,7 @@ package main
 import (
 	"github.com/ziutek/mdtwm/xgb_patched"
 	"os"
-	"exp/signal"
+	"os/signal"
 	"syscall"
 )
 
@@ -17,14 +17,14 @@ func main() {
 }
 
 func signals() {
+	sc := make(chan os.Signal, 3)
+	signal.Notify(sc, syscall.SIGTERM, syscall.SIGINT, syscall.SIGCHLD)
 	go func() {
-		for sig := range signal.Incoming {
-			if s, ok := sig.(os.UnixSignal); ok {
+		for sig := range sc {
+			if s, ok := sig.(syscall.Signal); ok {
 				switch s {
 				case syscall.SIGTERM, syscall.SIGINT:
 					os.Exit(0)
-				case syscall.SIGWINCH:
-					continue
 				case syscall.SIGCHLD:
 					var status syscall.WaitStatus
 					_, err := syscall.Wait4(-1, &status, 0, nil)
