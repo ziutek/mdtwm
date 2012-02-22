@@ -61,8 +61,12 @@ func NewRootPanel() *RootPanel {
 	)
 	// Grab keys for WM actions
 	for k, _ := range cfg.Keys {
+		// For cfg.ModMask
 		p.w.GrabKey(true, cfg.ModMask, keySymToCode[k], xgb.GrabModeAsync,
 			xgb.GrabModeAsync)
+		// For cfg.ModMask + NumLock
+		p.w.GrabKey(true, cfg.ModMask|xgb.ModMask2, keySymToCode[k],
+			xgb.GrabModeAsync, xgb.GrabModeAsync)
 	}
 	return &p
 }

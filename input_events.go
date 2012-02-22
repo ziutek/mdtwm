@@ -6,7 +6,7 @@ import (
 
 func keyPress(e xgb.KeyPressEvent) {
 	d.Printf("%T: %+v", e, e)
-	if e.State == cfg.ModMask {
+	if e.State == cfg.ModMask || e.State == cfg.ModMask|xgb.ModMask2 {
 		cmd, ok := cfg.Keys[keyCodeToSym[e.Detail]]
 		if !ok {
 			l.Print("Unhandled key: ", e.Detail)
@@ -17,7 +17,6 @@ func keyPress(e xgb.KeyPressEvent) {
 		}
 	}
 }
-
 
 // TODO: Following code isn't good (it need to be reimplemented!)
 
@@ -193,16 +192,16 @@ func motionNotify(e xgb.MotionNotifyEvent) {
 			if click.Box.Float() {
 				x, y, w, h := click.Box.PosSize()
 				bb := cfg.ResizeBorderWidth * 2
-				if click.Resize & resizeLeft != 0 && w - dx > bb {
-						x += dx
-						w -= dx
-				} else if click.Resize & resizeRight != 0 && w + dx > bb {
-						w += dx
+				if click.Resize&resizeLeft != 0 && w-dx > bb {
+					x += dx
+					w -= dx
+				} else if click.Resize&resizeRight != 0 && w+dx > bb {
+					w += dx
 				}
-				if click.Resize & resizeTop != 0 && h - dy > bb {
-						y += dy
-						h -= dy
-				} else if click.Resize & resizeBottom != 0 && h + dy > bb {
+				if click.Resize&resizeTop != 0 && h-dy > bb {
+					y += dy
+					h -= dy
+				} else if click.Resize&resizeBottom != 0 && h+dy > bb {
 					h += dy
 				}
 				click.Box.SetPosSize(x, y, w, h)
