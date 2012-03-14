@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"syscall"
 	"os/exec"
 	"strings"
 	"time"
@@ -245,7 +246,7 @@ func (d *Dzen2Logger) thr() {
 func (c *Config) Load(fname string) {
 	f, err := os.Open(fname)
 	if err != nil {
-		if e, ok := err.(*os.PathError); !ok || e.Err != os.ENOENT {
+		if e, ok := err.(*os.PathError); !ok || e.Err != syscall.ENOENT {
 			l.Fatalf("Can't open a configuration file: %s", err)
 		}
 		// Configuration file doesn't exists: create default
