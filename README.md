@@ -13,7 +13,7 @@ mdtwm uses only right mouse button as follows:
 
 Default layout (see config.go)
 
-- two desks
+- three desks
 - first desk contains two panels
 - second desk contains one horizontal panel
 - third desk contains one vertical panel
@@ -21,7 +21,7 @@ Default layout (see config.go)
 Default keybindings (see config.go)
 
 - Mod+Enter: new terminal (gnome-terminal)
-- Mod+q: exit
+- Mod+ESC: exit
 - Mod+1: first desk
 - Mod+2: second desk
 - Mod+3: thrid desk

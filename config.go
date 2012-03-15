@@ -64,6 +64,7 @@ func configure() {
 			KeyEscape: {exit, 0},
 			KeyW:      {spawn, "x-www-browser"},
 			KeyE:      {spawn, "gnome-text-editor"},
+			KeyT:      {spawn, "nautilus"},
 			KeyF11:    {spawn, "sudo pm-suspend"},
 			KeyF12:    {spawn, "sudo pm-hibernate"},
 		},
@@ -107,4 +108,3 @@ func configure() {
 		cfg.StatusLogger.Start()
 	}
 }
-
