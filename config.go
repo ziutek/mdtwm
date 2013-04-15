@@ -44,7 +44,7 @@ func configure() {
 			FgColor:    "#ddddcc",
 			BgColor:    "#555588",
 			TimeFormat: "Mon, Jan _2 15:04:05",
-			TimePos:    -154, // Negatife value means pixels from right border
+			TimePos:    -118, // Negatife value means pixels from right border
 		},
 
 		DefaultCursor:     stdCursor(68),
@@ -78,25 +78,25 @@ func configure() {
 	// Layout
 	root = NewRootPanel()
 	// Setup all desks
-	desk0 := NewPanel(Horizontal, 1.97)
-	desk1 := NewPanel(Horizontal, 1.97)
-	desk2 := NewPanel(Horizontal, 1)
+	desk0 := NewPanel(Horizontal, 484, 1)
+	desk1 := NewPanel(Horizontal, 0, 2.74)
+	desk2 := NewPanel(Horizontal, 0, 1)
 	root.Append(desk0)
 	root.Append(desk1)
 	root.Append(desk2)
 	// Setup two main vertical panels on first desk
-	left := NewPanel(Vertical, 1.03)
-	right := NewPanel(Vertical, 0.3)
+	left := NewPanel(Vertical, 0, 1)
+	right := NewPanel(Vertical, 0, 0.3)
 	desk0.Append(left)
 	desk0.Append(right)
 	// Divide right panel into two horizontal panels
-	right.Append(NewPanel(Horizontal, 1))
-	right.Append(NewPanel(Horizontal, 1))
+	right.Append(NewPanel(Horizontal, 484, 1))
+	right.Append(NewPanel(Horizontal, 0, 1))
 	// Setup two panels on second desk
-	desk1.Append(NewPanel(Vertical, 1.03))
-	desk1.Append(NewPanel(Vertical, 0.3))
+	desk1.Append(NewPanel(Vertical, 0, 1.03))
+	desk1.Append(NewPanel(Vertical, 0, 0.3))
 	// Setup one horizontal panel on thrid desk
-	desk2.Append(NewPanel(Horizontal, 1))
+	desk2.Append(NewPanel(Horizontal, 0, 1))
 	// Set current desk and current box
 	setCurrentDesk(0)
 	// In this box all existing windows will be placed

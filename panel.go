@@ -10,12 +10,13 @@ type Panel struct {
 
 	typ   Orientation // panel type (vertical or horizontal)
 	ratio float64     // ratio of size of two neighboringsubwindows
+	first int16       // space for first subwindow (pixels)
 }
 
 // New Panel has parent set to nil and its window
 // parent is root window.
 // ratio == 1 means all subwindows in panel are equal in size.
-func NewPanel(typ Orientation, ratio float64) *Panel {
+func NewPanel(typ Orientation, first int16, ratio float64) *Panel {
 	var p Panel
 	p.init(
 		NewWindow(root.Window(), Geometry{0, 0, 1, 1, 0},
@@ -27,6 +28,7 @@ func NewPanel(typ Orientation, ratio float64) *Panel {
 	p.height = 1
 	p.typ = typ
 	p.ratio = ratio
+	p.first = first
 	p.SetClass(cfg.Instance, cfg.Class)
 	p.SetName("mdtwm panel")
 	p.w.SetBackPixmap(xgb.BackPixmapParentRelative)
@@ -79,7 +81,7 @@ func (p *Panel) Append(b Box) {
 	p.insertCommon(b)
 }
 
-// Inserts a box into panel 
+// Inserts a box into panel
 func (p *Panel) insertCommon(b Box) {
 	b.SetParent(p)
 	if !b.Float() {
@@ -115,9 +117,9 @@ func (p *Panel) tile() {
 	}
 	if p.typ == Vertical {
 		d.Print("Tile V in: ", p)
-		hg := NewSizeGen(p.height, n, p.ratio)
+		hg := NewSizeGen(p.height, n, p.first, p.ratio)
 		y, w := int16(0), p.width
-		for b = p.children.Front(); n > 1; b, n = b.Next(), n - 1 {
+		for b = p.children.Front(); n > 1; b, n = b.Next(), n-1 {
 			if b.Float() {
 				continue
 			}
@@ -129,9 +131,9 @@ func (p *Panel) tile() {
 		b.SetPosSize(0, y, w, p.height-y)
 	} else {
 		d.Print("Tile H in:", p)
-		wg := NewSizeGen(p.width, n, p.ratio)
+		wg := NewSizeGen(p.width, n, p.first, p.ratio)
 		x, h := int16(0), p.height
-		for b = p.children.Front(); n > 1; b, n = b.Next(), n - 1 {
+		for b = p.children.Front(); n > 1; b, n = b.Next(), n-1 {
 			if b.Float() {
 				continue
 			}
@@ -146,17 +148,26 @@ func (p *Panel) tile() {
 
 type SizeGen struct {
 	s, ratio float64
+	first    int16
 }
 
-func NewSizeGen(allSpace, n int16, ratio float64) *SizeGen {
+func NewSizeGen(allSpace, n, first int16, ratio float64) *SizeGen {
+	if first != 0 {
+		n--
+	}
 	d := 1.0
 	for ; n > 1; n-- {
 		d = d*ratio + 1
 	}
-	return &SizeGen{float64(allSpace) / d, ratio}
+	return &SizeGen{float64(allSpace-first) / d, ratio, first}
 }
 
 func (g *SizeGen) Next() (s int16) {
+	if g.first != 0 {
+		s = g.first
+		g.first = 0
+		return
+	}
 	s = int16(g.s)
 	g.s *= g.ratio
 	return
