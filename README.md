@@ -41,4 +41,4 @@ Build instruction:
 
 Screenshot:
 
-![Screenshot image](/ziutek/mdtwm/raw/master/screenshot.jpg)
+![Screenshot image](https://raw.github.com/ziutek/mdtwm/master/screenshot.jpg)
