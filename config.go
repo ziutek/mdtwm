@@ -79,7 +79,7 @@ func configure() {
 	root = NewRootPanel()
 	// Setup all desks
 	desk0 := NewPanel(Horizontal, 484, 1)
-	desk1 := NewPanel(Horizontal, 0, 2.74)
+	desk1 := NewPanel(Horizontal, 484, 1)
 	desk2 := NewPanel(Horizontal, 0, 1)
 	root.Append(desk0)
 	root.Append(desk1)
