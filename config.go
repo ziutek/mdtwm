@@ -44,7 +44,7 @@ func configure() {
 			FgColor:    "#ddddcc",
 			BgColor:    "#555588",
 			TimeFormat: "Mon, Jan _2 15:04:05",
-			TimePos:    -110, // Negatife value means pixels from right border
+			TimePos:    -130, // Negatife value means pixels from right border
 		},
 
 		DefaultCursor:     stdCursor(68),
