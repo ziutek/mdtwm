@@ -57,7 +57,14 @@ func NewRootPanel() *RootPanel {
 		rightButtonEventMask,
 		xgb.GrabModeAsync, xgb.GrabModeAsync,
 		xgb.WindowNone, cfg.DefaultCursor, 3,
-		xgb.ButtonMaskAny,
+		cfg.ModMask,
+	)
+	p.w.GrabButton(
+		true,
+		rightButtonEventMask,
+		xgb.GrabModeAsync, xgb.GrabModeAsync,
+		xgb.WindowNone, cfg.DefaultCursor, 3,
+		cfg.ModMask|xgb.ModMask2,
 	)
 	// Grab keys for WM actions
 	for k, _ := range cfg.Keys {
@@ -86,7 +93,7 @@ func (p *RootPanel) SetFocus(f bool, t xgb.Timestamp) {
 	return
 }
 
-// Inserts a box into panel 
+// Inserts a box into panel
 func (p *RootPanel) Append(b Box) {
 	b.SetParent(p)
 	p.children.PushBack(b)

@@ -1877,7 +1877,7 @@ func (c *Conn) ChangeProperty(Mode byte, Window Id, Property Id, Type Id, Format
 	put32(b[12:], uint32(Type))
 	b[16] = Format
 	//put32(b[20:], uint32(len(Data)))
-	put32(b[20:], uint32(len(Data) * 8 / int(Format)))
+	put32(b[20:], uint32(len(Data)*8/int(Format)))
 	c.sendRequest(b)
 	//c.sendBytes(Data[0:((len(Data) * int(Format)) / 8)])
 	c.sendBytes(Data)
