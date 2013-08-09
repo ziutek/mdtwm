@@ -229,6 +229,10 @@ func readFull(fname string, buf []byte) (int, error) {
 }
 
 func (d *Dzen2Logger) batInfo() string {
+	if d.BatPath == "" {
+		return ""
+	}
+
 	c := d.c[:]
 	n, err := readFull(filepath.Join(d.BatPath, "capacity"), c)
 	if err != nil && err != io.ErrUnexpectedEOF {
