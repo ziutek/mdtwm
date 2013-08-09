@@ -292,7 +292,7 @@ func (d *Dzen2Logger) thr() {
 		}
 		t := time.Now()
 		fmt.Fprintf(
-			d.Writer, "   %s^pa(%d)%11s   %s\n",
+			d.Writer, "   %s^pa(%d)%13s   %s\n",
 			s.title, d.InfoPos, d.batInfo(), t.Format(d.TimeFormat),
 		)
 	}
