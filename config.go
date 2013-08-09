@@ -43,8 +43,9 @@ func configure() {
 			Writer:     os.Stdout,
 			FgColor:    "#ddddcc",
 			BgColor:    "#555588",
+			BatPath:    "/sys/class/power_supply/BAT1",
 			TimeFormat: "Mon, Jan _2 15:04:05",
-			TimePos:    -132, // Negatife value means pixels from right border
+			InfoPos:    -222, // Negatife value means pixels from right border
 		},
 
 		DefaultCursor:     stdCursor(68),

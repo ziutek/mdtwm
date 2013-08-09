@@ -1,14 +1,15 @@
 package main
 
 import (
-	"github.com/ziutek/mdtwm/xgb_patched"
 	"encoding/json"
 	"fmt"
+	"github.com/ziutek/mdtwm/xgb_patched"
 	"io"
 	"os"
-	"syscall"
 	"os/exec"
+	"path/filepath"
 	"strings"
+	"syscall"
 	"time"
 )
 
@@ -187,10 +188,15 @@ type Dzen2Logger struct {
 	io.Writer
 	FgColor    string
 	BgColor    string
+	BatPath    string
 	TimeFormat string
-	TimePos    int16
+	InfoPos    int16
 
 	ch chan *Status
+
+	i [9]byte
+	c [4]byte
+	s [1]byte
 }
 
 func (d *Dzen2Logger) invColors() {
@@ -201,9 +207,9 @@ func (d *Dzen2Logger) nrmColors() {
 }
 
 func (d *Dzen2Logger) Start() {
-	if d.TimePos < 0 {
+	if d.InfoPos < 0 {
 		_, _, width, _ := root.PosSize()
-		d.TimePos += width
+		d.InfoPos += width
 	}
 	d.ch = make(chan *Status)
 	go d.thr()
@@ -211,6 +217,51 @@ func (d *Dzen2Logger) Start() {
 
 func (d *Dzen2Logger) Log(s Status) {
 	d.ch <- &s
+}
+
+func readFull(fname string, buf []byte) (int, error) {
+	f, err := os.Open(fname)
+	if err != nil {
+		return 0, err
+	}
+	defer f.Close()
+	return io.ReadFull(f, buf)
+}
+
+func (d *Dzen2Logger) batInfo() string {
+	c := d.c[:]
+	n, err := readFull(filepath.Join(d.BatPath, "capacity"), c)
+	if err != nil && err != io.ErrUnexpectedEOF {
+		return ""
+	}
+	if n > 0 {
+		c = c[:n-1]
+	} else {
+		c = nil
+	}
+
+	i := d.i[:]
+	i[0] = ' '
+	n, err = readFull(filepath.Join(d.BatPath, "current_now"), i[1:])
+	if err != nil && err != io.ErrUnexpectedEOF {
+		return ""
+	}
+	if n > 0 {
+		if n > 3 {
+			i = i[:n-3]
+		} else {
+			i = i[:2]
+			i[1] = '0'
+		}
+	} else {
+		i = i[:1]
+	}
+
+	_, err = readFull(filepath.Join(d.BatPath, "status"), d.s[:])
+	if err == nil && d.s[0] == 'C' {
+		i[0] = '~'
+	}
+	return fmt.Sprintf("[%s%%%5smA]", c, i)
 }
 
 func (d *Dzen2Logger) thr() {
@@ -237,8 +288,8 @@ func (d *Dzen2Logger) thr() {
 		}
 		t := time.Now()
 		fmt.Fprintf(
-			d.Writer, "   %s^pa(%d)%s\n",
-			s.title, d.TimePos, t.Format(d.TimeFormat),
+			d.Writer, "   %s^pa(%d)%11s   %s\n",
+			s.title, d.InfoPos, d.batInfo(), t.Format(d.TimeFormat),
 		)
 	}
 }
