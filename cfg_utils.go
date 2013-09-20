@@ -56,6 +56,20 @@ func spawn(cmd interface{}) error {
 	return exec.Command(args[0], args[1:]...).Start()
 }
 
+func closeCurrentWindow(cmd interface{}) error {
+	if currentBox == nil {
+		return nil
+	}
+	if b, ok := currentBox.(*BoxedWindow); ok {
+		if b.Protocols().Contains(AtomWmDeleteWindow) {
+			b.SendMessage(AtomWmDeleteWindow, b.Window())
+		} else {
+			b.Window().Destroy()
+		}
+	}
+	return nil
+}
+
 func exit(retval interface{}) error {
 	os.Exit(retval.(int))
 	return nil
