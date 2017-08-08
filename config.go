@@ -45,7 +45,7 @@ func configure() {
 			BgColor:    "#555588",
 			BatPath:    "/sys/class/power_supply/BAT1",
 			TimeFormat: "Mon, Jan _2 15:04:05",
-			InfoPos:    -228, // Negatife value means pixels from right border
+			InfoPos:    -185, // Negatife value means pixels from right border
 		},
 
 		DefaultCursor:     stdCursor(68),
@@ -63,9 +63,9 @@ func configure() {
 			KeyRight:  {nextDesk, nil},
 			KeyReturn: {spawn, "x-terminal-emulator"},
 			KeyEscape: {exit, 0},
+			KeyA:      {spawn, "x-text-editor"},
 			KeyC:      {closeCurrentWindow, nil},
-			KeyE:      {spawn, "gnome-text-editor"},
-			KeyF:      {spawn, "nautilus"},
+			KeyM:      {spawn, "x-mail-client"},
 			KeyW:      {spawn, "x-www-browser"},
 			KeyF11:    {spawn, "sudo pm-suspend"},
 			KeyF12:    {spawn, "sudo pm-hibernate"},
