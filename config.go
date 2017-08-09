@@ -65,7 +65,7 @@ func configure() {
 			KeyEscape: {exit, 0},
 			KeyA:      {spawn, "x-text-editor"},
 			KeyC:      {closeCurrentWindow, nil},
-			KeyM:      {spawn, "x-mail-client"},
+			KeyE:      {spawn, "x-email-client"},
 			KeyW:      {spawn, "x-www-browser"},
 			KeyF11:    {spawn, "sudo pm-suspend"},
 			KeyF12:    {spawn, "sudo pm-hibernate"},
