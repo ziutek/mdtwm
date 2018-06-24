@@ -45,7 +45,7 @@ func configure() {
 			BgColor:    "#555588",
 			BatPath:    "/sys/class/power_supply/BAT1",
 			TimeFormat: "Mon, Jan _2 15:04:05",
-			InfoPos:    -185, // Negatife value means pixels from right border
+			InfoPos:    -360, // Negatife value means pixels from right border
 		},
 
 		DefaultCursor:     stdCursor(68),
@@ -67,12 +67,12 @@ func configure() {
 			KeyC:      {closeCurrentWindow, nil},
 			KeyE:      {spawn, "x-email-client"},
 			KeyW:      {spawn, "x-www-browser"},
-			KeyF11:    {spawn, "sudo pm-suspend"},
-			KeyF12:    {spawn, "sudo pm-hibernate"},
+			KeyF11:    {spawn, "sudo systemctl -i suspend"},
+			KeyF12:    {spawn, "sudo systemctl -i hibernate"},
 		},
 
 		Ignore: TextList{},
-		Float:  TextList{"MPlayer", "QEMU"},
+		Float:  TextList{"MPlayer", "QEMU", "mpv"},
 	}
 	// Read configuration from file
 	//cfg.Load(filepath.Join(os.Getenv("HOME"), ".mdtwm"))

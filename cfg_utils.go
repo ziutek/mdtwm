@@ -1,16 +1,19 @@
 package main
 
 import (
+	"bufio"
 	"encoding/json"
 	"fmt"
-	"github.com/ziutek/mdtwm/xgb_patched"
 	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"syscall"
 	"time"
+
+	"github.com/ziutek/mdtwm/xgb_patched"
 )
 
 func rgbColor(r, g, b uint16) uint32 {
@@ -198,6 +201,10 @@ type StatusLogger interface {
 	Start()
 }
 
+type sysStat struct {
+	act, sum uint64
+}
+
 type Dzen2Logger struct {
 	io.Writer
 	FgColor    string
@@ -208,9 +215,10 @@ type Dzen2Logger struct {
 
 	ch chan *Status
 
-	i [9]byte
-	c [4]byte
-	s [1]byte
+	i    [9]byte
+	c    [4]byte
+	s    [1]byte
+	stat []sysStat
 }
 
 func (d *Dzen2Logger) invColors() {
@@ -226,6 +234,21 @@ func (d *Dzen2Logger) Start() {
 		d.InfoPos += width
 	}
 	d.ch = make(chan *Status)
+	if f, err := os.Open("/proc/stat"); err == nil {
+		sc := bufio.NewScanner(f)
+		n := 0
+		for sc.Scan() {
+			line := sc.Text()
+			if !strings.HasPrefix(line, "cpu") {
+				break
+			}
+			n++
+		}
+		f.Close()
+		if sc.Err() == nil {
+			d.stat = make([]sysStat, n-1)
+		}
+	}
 	go d.thr()
 }
 
@@ -282,6 +305,46 @@ func (d *Dzen2Logger) batInfo() string {
 	return fmt.Sprintf("[%s%%%5smA]", c, i)
 }
 
+func (d *Dzen2Logger) cpuLoad() string {
+	if d.stat == nil {
+		return ""
+	}
+	f, err := os.Open("/proc/stat")
+	if err != nil {
+		return ""
+	}
+	defer f.Close()
+	sc := bufio.NewScanner(f)
+	load := make([]string, len(d.stat))
+	i := 0
+	for sc.Scan() {
+		line := sc.Text()
+		if !strings.HasPrefix(line, "cpu") {
+			break
+		}
+		if strings.HasPrefix(line, "cpu ") {
+			continue
+		}
+		a := strings.Fields(line)
+		user, _ := strconv.ParseUint(a[1], 10, 64)
+		nice, _ := strconv.ParseUint(a[2], 10, 64)
+		system, _ := strconv.ParseUint(a[3], 10, 64)
+		idle, _ := strconv.ParseUint(a[4], 10, 64)
+		iowait, _ := strconv.ParseUint(a[5], 10, 64)
+		irq, _ := strconv.ParseUint(a[6], 10, 64)
+		soft, _ := strconv.ParseUint(a[7], 10, 64)
+		act := user + nice + system + iowait + irq + soft
+		sum := act + idle
+		dact := act - d.stat[i].act + 1
+		dsum := sum - d.stat[i].sum + 1
+		load[i] = fmt.Sprintf("%3d", (dact*100+dsum/2)/dsum)
+		d.stat[i].act = act
+		d.stat[i].sum = sum
+		i++
+	}
+	return "cpu: " + strings.Join(load, " ")
+}
+
 func (d *Dzen2Logger) thr() {
 	var s *Status
 	tick := time.Tick(time.Second)
@@ -306,8 +369,9 @@ func (d *Dzen2Logger) thr() {
 		}
 		t := time.Now()
 		fmt.Fprintf(
-			d.Writer, "   %s^pa(%d)%13s   %s\n",
-			s.title, d.InfoPos, d.batInfo(), t.Format(d.TimeFormat),
+			d.Writer, "   %s^pa(%d)%s   %13s   %s\n",
+			s.title, d.InfoPos, d.cpuLoad(), d.batInfo(),
+			t.Format(d.TimeFormat),
 		)
 	}
 }
