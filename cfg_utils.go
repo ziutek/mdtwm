@@ -342,7 +342,7 @@ func (d *Dzen2Logger) cpuLoad() string {
 		d.stat[i].sum = sum
 		i++
 	}
-	return "cpu: " + strings.Join(load, " ")
+	return "cpu:" + strings.Join(load, "")
 }
 
 func (d *Dzen2Logger) thr() {
