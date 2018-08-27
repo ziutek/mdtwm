@@ -337,7 +337,15 @@ func (d *Dzen2Logger) cpuLoad() string {
 		sum := act + idle
 		dact := act - d.stat[i].act + 1
 		dsum := sum - d.stat[i].sum + 1
-		load[i] = fmt.Sprintf("%3d", (dact*100+dsum/2)/dsum)
+		percent := strconv.FormatUint((dact*100+dsum/2)/dsum, 10)
+		switch len(percent) {
+		case 1:
+			load[i] = "  " + percent
+		case 2:
+			load[i] = " " + percent
+		default:
+			load[i] = " ^^^^"
+		}
 		d.stat[i].act = act
 		d.stat[i].sum = sum
 		i++
