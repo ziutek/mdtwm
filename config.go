@@ -43,7 +43,7 @@ func configure() {
 			Writer:     os.Stdout,
 			FgColor:    "#ddddcc",
 			BgColor:    "#555588",
-			BatPath:    "/sys/class/power_supply/BAT1",
+			BatPath:    "/sys/class/power_supply/BAT0",
 			TimeFormat: "Mon, Jan _2 15:04:05",
 			InfoPos:    -332, // Negatife value means pixels from right border
 		},
@@ -80,8 +80,8 @@ func configure() {
 	// Layout
 	root = NewRootPanel()
 	// Setup all desks
-	desk0 := NewPanel(Horizontal, 484, 1)
-	desk1 := NewPanel(Horizontal, 484, 1)
+	desk0 := NewPanel(Horizontal, 486, 1)
+	desk1 := NewPanel(Horizontal, 486, 1)
 	desk2 := NewPanel(Horizontal, 0, 1)
 	root.Append(desk0)
 	root.Append(desk1)
