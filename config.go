@@ -67,8 +67,8 @@ func configure() {
 			KeyC:      {closeCurrentWindow, nil},
 			KeyE:      {spawn, "x-email-client"},
 			KeyW:      {spawn, "x-www-browser"},
-			KeyF11:    {spawn, "sudo systemctl -i suspend"},
-			KeyF12:    {spawn, "sudo systemctl -i hibernate"},
+			KeyF11:    {spawn, "systemctl -i suspend"},
+			KeyF12:    {spawn, "systemctl -i hibernate"},
 		},
 
 		Ignore: TextList{},
