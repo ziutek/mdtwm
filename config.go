@@ -72,7 +72,7 @@ func configure() {
 		},
 
 		Ignore: TextList{},
-		Float:  TextList{"MPlayer", "QEMU", "mpv"},
+		Float:  TextList{"MPlayer", "QEMU", "mpv", "ffplay"},
 	}
 	// Read configuration from file
 	//cfg.Load(filepath.Join(os.Getenv("HOME"), ".mdtwm"))
